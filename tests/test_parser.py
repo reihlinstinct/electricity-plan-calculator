@@ -42,3 +42,12 @@ def test_bom_handled(tmp_path):
     intervals = parse(p)
     assert len(intervals) == 1
     assert intervals[0].kwh == 0.7
+
+
+def test_2400_normalized(tmp_path):
+    p = tmp_path / "h24.csv"
+    p.write_bytes(
+        '\ufeff"00-00000001","צריכה","02/10/2026","24:00",0.7,0\n'.encode("utf-8")
+    )
+    intervals = parse(p)
+    assert intervals[0].start == datetime(2026, 10, 3, 0, 0)
