@@ -2,7 +2,7 @@ import io
 import json
 from datetime import date, timedelta
 
-from iec_calc.weather import fetch_daily_temps, ols3, pearson, sensitivity
+from iec_calc.weather import fetch_daily_temps, hvac_split, ols3, pearson, sensitivity
 
 
 def test_pearson():
@@ -73,3 +73,46 @@ def test_low_temperature_variance_returns_none():
     temps = {d: 25.3 for d in days}
     kwh = {d: 6.0 + (i % 3) for i, d in enumerate(days)}
     assert sensitivity(kwh, temps) is None
+
+
+def _synthetic_hvac_days():
+    # 60 days: known coefficients b0=5, weekend=+3, cool=0.8/CDD, heat=1.2/HDD
+    days = [date(2026, 9, 1) + timedelta(days=i) for i in range(60)]
+    temps, kwh = {}, {}
+    for i, d in enumerate(days):
+        t = 20.0 + 8.0 * ((i * 7) % 13) / 13 - (4.0 if i > 40 else 0.0)
+        temps[d] = t
+        kwh[d] = (
+            5.0
+            + (3.0 if d.weekday() in (4, 5) else 0.0)
+            + 0.8 * max(0.0, t - 22.0)
+            + 1.2 * max(0.0, 18.0 - t)
+        )
+    return kwh, temps
+
+
+def test_hvac_split_recovers_coefficients():
+    kwh, temps = _synthetic_hvac_days()
+    rep = hvac_split(kwh, temps)
+    assert rep is not None
+    assert abs(rep.kwh_per_cooling_degree - 0.8) < 0.05
+    assert abs(rep.kwh_per_heating_degree - 1.2) < 0.05
+    assert rep.r_squared > 0.99
+
+
+def test_hvac_monthly_attribution_sums():
+    kwh, temps = _synthetic_hvac_days()
+    rep = hvac_split(kwh, temps)
+    assert [m.month for m in rep.monthly] == ["2026-09", "2026-10"]
+    for m in rep.monthly:
+        attributed = m.base_kwh + m.weekend_kwh + m.cooling_kwh + m.heating_kwh
+        assert abs(attributed + m.residual_kwh - m.total_kwh) < 1e-6
+    sep = rep.monthly[0]
+    assert sep.cooling_kwh > 0
+
+
+def test_hvac_split_none_without_variance():
+    days = [date(2026, 10, 1) + timedelta(days=i) for i in range(10)]
+    temps = {d: 20.0 for d in days}  # between the bases: no CDD/HDD at all
+    kwh = {d: 6.0 + (i % 2) for i, d in enumerate(days)}
+    assert hvac_split(kwh, temps) is None
