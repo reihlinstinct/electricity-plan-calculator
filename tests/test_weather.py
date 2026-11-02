@@ -65,3 +65,11 @@ def test_sensitivity_singular_returns_none():
     temps = {d: 20.0 for d in days}  # constant -> singular
     kwh = {d: 6.0 for d in days}
     assert sensitivity(kwh, temps) is None
+
+
+def test_low_temperature_variance_returns_none():
+    # near-constant temps: any slope would be noise, report nothing (#8 follow-up)
+    days = [date(2026, 10, 1) + timedelta(days=i) for i in range(14)]
+    temps = {d: 25.3 for d in days}
+    kwh = {d: 6.0 + (i % 3) for i, d in enumerate(days)}
+    assert sensitivity(kwh, temps) is None
