@@ -5,7 +5,7 @@ import argparse
 import logging
 import sys
 
-from . import __version__, analysis, cost, report, tariffs, weather
+from . import __version__, analysis, cost, insights, report, tariffs, weather
 from . import parser as csv_parser
 
 log = logging.getLogger(__name__)
@@ -145,6 +145,9 @@ def main(argv: list[str] | None = None) -> int:
                 costs, summary.days, catalog, excluded, args.current_plan
             )
         )
+    if args.command == "report":
+        ins = insights.build_insights(intervals, summary, catalog)
+        out.append(report.format_insights(ins, catalog.flat_rate))
     print("\n\n".join(out))
     return 0
 

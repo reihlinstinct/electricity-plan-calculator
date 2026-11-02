@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from .analysis import Summary
 from .cost import PlanCost
+from .insights import InsightsReport
 from .tariffs import Catalog
 from .weather import HvacReport, WeatherReport
 
@@ -126,3 +127,66 @@ def format_hvac(h: HvacReport) -> str:
             f"{m.month:<9}" + "".join(f"{v:>8.0f}" for v in cells)
         )
     return lines_to_text(lines)
+
+_KIND_LABELS = {
+    "washing_machine": "מכונת כביסה אפשרית",
+    "oven": "תנור אפייה אפשרי",
+    "sustained_high": "עומס גבוה ממושך (ייתכן מזגן/חימום/דוד - לא ניתן להבחין מהצריכה בלבד)",
+}
+_CONF_LABELS = {"high": "ביטחון גבוה", "medium": "ביטחון בינוני", "low": "ביטחון נמוך"}
+_HE_DAY = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]
+
+
+def format_insights(rep: InsightsReport, flat_rate: float) -> str:
+    """Observations only - every line is descriptive of the file, never causal."""
+    lines = [
+        "תובנות מהנתונים (תצפיות על הקובץ בלבד)",
+        "=========================================",
+    ]
+    span = f"{rep.first:%d.%m.%Y} - {rep.last:%d.%m.%Y}"
+    if not rep.covers_full_year:
+        lines.append(
+            f"כיסוי: {rep.days} ימים ({span}). השוואה עונתית (חורף/קיץ) דורשת ייצוא של שנה "
+            "מלאה; אין להסיק מהקובץ על עונות שאינן בו."
+        )
+    else:
+        lines.append(f"כיסוי: {rep.days} ימים ({span}) - שנה מלאה.")
+    hours = ", ".join(f"{h:02d}:00 ({v:.2f})" for h, v in rep.peak_hours)
+    lines.append(f"שעות שיא ממוצעות: {hours} קוט\"ש")
+    lines.append(
+        f"ממוצע יום חול: {rep.weekday_avg:.2f} | ממוצע שישי-שבת: {rep.weekend_avg:.2f} קוט\"ש"
+    )
+    base_annual_nis = rep.night_base_kw * 24 * 365 * flat_rate
+    lines.append(
+        f"עומס בסיס לילי: {rep.night_base_kw * 1000:.0f} וואט"
+        f" (כ-{base_annual_nis:,.0f} ₪ לשנה אם קבוע)"
+    )
+    if rep.notable_days:
+        days = ", ".join(f"{d:%d.%m}" for d in rep.notable_days)
+        lines.append(f"ימים עם צריכה חריגה: {days}")
+    lines.append(
+        f'חלון השיא של תעו"ז: {rep.taoz_peak_kwh:.0f} קוט"ש '
+        f"({rep.taoz_peak_cost_share:.0%} מהעלות אם היית בתעו\"ז)"
+    )
+    if rep.appliances:
+        lines.append("")
+        lines.append("זיהוי מכשירים (הערכה הסתברותית מחתימת העומס בלבד, לא ודאות):")
+        by_kind: dict[str, list] = {}
+        for a in rep.appliances:
+            by_kind.setdefault(a.kind, []).append(a)
+        for kind, label in _KIND_LABELS.items():
+            events = by_kind.get(kind)
+            if not events:
+                continue
+            confs = {}
+            for e in events:
+                confs[e.confidence] = confs.get(e.confidence, 0) + 1
+            conf_txt = ", ".join(f"{n} ב{_CONF_LABELS[c]}" for c, n in sorted(confs.items()))
+            lines.append(f"- {label}: {len(events)} אירועים ({conf_txt}).")
+            for e in sorted(events, key=lambda x: x.excess_kwh, reverse=True)[:2]:
+                lines.append(
+                    f"  למשל יום {_HE_DAY[e.start.weekday()]} {e.start:%d.%m %H:%M}-{e.end:%H:%M}"
+                    f" ({e.excess_kwh:.1f} קוט\"ש, {_CONF_LABELS[e.confidence]}): {e.pattern}"
+                )
+    return lines_to_text(lines)
+

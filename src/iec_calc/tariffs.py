@@ -99,17 +99,24 @@ class Taoz:
     requires_smart_meter: bool = True
     voluntary_below_annual_kwh: int = 40000
 
-    def rate(self, when: datetime) -> float:
+    def is_peak(self, when: datetime) -> bool:
+        """True when `when` falls in the Taoz peak window.
+
+        Peak windows (17:00-22:00/23:00) never wrap midnight, and each
+        season's window already encodes its day rule ("all" in winter,
+        "sun-thu" in summer/transition). Holidays and holiday eves are
+        off-peak all day in summer/transition; in winter the peak applies
+        every day, holidays included (schedule 5.1-1, decision 63609).
+        """
         season = next(s for s in self.seasons if when.month in s.months)
-        # Peak windows (17:00-22:00/23:00) never wrap midnight, and each
-        # season's window already encodes its day rule ("all" in winter,
-        # "sun-thu" in summer/transition). Holidays and holiday eves are
-        # off-peak all day in summer/transition; in winter the peak applies
-        # every day, holidays included (schedule 5.1-1, decision 63609).
         peak = season.peak_window.contains(when)
         if peak and season.name != "winter" and when.date() in (self.holidays | self.holiday_eves):
             peak = False
-        return season.peak_rate if peak else season.off_peak_rate
+        return peak
+
+    def rate(self, when: datetime) -> float:
+        season = next(s for s in self.seasons if when.month in s.months)
+        return season.peak_rate if self.is_peak(when) else season.off_peak_rate
 
 
 @dataclass(frozen=True)
