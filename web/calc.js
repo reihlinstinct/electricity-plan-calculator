@@ -245,7 +245,10 @@ export function buildInsights(intervals) {
     totalCost += i.kwh * r;
     if (taozIsPeak(i.start, TARIFFS.taoz)) { peakKwh += i.kwh; peakCost += i.kwh * r; }
   }
-  const peakHours = sum.hourlyAvg.map((v, h) => [h, v]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  // per-hour averages (sum per clock hour / days), matching the CLI units
+  const hourTotals = new Array(24).fill(0);
+  intervals.forEach(i => { hourTotals[i.start.getHours()] += i.kwh; });
+  const peakHours = hourTotals.map((v, h) => [h, v / days.length]).sort((a, b) => b[1] - a[1]).slice(0, 3);
   return {
     days: days.length, first: days[0], last: days[days.length - 1],
     coversFullYear: days.length >= 350,

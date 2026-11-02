@@ -80,6 +80,7 @@ function setBlock(ivs, startIdx, kws) {
   check('js: insights night base positive', ins.nightBaseKw > 0.1 && ins.nightBaseKw < 0.5);
   check('js: insights taoz peak share sane', ins.taozPeakCostShare > 0 && ins.taozPeakCostShare < 1);
   check('js: insights peak hours top=21', ins.peakHours[0][0] === 21);
+  check('js: peak hours per hour, CLI units', Math.abs(ins.peakHours[0][1] - 1.219) < 0.01);
 }
 
 {
