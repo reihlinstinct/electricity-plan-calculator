@@ -97,7 +97,7 @@ export const I18N = {
       "en": "GitHub"
     },
     "ui.footer_sources": {
-      "he": "Sources",
+      "he": "מקורות",
       "en": "Sources"
     },
     "plan.flat_label": {

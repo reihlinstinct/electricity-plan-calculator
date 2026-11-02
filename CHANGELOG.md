@@ -2,6 +2,8 @@
 
 ## 2026-11-02
 
+- Footer "Sources" link localized to Hebrew (מקורות). (#59)
+
 - English as the first additional language: shared strings file, `?lang=en` on the
   site, CLI `--lang`, per-language og meta in JS. IEC supplier plan names stay in
   Hebrew (proper nouns from the tariff catalog). (#44, #51, #52)

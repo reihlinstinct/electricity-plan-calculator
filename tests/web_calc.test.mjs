@@ -228,6 +228,7 @@ function setBlock(ivs, startIdx, kws) {
     check(`${page}: header flex opposite-side`, /header \{[^}]*display:flex[^}]*justify-content:space-between[^}]*flex-direction:row-reverse/s.test(body));
     check(`${page}: no old nav bar`, !body.includes('<nav id="langSwitch"'));
   }
+  check('i18n: footer sources label localized', I18N.strings['ui.footer_sources'].he === 'מקורות' && I18N.strings['ui.footer_sources'].en === 'Sources');
   check('i18n: selector aria-label key in all languages', ['he', 'en'].every(l => I18N.strings['ui.lang_switch_label'][l]));
   check('i18n: option labels are 2-letter codes', Object.keys(I18N.languages).every(c => c.length === 2 && c.toUpperCase().length === 2));
   // issue #56: no hostname-list box on the main page; sources live only on the Sources page
