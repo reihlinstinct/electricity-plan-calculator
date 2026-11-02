@@ -220,6 +220,16 @@ function setBlock(ivs, startIdx, kws) {
   check('i18n: en translation renders', t('ui.title', {}, 'en') === 'Electricity plan calculator');
   check('i18n: og keys exist in both languages', ['he', 'en'].every(l => I18N.strings['ui.og_title'][l] && I18N.strings['ui.og_desc'][l]));
   check('i18n: unknown language falls back to he', t('ui.title', {}, 'fr') === t('ui.title', {}, 'he'));
+  // selector redesign (issue #54): a native select inside the header on every page,
+  // flex space-between puts it opposite the title in both directions
+  for (const page of ['index.html', 'guide.html', 'sources.html']) {
+    const body = readFileSync(join(root, 'web', page), 'utf-8');
+    check(`${page}: select#langSwitch inside header`, /<header><select id="langSwitch"><\/select><h1/.test(body));
+    check(`${page}: header flex opposite-side`, /header \{[^}]*display:flex[^}]*justify-content:space-between[^}]*flex-direction:row-reverse/s.test(body));
+    check(`${page}: no old nav bar`, !body.includes('<nav id="langSwitch"'));
+  }
+  check('i18n: selector aria-label key in all languages', ['he', 'en'].every(l => I18N.strings['ui.lang_switch_label'][l]));
+  check('i18n: option labels are 2-letter codes', Object.keys(I18N.languages).every(c => c.length === 2 && c.toUpperCase().length === 2));
 }
 
 // --- link hygiene (issue #45): repo/source links point at main, hosts are expected, internal links exist ---

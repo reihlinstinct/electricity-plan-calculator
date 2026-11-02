@@ -779,6 +779,10 @@ export const I18N = {
     "report.weather_no_overlap": {
       "he": "רגישות למזג אוויר: לא נמצאו מספיק ימים חופפים.",
       "en": "Weather sensitivity: not enough overlapping days found."
+    },
+    "ui.lang_switch_label": {
+      "he": "בחירת שפה",
+      "en": "Language"
     }
   }
 };

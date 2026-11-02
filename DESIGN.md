@@ -49,8 +49,12 @@ household's **actual** interval-level usage, with annual NIS cost estimates.
   map. Tests fail if any key is missing a language or placeholders differ.
 - Web: Hebrew stays inline in the HTML (no-JS fallback); `web/i18n.js` swaps
   `[data-i18n]` text by the `?lang=` URL parameter (shareable, no cookies)
-  and sets `<html lang dir>`. The selector is link-based at the top of every
-  page. og/meta tags stay Hebrew for now.
+  and sets `<html lang dir>`. The selector is a native `<select>` dropdown
+  inside the header, on the side opposite the title (flex `row-reverse` +
+  `space-between`, so direction picks the corner), labelled with 2-letter
+  codes (HE, EN, ...). Changing it updates the `?lang=` URL param via
+  `history.replaceState` and re-renders - no reload, no network. og/meta
+  tags switch in JS only (crawlers without JS see the default tags).
 - The CLI renders in the default language unless `--lang` is given; English
   is the first additional language. og/twitter meta tags are swapped by JS on
   language switch (crawlers that do not run JS still see the default Hebrew

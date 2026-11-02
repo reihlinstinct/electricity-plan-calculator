@@ -51,15 +51,26 @@ export function applyI18n(doc = document) {
   for (const el of doc.querySelectorAll('[data-i18n-title]')) {
     doc.title = t(el.getAttribute('data-i18n-title'), {}, lang);
   }
-  const nav = doc.getElementById('langSwitch');
-  if (nav) {
-    nav.replaceChildren();
-    const parts = [];
-    for (const [code, m] of Object.entries(I18N.languages)) {
-      if (code === lang) { const b = doc.createElement('b'); b.textContent = m.name; parts.push(b); }
-      else { const a = doc.createElement('a'); a.href = `?lang=${code}`; a.textContent = m.name; parts.push(a); }
+  // Dropdown selector in the header: 2-letter codes, native select (keyboard
+  // + screen-reader friendly), no reload - update the URL param and re-render.
+  const sel = doc.getElementById('langSwitch');
+  if (sel) {
+    sel.setAttribute('aria-label', t('ui.lang_switch_label', {}, lang));
+    if (!sel.options || sel.options.length !== Object.keys(I18N.languages).length) {
+      sel.replaceChildren();
+      for (const code of Object.keys(I18N.languages)) {
+        const opt = doc.createElement('option');
+        opt.value = code;
+        opt.textContent = code.toUpperCase();
+        sel.appendChild(opt);
+      }
+      sel.addEventListener('change', () => {
+        const q = new URLSearchParams(window.location.search);
+        q.set('lang', sel.value);
+        window.history.replaceState(null, '', `${window.location.pathname}?${q}`);
+        applyI18n();
+      });
     }
-    parts.forEach((el, i) => { if (i) nav.append(' · '); nav.appendChild(el); });
-    nav.style.cssText = 'text-align:center;padding:.4rem;font-size:.9rem;background:#eef2f7;';
+    sel.value = lang;
   }
 }

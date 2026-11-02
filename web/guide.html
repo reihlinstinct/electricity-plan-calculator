@@ -10,7 +10,11 @@
   :root { --bg:#f7f7f9; --card:#fff; --ink:#1a1a2e; --accent:#0b6bcb; --muted:#666; }
   * { box-sizing: border-box; }
   body { font-family: system-ui, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; }
-  header { background:var(--accent); color:#fff; padding:1rem 1.5rem; }
+  header { background:var(--accent); color:#fff; padding:1rem 1.5rem;
+           display:flex; align-items:center; justify-content:space-between; gap:1rem;
+           flex-direction:row-reverse; }
+  header select#langSwitch { font:inherit; font-weight:600; color:var(--accent);
+           background:#fff; border:0; border-radius:6px; padding:.15rem .3rem; cursor:pointer; }
   header h1 { margin:0; font-size:1.2rem; }
   main { max-width:760px; margin:0 auto; padding:1rem; display:grid; gap:1rem; }
   .card { background:var(--card); border-radius:12px; padding:1rem 1.25rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
@@ -22,8 +26,7 @@
 </style>
 </head>
 <body>
-<nav id="langSwitch" aria-label="language"></nav>
-<header><h1 data-i18n="guide.header">איך שולפים את קובץ נתוני הצריכה (CSV) מאתר חברת החשמל</h1></header>
+<header><select id="langSwitch"></select><h1 data-i18n="guide.header">איך שולפים את קובץ נתוני הצריכה (CSV) מאתר חברת החשמל</h1></header>
 <main>
   <div class="card">
     <p data-i18n="guide.intro">מדריך קצר, צעד אחר צעד, להורדת קובץ הצריכה ברמת רבע שעה - זה הקובץ שמעלים למחשבון. נבדק מול האתר בנובמבר 2026.</p>
