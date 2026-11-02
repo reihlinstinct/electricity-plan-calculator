@@ -1,0 +1,24 @@
+.TH IEC-CALC-MCP 1 "November 2026" "iec-calc 0.1.0" "User Commands"
+.SH NAME
+iec-calc-mcp \- MCP server (stdio) for the IEC electricity plan calculator
+.SH SYNOPSIS
+.B iec-calc-mcp
+.SH DESCRIPTION
+Speaks newline-delimited JSON-RPC 2.0 on stdin/stdout, MCP protocol version
+2025-06-18. Local only: no listener, no network access except the explicit
+weather opt-in on analyze_csv (Open-Meteo, experimental).
+Logs go to stderr at WARNING level; set MCP_DEBUG=1 for debug logging.
+Stateless: every tool call reads the given local CSV path and retains nothing.
+.SH TOOLS
+.TP
+.B analyze_csv {path, weather?, lat?, lon?}
+Consumption profile: totals, base load, peaks, night/weekend and Shabbat split.
+.TP
+.B rank_plans {path, phase?, gas?, hot?, smart_meter?, current_plan?}
+Annual-cost ranking of flat, Taoz and supplier plans. Conditional
+(gas/HOT-customer) plans are excluded unless the matching flag is true.
+.TP
+.B explain_insights {path, lat?, lon?}
+Descriptive observations and probabilistic appliance-signature detection.
+.SH SEE ALSO
+.BR iec-calc (1)

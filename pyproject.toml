@@ -20,6 +20,7 @@ dev = [
 
 [project.scripts]
 iec-calc = "iec_calc.cli:main"
+iec-calc-mcp = "iec_calc.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

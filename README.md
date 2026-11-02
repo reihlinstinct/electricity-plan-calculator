@@ -51,6 +51,10 @@ Try it on the synthetic sample: `iec-calc report data/sample_consumption.csv`
   cheapest first. Discount windows follow Israeli conventions
   (workdays = Sunday-Thursday; night windows wrap midnight).
 
+## MCP server
+
+`iec-calc-mcp` exposes the same engine to MCP clients over stdio (newline-delimited JSON-RPC, protocol 2025-06-18, no dependencies). Tools: `analyze_csv`, `rank_plans`, `explain_insights` - each takes a local CSV path; nothing is sent anywhere or retained. Conditional plans stay off unless `gas`/`hot` are passed, and the weather estimate stays an opt-in (`weather: true` on `analyze_csv`, experimental, one Open-Meteo call). Design notes: `docs/mcp-design.md`. No registry publishing.
+
 ## Tariff data
 
 All rates, discounts, eligibility notes, source URLs and verification dates
