@@ -42,8 +42,11 @@
       <label>סוג מונה:
         <select id="phase"><option value="single">חד-פאזי</option><option value="three">תלת-פאזי</option></select></label>
       <label><input type="checkbox" id="smartMeter" checked> יש לי מונה חכם</label>
-      <label><input type="checkbox" id="gasCustomer" checked> לקוח גז אמישראגז</label>
-      <label><input type="checkbox" id="hotCustomer" checked> לקוח HOT/NEXT</label>
+      <details id="extraDiscounts">
+        <summary>אפשרויות הנחה נוספות</summary>
+        <label><input type="checkbox" id="gasCustomer"> לקוח גז אמישראגז</label>
+        <label><input type="checkbox" id="hotCustomer"> לקוח HOT/NEXT</label>
+      </details>
       <label>המסלול הנוכחי שלי: <select id="currentPlan"><option value="">-</option></select></label>
     </div>
     <p><button id="go" disabled>חשב</button> <span id="status" class="muted"></span></p>

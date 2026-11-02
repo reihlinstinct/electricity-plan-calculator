@@ -42,11 +42,12 @@ def test_rank_plans_filters_and_reports_excluded():
     assert not any("אמישראגז" in lbl for lbl in labels)
 
 
-def test_default_customer_includes_everything():
+def test_default_customer_excludes_conditional_plans_by_default():
     cat = load_catalog()
     ranked = rank_plans(_intervals(), cat, days=1)
-    assert len(ranked) == 22
-    assert unavailable_plans(cat, Customer()) == []
+    assert len(ranked) == 20
+    excluded = unavailable_plans(cat, Customer())
+    assert len(excluded) == 2
 
 
 def test_eligibility_flags_come_from_data_not_text():
@@ -56,3 +57,15 @@ def test_eligibility_flags_come_from_data_not_text():
     assert flagged, "data should carry explicit requirement flags"
     for p in flagged:
         assert not plan_available(p, Customer(gas_customer=False, hot_customer=False))
+
+
+def test_default_customer_excludes_conditional_plans():
+    cat = load_catalog()
+    ranked = rank_plans(_intervals(), cat, days=1, customer=Customer())
+    labels = [p.label for p in ranked]
+    assert not any("אמישראגז" in lbl for lbl in labels)
+    assert "HOT energy - חוסכים קבוע" not in labels  # other HOT energy plans need no membership
+    excluded = unavailable_plans(cat, Customer())
+    assert any("אמישראגז" in p.label for p in excluded)
+    assert any(p.label == "HOT energy - חוסכים קבוע" for p in excluded)
+    assert len(ranked) + len(excluded) == 22

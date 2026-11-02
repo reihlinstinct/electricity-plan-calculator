@@ -19,7 +19,10 @@ const sum = summarize(intervals);
 check('14 local days (no UTC phantom day)', sum.days === 14);
 
 const ranked = rankPlans(intervals, {});
-check('22 plans ranked', ranked.length === 22);
+check('20 plans ranked by default (gas/HOT excluded)', ranked.length === 20);
+check('default excludes Amisragas', !ranked.some(p => p.label.includes('אמישראגז')));
+const rankedAll = rankPlans(intervals, { gasCustomer: true, hotCustomer: true });
+check('22 plans with opt-ins', rankedAll.length === 22);
 check('sorted ascending', ranked.every((p, i) => i === 0 || ranked[i - 1].annual <= p.annual));
 // expected values from the Python engine on the same file
 check('taoz annual = 3185', Math.round(ranked.find(p => p.kind === 'taoz').annual) === 3185);

@@ -50,3 +50,16 @@ def test_version(capsys):
     except SystemExit as e:
         assert e.code == 0
     assert "iec-calc" in capsys.readouterr().out
+
+
+def test_cli_gas_hot_opt_in(sample_csv, capsys):
+    from iec_calc.cli import main
+    def ranked_lines(out):
+        return [ln for ln in out.splitlines() if " | " in ln]
+
+    main(["plans", str(sample_csv)])
+    out = capsys.readouterr().out
+    assert not any("אמישראגז" in ln for ln in ranked_lines(out))
+    main(["plans", str(sample_csv), "--gas"])
+    out = capsys.readouterr().out
+    assert any("אמישראגז" in ln for ln in ranked_lines(out))

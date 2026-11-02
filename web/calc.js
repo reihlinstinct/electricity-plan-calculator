@@ -95,8 +95,8 @@ export function rankPlans(intervals, opts = {}) {
   out.push({ label: 'תעו"ז מפוקח (מונה חכם)', kind: 'taoz', annual: taozAnnual, saving: flatAnnual - taozAnnual });
   for (const p of TARIFFS.supplier_plans) {
     if (p.meter === 'smart' && opts.smartMeter === false) continue;
-    if (p.requires_gas_customer && opts.gasCustomer === false) continue;
-    if (p.requires_hot_customer && opts.hotCustomer === false) continue;
+    if (p.requires_gas_customer && opts.gasCustomer !== true) continue;
+    if (p.requires_hot_customer && opts.hotCustomer !== true) continue;
     const cost = intervals.reduce((s, i) => s + i.kwh * flat * (planApplies(p, i.start) ? 1 - p.discount : 1), 0);
     const annual = ann(cost) + iecFixed;
     out.push({ label: `${p.supplier} - ${p.plan}`, kind: 'supplier', annual, saving: flatAnnual - annual, plan: p });

@@ -16,8 +16,8 @@ class Customer:
     """
 
     smart_meter: bool = True
-    gas_customer: bool = True
-    hot_customer: bool = True
+    gas_customer: bool = False
+    hot_customer: bool = False
 
 
 def plan_available(plan: SupplierPlan, customer: Customer) -> bool:

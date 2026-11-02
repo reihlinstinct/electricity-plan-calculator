@@ -41,7 +41,7 @@ def test_ranking_sorted_and_marks_recommendation(two_days):
     cat = load_catalog()
     ranked = rank_plans(two_days, cat, days=2)
     assert ranked == sorted(ranked, key=lambda c: c.annual_cost)
-    assert len(ranked) == 22  # 20 supplier plans + flat + taoz
+    assert len(ranked) == 20  # 18 unconditional supplier plans + flat + taoz (gas/HOT opt-in)
     flat = next(c for c in ranked if c.kind == "flat")
     assert flat.savings_vs_flat_annual == 0.0
     best = ranked[0]

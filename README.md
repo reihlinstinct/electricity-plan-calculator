@@ -29,7 +29,7 @@ Try it on the synthetic sample: `iec-calc report data/sample_consumption.csv`
 ## Useful flags
 
 - `--phase {single,three}` - meter phase for the fixed-fee calculation (default: single)
-- `--no-smart-meter` / `--no-gas` / `--no-hot` - exclude plans you are not eligible for
+- `--no-smart-meter` - exclude smart-meter plans; `--gas` / `--hot` - OPT IN to gas-customer (Amisragas) / HOT-customer plans (excluded by default)
 - `--current-plan LABEL` - mark your current plan (substring match; flat tariff and Taoz
   labels work too) and see the top plan's saving versus it
 - `--weather` [--lat/--lon] - opt-in (off by default, makes a network call to Open-Meteo);

@@ -43,10 +43,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     def add_eligibility_args(sp):
         sp.add_argument("--no-smart-meter", dest="smart_meter", action="store_false",
                         help="exclude plans that require a smart meter")
-        sp.add_argument("--no-gas", dest="gas_customer", action="store_false",
-                        help="exclude gas-customer-only plans (Amisragas)")
-        sp.add_argument("--no-hot", dest="hot_customer", action="store_false",
-                        help="exclude HOT/NEXT-customer-only plans")
+        sp.add_argument("--gas", dest="gas_customer", action="store_true",
+                        help="include gas-customer-only plans (Amisragas); excluded by default")
+        sp.add_argument("--hot", dest="hot_customer", action="store_true",
+                        help="include HOT/NEXT-customer-only plans; excluded by default")
         sp.add_argument("--current-plan", metavar="LABEL",
                         help="label (or substring) of your current plan, to show savings vs it")
 
