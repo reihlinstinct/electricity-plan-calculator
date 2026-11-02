@@ -13,7 +13,7 @@ import csv
 import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from pathlib import Path
 
 log = logging.getLogger(__name__)
@@ -58,7 +58,11 @@ def parse(path: str | Path) -> list[Interval]:
             if cells[1] != CONSUMPTION_KIND:
                 skipped += 1
                 continue
-            intervals.append(Interval(datetime.combine(day, time(hour, minute)), kwh, feed))
+            if hour < 24:
+                start = datetime.combine(day, time(hour, minute))
+            else:  # some exports write midnight as 24:00
+                start = datetime.combine(day, time(0, 0)) + timedelta(days=1)
+            intervals.append(Interval(start, kwh, feed))
     intervals.sort(key=lambda i: i.start)
     log.debug(
         "parsed %d intervals (%d rows skipped), range %s..%s",
