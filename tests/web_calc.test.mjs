@@ -128,7 +128,7 @@ function setBlock(ivs, startIdx, kws) {
     if (p.startsWith('http')) return false;
     try { readFileSync(join(root, 'web', p)); return true; } catch { return false; }
   }));
-  check('guide: no external resource loads', !(guide.match(/src="https?:/) || guide.match('<link[^>]+href="https?:')));
+  check('guide: no external resource loads', !(guide.match(/src="https?:/) || guide.match(/<link[^>]+href="https?:/)));
 
   const pngSize = path => {
     const b = readFileSync(path);
