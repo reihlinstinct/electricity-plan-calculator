@@ -39,27 +39,47 @@ def taoz_cost(intervals: list[Interval], catalog: Catalog) -> float:
     return sum(i.kwh * catalog.taoz.rate(i.start) for i in intervals)
 
 
-def rank_plans(intervals: list[Interval], catalog: Catalog, days: int) -> list[PlanCost]:
-    """Annual cost for every plan, cheapest first. Flat regulated tariff included."""
+def rank_plans(
+    intervals: list[Interval],
+    catalog: Catalog,
+    days: int,
+    phase: str = "single",
+) -> list[PlanCost]:
+    """Annual cost (energy + fixed fees, incl. VAT) per plan, cheapest first.
+
+    Fixed fees are identical for the flat tariff and supplier plans; Taoz's
+    fixed fee is higher (schedule 5.4-1), so it is included explicitly.
+    """
+    iec_fixed = catalog.fixed_fee_annual(phase)
+    taoz_fixed = catalog.fixed_fee_annual(phase, taoz=True)
+    log.debug("fixed fees annual incl VAT: iec=%.0f taoz=%.0f", iec_fixed, taoz_fixed)
     base = flat_cost(intervals, catalog.flat_rate)
+    flat_annual = _annualize(base, days) + iec_fixed
     out = [
         PlanCost(
             label='חברת החשמל - תעריף אחיד מפוקח',
             kind="flat",
             period_cost=base,
-            annual_cost=_annualize(base, days),
+            annual_cost=flat_annual,
             savings_vs_flat_annual=0.0,
-            detail=f"{catalog.flat_rate:.4f} NIS/kWh, all hours",
+            detail=f"{catalog.flat_rate:.4f} NIS/kWh, all hours, fixed fee {iec_fixed:.0f} NIS/yr",
         ),
+    ]
+    tc = taoz_cost(intervals, catalog)
+    taoz_annual = _annualize(tc, days) + taoz_fixed
+    out.append(
         PlanCost(
             label='תעו"ז מפוקח (מונה חכם)',
             kind="taoz",
-            period_cost=(tc := taoz_cost(intervals, catalog)),
-            annual_cost=_annualize(tc, days),
-            savings_vs_flat_annual=_annualize(base - tc, days),
-            detail="season x peak/off-peak, measured period only",
+            period_cost=tc,
+            annual_cost=taoz_annual,
+            savings_vs_flat_annual=flat_annual - taoz_annual,
+            detail=(
+                "season x peak/off-peak + higher fixed fee "
+                f"{taoz_fixed:.0f} NIS/yr (vs {iec_fixed:.0f})"
+            ),
         ),
-    ]
+    )
     for plan in catalog.plans:
         c = supplier_cost(intervals, plan, catalog.flat_rate)
         out.append(
@@ -67,8 +87,8 @@ def rank_plans(intervals: list[Interval], catalog: Catalog, days: int) -> list[P
                 label=plan.label,
                 kind="supplier",
                 period_cost=c,
-                annual_cost=_annualize(c, days),
-                savings_vs_flat_annual=_annualize(base - c, days),
+                annual_cost=_annualize(c, days) + iec_fixed,
+                savings_vs_flat_annual=flat_annual - (_annualize(c, days) + iec_fixed),
                 detail=f"{plan.discount:.1%} off, {plan.meter} meter, verified {plan.verified}",
             )
         )

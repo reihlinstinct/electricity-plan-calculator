@@ -32,11 +32,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     a.add_argument("--lat", type=float, default=DEFAULT_LAT)
     a.add_argument("--lon", type=float, default=DEFAULT_LON)
 
+    def add_phase_arg(sp):
+        sp.add_argument("--phase", choices=["single", "three"], default="single",
+                        help="meter phase for fixed-fee calculation (default: single)")
+
     p = sub.add_parser("plans", help="rank all electricity plans by annual cost on your data")
     add_file_arg(p)
+    add_phase_arg(p)
 
     r = sub.add_parser("report", help="full report: analysis + plan ranking")
     add_file_arg(r)
+    add_phase_arg(r)
     r.add_argument("--weather", action="store_true")
     r.add_argument("--lat", type=float, default=DEFAULT_LAT)
     r.add_argument("--lon", type=float, default=DEFAULT_LON)
@@ -80,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
             out.append(_weather_block(args, summary))
     if args.command in ("plans", "report"):
         catalog = tariffs.load_catalog(args.tariffs)
-        costs = cost.rank_plans(intervals, catalog, summary.days)
+        costs = cost.rank_plans(intervals, catalog, summary.days, phase=args.phase)
         out.append(report.format_ranking(costs, summary.days, catalog.flat_rate))
     print("\n\n".join(out))
     return 0
