@@ -61,3 +61,31 @@ def test_taoz_rates():
     # holiday = off-peak
     tz_h = type(tz)(seasons=tz.seasons, holidays=frozenset({date(2026, 10, 4)}))
     assert tz_h.rate(datetime(2026, 10, 4, 18, 0)) == 0.4578
+
+
+def test_fixed_fee_annual_amounts():
+    cat = load_catalog()
+    assert abs(cat.fixed_fee_annual() - 25.57 * 12 * 1.18) < 0.01
+    assert abs(cat.fixed_fee_annual(phase="three") - 27.09 * 12 * 1.18) < 0.01
+    assert abs(cat.fixed_fee_annual(taoz=True) - 47.63 * 12 * 1.18) < 0.01
+
+
+def test_holiday_data_loaded():
+    cat = load_catalog()
+    assert len(cat.taoz.holidays) >= 14
+    assert len(cat.taoz.holiday_eves) >= 14
+    assert date(2026, 9, 12) in cat.taoz.holidays  # Rosh Hashana day 1
+    assert date(2026, 9, 21) in cat.taoz.holidays  # Yom Kippur
+    assert date(2026, 9, 20) in cat.taoz.holiday_eves
+
+
+def test_winter_peak_on_holiday():
+    # winter peak applies every day, holidays included (schedule 5.1-1, decision 63609)
+    cat = load_catalog()
+    tz = type(cat.taoz)(
+        seasons=cat.taoz.seasons,
+        holidays=frozenset({date(2027, 1, 15)}),
+        holiday_eves=cat.taoz.holiday_eves,
+        fixed_fee_monthly_pre_vat=cat.taoz.fixed_fee_monthly_pre_vat,
+    )
+    assert tz.rate(datetime(2027, 1, 15, 18, 0)) == 1.1470  # Friday in winter, holiday

@@ -47,3 +47,24 @@ def test_ranking_sorted_and_marks_recommendation(two_days):
     best = ranked[0]
     assert best.annual_cost <= flat.annual_cost
     assert best.savings_vs_flat_annual >= 0
+
+
+def test_ranking_includes_fixed_fees(two_days):
+    cat = load_catalog()
+    ranked = rank_plans(two_days, cat, days=2)
+    by_kind = {c.kind: c for c in ranked}
+    iec_fixed = 25.57 * 12 * 1.18
+    taoz_fixed = 47.63 * 12 * 1.18
+    assert abs(by_kind["flat"].annual_cost - (flat_cost(two_days, cat.flat_rate) / 2 * 365 + iec_fixed)) < 0.01
+    taoz_energy = taoz_cost(two_days, cat) / 2 * 365
+    assert abs(by_kind["taoz"].annual_cost - (taoz_energy + taoz_fixed)) < 0.01
+    # Taoz's higher fixed fee erases part of its energy saving
+    assert by_kind["taoz"].savings_vs_flat_annual < (by_kind["flat"].annual_cost - taoz_energy)
+    assert "fixed fee" in by_kind["taoz"].detail
+
+
+def test_ranking_three_phase(two_days):
+    cat = load_catalog()
+    ranked3 = rank_plans(two_days, cat, days=2, phase="three")
+    flat3 = next(c for c in ranked3 if c.kind == "flat")
+    assert abs(flat3.annual_cost - (flat_cost(two_days, cat.flat_rate) / 2 * 365 + 27.09 * 12 * 1.18)) < 0.01
