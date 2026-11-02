@@ -67,9 +67,12 @@ def ols3(x1: list[float], x2: list[float], y: list[float]) -> tuple[float, float
     amat = [[sum(r[i] * r[j] for r in rows) for j in range(n)] for i in range(n)]
     bvec = [sum(r[i] * yy for r, yy in zip(rows, y, strict=False)) for i in range(n)]
     for i in range(n):
-        piv = amat[i][i]
-        if abs(piv) < 1e-12:
+        piv_row = max(range(i, n), key=lambda r: abs(amat[r][i]))
+        if abs(amat[piv_row][i]) < 1e-12:
             raise ValueError("singular design matrix")
+        amat[i], amat[piv_row] = amat[piv_row], amat[i]
+        bvec[i], bvec[piv_row] = bvec[piv_row], bvec[i]
+        piv = amat[i][i]
         for j in range(i, n):
             amat[i][j] /= piv
         bvec[i] /= piv
@@ -97,6 +100,9 @@ def sensitivity(
         return None
     ys = [daily_kwh[d] for d in common]
     ts = [temps[d] for d in common]
+    if statistics.pstdev(ts) < 1.0:
+        log.debug("weather: temperature variance too low (pstdev < 1C), slope meaningless, skipping")
+        return None
     weekend = [1.0 if d.weekday() in FRI_SAT else 0.0 for d in common]
     try:
         _, b_weekend, b_temp, r2 = ols3(weekend, ts, ys)
