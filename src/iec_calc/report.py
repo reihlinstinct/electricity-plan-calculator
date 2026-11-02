@@ -4,7 +4,7 @@ from __future__ import annotations
 from .analysis import Summary
 from .cost import PlanCost
 from .tariffs import Catalog
-from .weather import WeatherReport
+from .weather import HvacReport, WeatherReport
 
 
 def _nis(v: float) -> str:
@@ -99,3 +99,21 @@ def format_ranking(
 
 def lines_to_text(lines: list[str]) -> str:
     return "\n".join(lines)
+
+
+def format_hvac(h: HvacReport) -> str:
+    lines = [
+        "פיצול קירור/חימום (מעלות-יום)",
+        "=============================",
+        f"קירור: {h.kwh_per_cooling_degree:+.2f} קוט\"ש/יום לכל מעלה מעל {h.cooling_base:.0f}° | "
+        f"חימום: {h.kwh_per_heating_degree:+.2f} קוט\"ש/יום לכל מעלה מתחת {h.heating_base:.0f}°",
+        f"הסבר המודל: R²={h.r_squared:.2f} ({h.days} ימים)",
+        "",
+        "חודש     " + '  סה"כ' + "   בסיס" + '  סופ"ש' + "   קירור" + "   חימום",
+    ]
+    for m in h.monthly:
+        lines.append(
+            f"{m.month:<9}{m.total_kwh:>8.0f}{m.base_kwh:>8.0f}{m.weekend_kwh:>8.0f}"
+            f"{m.cooling_kwh:>8.0f}{m.heating_kwh:>8.0f}"
+        )
+    return lines_to_text(lines)

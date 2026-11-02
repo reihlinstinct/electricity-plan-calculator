@@ -20,6 +20,33 @@ log = logging.getLogger(__name__)
 API = "https://archive-api.open-meteo.com/v1/archive"
 
 
+DEFAULT_COOLING_BASE = 22.0  # deg C: above this, cooling degree-days accrue
+DEFAULT_HEATING_BASE = 18.0  # deg C: below this, heating degree-days accrue
+
+
+@dataclass(frozen=True)
+class MonthAttribution:
+    month: str  # YYYY-MM
+    days: int
+    total_kwh: float
+    base_kwh: float
+    weekend_kwh: float
+    cooling_kwh: float
+    heating_kwh: float
+    residual_kwh: float
+
+
+@dataclass(frozen=True)
+class HvacReport:
+    days: int
+    kwh_per_cooling_degree: float
+    kwh_per_heating_degree: float
+    r_squared: float
+    cooling_base: float
+    heating_base: float
+    monthly: tuple[MonthAttribution, ...]
+
+
 @dataclass(frozen=True)
 class WeatherReport:
     days: int
@@ -60,10 +87,13 @@ def pearson(xs: list[float], ys: list[float]) -> float:
     return cov / (sx * sy) if sx and sy else 0.0
 
 
-def ols3(x1: list[float], x2: list[float], y: list[float]) -> tuple[float, float, float, float]:
-    """OLS of y on [1, x1, x2]; returns (intercept, b1, b2, r_squared)."""
-    n = 3
-    rows = [[1.0, a, b] for a, b in zip(x1, x2, strict=False)]
+def ols(rows: list[list[float]], y: list[float]) -> tuple[list[float], float]:
+    """OLS of y on design rows [1, x1, x2, ...]; returns (coefficients, r_squared).
+
+    Gaussian elimination with partial pivoting; raises ValueError on a
+    (near-)singular design matrix.
+    """
+    n = len(rows[0])
     amat = [[sum(r[i] * r[j] for r in rows) for j in range(n)] for i in range(n)]
     bvec = [sum(r[i] * yy for r, yy in zip(rows, y, strict=False)) for i in range(n)]
     for i in range(n):
@@ -82,12 +112,18 @@ def ols3(x1: list[float], x2: list[float], y: list[float]) -> tuple[float, float
                 for j in range(i, n):
                     amat[k][j] -= factor * amat[i][j]
                 bvec[k] -= factor * bvec[i]
-    pred = [bvec[0] + bvec[1] * a + bvec[2] * b for a, b in zip(x1, x2, strict=False)]
+    pred = [sum(c * x for c, x in zip(bvec, r, strict=False)) for r in rows]
     mean = statistics.mean(y)
     ss_tot = sum((yy - mean) ** 2 for yy in y)
     ss_res = sum((yy - pp) ** 2 for yy, pp in zip(y, pred, strict=False))
     r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
-    return bvec[0], bvec[1], bvec[2], r2
+    return bvec, r2
+
+
+def ols3(x1: list[float], x2: list[float], y: list[float]) -> tuple[float, float, float, float]:
+    """OLS of y on [1, x1, x2]; returns (intercept, b1, b2, r_squared)."""
+    coef, r2 = ols([[1.0, a, b] for a, b in zip(x1, x2, strict=False)], y)
+    return coef[0], coef[1], coef[2], r2
 
 
 def sensitivity(
@@ -122,4 +158,59 @@ def sensitivity(
         "weather: r=%.3f, %.2f kWh/deg, weekend +%.2f kWh, R2=%.2f",
         report.correlation, report.kwh_per_degree, report.weekend_extra_kwh, report.r_squared,
     )
+    return report
+
+
+def hvac_split(
+    daily_kwh: dict[date, float],
+    temps: dict[date, float],
+    cooling_base: float = DEFAULT_COOLING_BASE,
+    heating_base: float = DEFAULT_HEATING_BASE,
+) -> HvacReport | None:
+    """Separate cooling from heating load via degree-days, with per-month attribution.
+
+    Fits daily kWh ~ intercept + weekend + b_cool*CDD + b_heat*HDD where
+    CDD = max(0, T - cooling_base) and HDD = max(0, heating_base - T).
+    Returns None (with a debug log) when there is too little variance to fit.
+    """
+    common = sorted(set(daily_kwh) & set(temps))
+    if len(common) < 7:
+        log.debug("hvac: only %d overlapping days, skipping", len(common))
+        return None
+    cdd = {d: max(0.0, temps[d] - cooling_base) for d in common}
+    hdd = {d: max(0.0, heating_base - temps[d]) for d in common}
+    if statistics.pstdev([cdd[d] for d in common]) < 0.2 and statistics.pstdev([hdd[d] for d in common]) < 0.2:
+        log.debug("hvac: no degree-day variance in period, skipping")
+        return None
+    weekend = [1.0 if d.weekday() in FRI_SAT else 0.0 for d in common]
+    rows = [[1.0, w, cdd[d], hdd[d]] for d, w in zip(common, weekend, strict=False)]
+    ys = [daily_kwh[d] for d in common]
+    try:
+        (b0, b_weekend, b_cool, b_heat), r2 = ols(rows, ys)
+    except ValueError:
+        log.debug("hvac: singular design matrix, skipping")
+        return None
+    by_month: dict[str, list[date]] = {}
+    for d in common:
+        by_month.setdefault(d.strftime("%Y-%m"), []).append(d)
+    monthly = []
+    for m in sorted(by_month):
+        days = by_month[m]
+        total = sum(daily_kwh[d] for d in days)
+        base = b0 * len(days)
+        wknd = b_weekend * sum(1.0 for d in days if d.weekday() in FRI_SAT)
+        cool = b_cool * sum(cdd[d] for d in days)
+        heat = b_heat * sum(hdd[d] for d in days)
+        monthly.append(MonthAttribution(m, len(days), total, base, wknd, cool, heat,
+                                        total - base - wknd - cool - heat))
+    report = HvacReport(
+        days=len(common),
+        kwh_per_cooling_degree=b_cool,
+        kwh_per_heating_degree=b_heat,
+        r_squared=r2,
+        cooling_base=cooling_base,
+        heating_base=heating_base,
+        monthly=tuple(monthly),
+    )
+    log.debug("hvac: %.2f kWh/CDD, %.2f kWh/HDD, R2=%.2f", b_cool, b_heat, r2)
     return report

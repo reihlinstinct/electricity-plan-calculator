@@ -31,6 +31,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     a.add_argument("--weather", action="store_true", help="correlate with temperature (Open-Meteo)")
     a.add_argument("--lat", type=float, default=DEFAULT_LAT)
     a.add_argument("--lon", type=float, default=DEFAULT_LON)
+    a.add_argument("--cooling-base", type=float, default=weather.DEFAULT_COOLING_BASE,
+                   help="cooling degree-day base temperature (default: %(default)s)")
+    a.add_argument("--heating-base", type=float, default=weather.DEFAULT_HEATING_BASE,
+                   help="heating degree-day base temperature (default: %(default)s)")
 
     def add_phase_arg(sp):
         sp.add_argument("--phase", choices=["single", "three"], default="single",
@@ -58,6 +62,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     r.add_argument("--weather", action="store_true")
     r.add_argument("--lat", type=float, default=DEFAULT_LAT)
     r.add_argument("--lon", type=float, default=DEFAULT_LON)
+    r.add_argument("--cooling-base", type=float, default=weather.DEFAULT_COOLING_BASE)
+    r.add_argument("--heating-base", type=float, default=weather.DEFAULT_HEATING_BASE)
     return ap
 
 
@@ -77,9 +83,20 @@ def _weather_block(args, summary) -> str:
         min(summary.daily), max(summary.daily),
     )
     w = weather.sensitivity(summary.daily, temps)
-    if w is None:
-        return "רגישות למזג אוויר: לא נמצאו מספיק ימים חופפים."
-    return report.format_weather(w)
+    hvac = weather.hvac_split(
+        summary.daily, temps, args.cooling_base, args.heating_base
+    )
+    blocks = []
+    blocks.append(
+        report.format_weather(w)
+        if w is not None
+        else "רגישות למזג אוויר: לא נמצאו מספיק ימים חופפים."
+    )
+    if hvac is not None:
+        blocks.append(report.format_hvac(hvac))
+    else:
+        log.debug("no hvac split for this period")
+    return "\n\n".join(blocks)
 
 
 def main(argv: list[str] | None = None) -> int:
