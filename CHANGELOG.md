@@ -2,6 +2,9 @@
 
 ## 2026-11-02
 
+- Arabic as the second additional language: full strings column, `--lang ar`,
+  `?lang=ar` on the site. (#44)
+
 - Footer "Sources" link localized to Hebrew (מקורות). (#59)
 
 - English as the first additional language: shared strings file, `?lang=en` on the

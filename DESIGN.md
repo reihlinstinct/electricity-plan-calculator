@@ -56,7 +56,7 @@ household's **actual** interval-level usage, with annual NIS cost estimates.
   `history.replaceState` and re-renders - no reload, no network. og/meta
   tags switch in JS only (crawlers without JS see the default tags).
 - The CLI renders in the default language unless `--lang` is given; English
-  is the first additional language. og/twitter meta tags are swapped by JS on
+  was the first additional language, Arabic the second. og/twitter meta tags are swapped by JS on
   language switch (crawlers that do not run JS still see the default Hebrew
   tags baked into the HTML - a known limitation of a fully static site).
 

@@ -40,6 +40,13 @@ def test_t_substitutes_and_falls_back():
 def test_t_explicit_language():
     assert i18n.t("ui.title", lang="en") == "Electricity plan calculator"
     assert i18n.t("ui.title", lang="he") == "מחשבון מסלולי חשמל"
+    assert i18n.t("ui.title", lang="ar") == "حاسبة مسارات الكهرباء"
+
+
+def test_arabic_is_rtl_not_default():
+    assert DOC["languages"]["ar"]["dir"] == "rtl"
+    assert not DOC["languages"]["ar"].get("default")
+    assert i18n.t("ui.title", lang="ar") != i18n.t("ui.title", lang="he")
 
 
 def test_set_active_language():
@@ -74,3 +81,21 @@ def test_cli_report_lang_en():
     # cautious phrasing survives translation
     assert "not a certainty" in en.stdout
     assert "not a verdict" in en.stdout and "possible explanation" in en.stdout
+
+
+def test_hvac_header_arabic_columns_separated():
+    from iec_calc.report import format_hvac
+    from iec_calc.weather import HvacReport, MonthAttribution
+    rep = HvacReport(
+        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=1.0,
+        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.0, 20.0, 0.0),),
+    )
+    i18n.set_active_language("ar")
+    try:
+        head = format_hvac(rep).splitlines()[5]
+    finally:
+        i18n.set_active_language(None)
+    assert "الأساسجمعة" not in head
+    for word in ("الشهر", "المجموع", "الأساس", "تبريد", "تدفئة", "أخرى"):
+        assert word in head

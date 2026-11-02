@@ -218,7 +218,9 @@ function setBlock(ivs, startIdx, kws) {
   check('i18n: he is default rtl', I18N.languages.he && I18N.languages.he.default && I18N.languages.he.dir === 'rtl');
   check('i18n: en present ltr, not default', I18N.languages.en && I18N.languages.en.dir === 'ltr' && !I18N.languages.en.default);
   check('i18n: en translation renders', t('ui.title', {}, 'en') === 'Electricity plan calculator');
-  check('i18n: og keys exist in both languages', ['he', 'en'].every(l => I18N.strings['ui.og_title'][l] && I18N.strings['ui.og_desc'][l]));
+  check('i18n: ar present rtl, not default', I18N.languages.ar && I18N.languages.ar.dir === 'rtl' && !I18N.languages.ar.default);
+  check('i18n: ar translation renders', t('ui.title', {}, 'ar') === 'حاسبة مسارات الكهرباء');
+  check('i18n: og keys exist in all languages', ['he', 'en', 'ar'].every(l => I18N.strings['ui.og_title'][l] && I18N.strings['ui.og_desc'][l]));
   check('i18n: unknown language falls back to he', t('ui.title', {}, 'fr') === t('ui.title', {}, 'he'));
   // selector redesign (issue #54): a native select inside the header on every page,
   // flex space-between puts it opposite the title in both directions
@@ -229,7 +231,7 @@ function setBlock(ivs, startIdx, kws) {
     check(`${page}: no old nav bar`, !body.includes('<nav id="langSwitch"'));
   }
   check('i18n: footer sources label localized', I18N.strings['ui.footer_sources'].he === 'מקורות' && I18N.strings['ui.footer_sources'].en === 'Sources');
-  check('i18n: selector aria-label key in all languages', ['he', 'en'].every(l => I18N.strings['ui.lang_switch_label'][l]));
+  check('i18n: selector aria-label key in all languages', ['he', 'en', 'ar'].every(l => I18N.strings['ui.lang_switch_label'][l]));
   check('i18n: option labels are 2-letter codes', Object.keys(I18N.languages).every(c => c.length === 2 && c.toUpperCase().length === 2));
   // issue #56: no hostname-list box on the main page; sources live only on the Sources page
   {

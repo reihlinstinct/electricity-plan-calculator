@@ -63,3 +63,17 @@ def test_cli_gas_hot_opt_in(sample_csv, capsys):
     main(["plans", str(sample_csv), "--gas"])
     out = capsys.readouterr().out
     assert any("אמישראגז" in ln for ln in ranked_lines(out))
+
+
+def test_report_runs_arabic(sample_csv, capsys):
+    import iec_calc.i18n as i18n
+    try:
+        rc = main(["--lang", "ar", "report", str(sample_csv)])
+    finally:
+        i18n.set_active_language(None)
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "تحليل الاستهلاك" in out
+    assert "ترتيب المسارات" in out
+    # supplier plan names stay Hebrew (proper nouns from the tariff catalog)
+    assert "ELECTRA POWER" in out
