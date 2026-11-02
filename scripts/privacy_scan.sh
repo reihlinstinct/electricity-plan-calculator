@@ -22,6 +22,6 @@ scan() {
     BAD=1
   fi
 }
-scan '(^|[^0-9])[0-9]{12}([^0-9]|$)'          # contract numbers
-scan '(^|[^0-9])[0-9]{2}-[0-9]{8}([^0-9]|$)'  # meter code-number pairs
+scan '(^|[^0-9a-fA-F])[0-9]{12}([^0-9a-fA-F]|$)' # contract numbers (hex SHAs excluded)
+scan '(^|[^0-9a-fA-F])[0-9]{2}-[0-9]{8}([^0-9a-fA-F]|$)' # meter code-number pairs (hex excluded)
 exit $BAD
