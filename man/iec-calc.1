@@ -38,6 +38,23 @@ Verbose diagnostic logging to stderr. Off by default.
 .BI --tariffs " JSON"
 Use an alternative tariff catalog instead of the bundled data/tariffs.json.
 .TP
+.B --phase {single,three}
+Meter phase for the fixed-fee calculation (default: single).
+.TP
+.B --no-smart-meter
+Exclude plans that require a smart meter.
+.TP
+.B --no-gas
+Exclude gas-customer-only plans (Amisragas).
+.TP
+.B --no-hot
+Exclude HOT/NEXT-customer-only plans.
+.TP
+.BI "--current-plan " LABEL
+Mark the plan whose label contains LABEL as your current plan and state the
+top plan's annual saving versus it. Must match exactly one plan, including
+the regulated options (flat tariff, Taoz); validated before the CSV is read.
+.TP
 .B --weather
 Correlate daily consumption with temperature (Open-Meteo archive API).
 .TP

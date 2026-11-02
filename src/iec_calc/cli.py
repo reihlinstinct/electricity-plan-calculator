@@ -89,9 +89,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command in ("plans", "report"):
         catalog = tariffs.load_catalog(args.tariffs)
         if args.current_plan:
-            matches = [p.label for p in catalog.plans if args.current_plan in p.label]
+            labels = [cost.FLAT_LABEL, cost.TAOZ_LABEL] + [p.label for p in catalog.plans]
+            matches = [lbl for lbl in labels if args.current_plan in lbl]
             if len(matches) != 1:
-                valid = "\n".join(f"  {p.label}" for p in catalog.plans)
+                valid = "\n".join(f"  {lbl}" for lbl in labels)
                 reason = (
                     f"no plan matches '{args.current_plan}'"
                     if not matches

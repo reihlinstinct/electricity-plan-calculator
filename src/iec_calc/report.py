@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from .analysis import Summary
 from .cost import PlanCost
+from .tariffs import Catalog
 from .weather import WeatherReport
 
 
@@ -44,7 +45,7 @@ def format_weather(w: WeatherReport) -> str:
 def format_ranking(
     costs: list[PlanCost],
     days: int,
-    catalog,
+    catalog: Catalog,
     excluded: list | None = None,
     current_label: str | None = None,
 ) -> str:
@@ -60,7 +61,9 @@ def format_ranking(
     for i, c in enumerate(costs, 1):
         marker = "  <<< הכי משתלם" if i == 1 else ""
         if current is not None and c.label == current.label:
-            marker = "  <<< המסלול הנוכחי"
+            marker = (
+                "  <<< הכי משתלם (המסלול הנוכחי שלך)" if i == 1 else "  <<< המסלול הנוכחי"
+            )
         lines.append(
             f"{i:2d}. {c.label:<48} {_nis(c.annual_cost):>9} | "
             f"חיסכון {_nis(c.savings_vs_flat_annual):>7}{marker}"
@@ -78,7 +81,15 @@ def format_ranking(
         lines += [
             "",
             f"המסלול הנוכחי: {current.label} ({_nis(current.annual_cost)} לשנה).",
-            f"מעבר ל{best.label} חוסך {_nis(delta)} לשנה מול המסלול הנוכחי.",
+        ]
+        if current.label == best.label:
+            lines.append("המסלול הנוכחי שלך הוא הזול ביותר - אין צורך להחליף.")
+        else:
+            lines.append(f"מעבר ל{best.label} חוסך {_nis(delta)} לשנה מול המסלול הנוכחי.")
+    elif current_label:
+        lines += [
+            "",
+            f"שים לב: המסלול הנוכחי ('{current_label}') לא נכלל בדירוג עקב דגלי הזכאות שהוגדרו.",
         ]
     if excluded:
         lines += ["", "לא נכללו בדירוג לפי דגלי הזכאות שהוגדרו:"]

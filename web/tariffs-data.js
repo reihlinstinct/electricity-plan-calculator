@@ -1,0 +1,410 @@
+// GENERATED from data/tariffs.json by scripts/gen_web_data.py - do not edit by hand
+export const TARIFFS = {
+  "version": "2026-07-01",
+  "retrieved": "2026-11-02",
+  "currency": "ILS",
+  "vat_included": true,
+  "notes": "Rates include 18% VAT. Supplier discounts apply to the energy (per-kWh) component only. Fixed monthly fees are identical for flat and supplier plans (single-phase 25.57 / three-phase 27.09 NIS pre-VAT, schedule 5.4-1); the Taoz fixed fee is higher (47.63 pre-VAT). Taoz holidays: yom-tov days and eves are off-peak in summer/transition only (decision 63609); winter peak applies daily.",
+  "sources": [
+    {
+      "name": "Electricity Authority tariff book, July 2026 (schedule 5.2-1, low voltage)",
+      "url": "https://www.gov.il/BlobFolder/generalpage/maagar_tarrifr_histoty/he/sefer_tariff_01_2026.pdf",
+      "verified": "2026-08-06"
+    },
+    {
+      "name": "chashmali.com tariff verification (cross-checked against the tariff book)",
+      "url": "https://chashmali.com/electricity-tariff/",
+      "verified": "2026-08-06"
+    },
+    {
+      "name": "shtipser.com tariff page (cross-checked against IEC tariff page)",
+      "url": "https://shtipser.com/tariff/",
+      "verified": "2026-08-01"
+    },
+    {
+      "name": "Taoz peak/off-peak hours, EA decision 63609 (schedule 5.1-1)",
+      "url": "https://kolhabait.com/chashmal/taoz",
+      "verified": "2026-10-01"
+    },
+    {
+      "name": "Private supplier plans (verified against supplier sites)",
+      "url": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&i=on&year=2026",
+      "description": "Hebcal API - yom-tov dates (Israel) 2026-2027, used for Taoz off-peak holidays",
+      "retrieved": "2026-11-02"
+    }
+  ],
+  "regulated": {
+    "flat_rate_per_kwh": 0.6352,
+    "flat_rate_per_kwh_pre_vat": 0.5383,
+    "effective_from": "2026-07-01",
+    "next_update_expected": "2027-01-01",
+    "fixed_fees_monthly_pre_vat": {
+      "single_phase": {
+        "distribution": 9.97,
+        "supply": 15.6,
+        "total": 25.57
+      },
+      "three_phase": {
+        "total": 27.09
+      }
+    }
+  },
+  "taoz": {
+    "requires_smart_meter": true,
+    "voluntary_below_annual_kwh": 40000,
+    "holidays": [
+      "2026-04-02",
+      "2026-04-08",
+      "2026-05-22",
+      "2026-09-12",
+      "2026-09-13",
+      "2026-09-21",
+      "2026-09-26",
+      "2026-10-03",
+      "2027-04-22",
+      "2027-04-28",
+      "2027-06-11",
+      "2027-10-02",
+      "2027-10-03",
+      "2027-10-11",
+      "2027-10-16",
+      "2027-10-23"
+    ],
+    "seasons": {
+      "summer": {
+        "months": [
+          6,
+          7,
+          8,
+          9
+        ],
+        "peak": {
+          "days": "sun-thu",
+          "start": "17:00",
+          "end": "23:00"
+        },
+        "rates": {
+          "peak": 1.7223,
+          "off_peak": 0.5042
+        }
+      },
+      "winter": {
+        "months": [
+          12,
+          1,
+          2
+        ],
+        "peak": {
+          "days": "all",
+          "start": "17:00",
+          "end": "22:00"
+        },
+        "rates": {
+          "peak": 1.147,
+          "off_peak": 0.4663
+        }
+      },
+      "transition": {
+        "months": [
+          3,
+          4,
+          5,
+          10,
+          11
+        ],
+        "peak": {
+          "days": "sun-thu",
+          "start": "17:00",
+          "end": "22:00"
+        },
+        "rates": {
+          "peak": 0.4958,
+          "off_peak": 0.4578
+        }
+      }
+    },
+    "fixed_fee_monthly_pre_vat": {
+      "distribution": 32.1,
+      "supply": 15.53,
+      "total": 47.63
+    },
+    "holiday_eves": [
+      "2026-04-01",
+      "2026-04-07",
+      "2026-05-21",
+      "2026-09-11",
+      "2026-09-20",
+      "2026-09-25",
+      "2026-10-02",
+      "2027-04-21",
+      "2027-04-27",
+      "2027-06-10",
+      "2027-10-01",
+      "2027-10-10",
+      "2027-10-15",
+      "2027-10-22"
+    ]
+  },
+  "supplier_plans": [
+    {
+      "supplier": "ELECTRA POWER",
+      "plan": "Power",
+      "discount": 0.065,
+      "window": null,
+      "meter": "any",
+      "eligibility": "כל סוגי המונים",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "אמישראגז חשמל",
+      "plan": "אמישראגז חשמל",
+      "discount": 0.07,
+      "window": null,
+      "meter": "any",
+      "eligibility": "לקוחות גז של אמישראגז בלבד",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27",
+      "requires_gas_customer": true,
+      "requires_hot_customer": false
+    },
+    {
+      "supplier": "בזק energy",
+      "plan": "חוסכים חכם 24/7",
+      "discount": 0.06,
+      "window": null,
+      "meter": "any",
+      "eligibility": "כל סוגי המונים",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "HOT energy",
+      "plan": "חוסכים קבוע",
+      "discount": 0.06,
+      "window": null,
+      "meter": "any",
+      "eligibility": "לקוחות HOT ו-NEXT",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27",
+      "requires_gas_customer": false,
+      "requires_hot_customer": true
+    },
+    {
+      "supplier": "HOT energy",
+      "plan": "חוסכים 24/7",
+      "discount": 0.05,
+      "window": null,
+      "meter": "any",
+      "eligibility": "כל סוגי המונים",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "פזגז",
+      "plan": "חוסכים קבוע",
+      "discount": 0.05,
+      "window": null,
+      "meter": "any",
+      "eligibility": "ללא התחייבות",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "Partner Power",
+      "plan": "הנחה קבועה",
+      "discount": 0.05,
+      "window": null,
+      "meter": "any",
+      "eligibility": "כל סוגי המונים; ההנחה עולה ל-7% לאורך שלוש שנים",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "סלקום אנרג׳י",
+      "plan": "חסכון משתלם",
+      "discount": 0.075,
+      "window": {
+        "days": "sun-thu",
+        "start": "00:00",
+        "end": "00:00"
+      },
+      "meter": "any",
+      "eligibility": "ימים ראשון-חמישי בלבד",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "ELECTRA POWER",
+      "plan": "מסלול יום",
+      "discount": 0.21,
+      "window": {
+        "days": "sun-thu",
+        "start": "07:00",
+        "end": "17:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "סלקום אנרג׳י",
+      "plan": "חסכון ביום",
+      "discount": 0.2,
+      "window": {
+        "days": "sun-thu",
+        "start": "07:00",
+        "end": "17:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "בזק energy",
+      "plan": "חוסכים חכם ביום",
+      "discount": 0.15,
+      "window": {
+        "days": "sun-thu",
+        "start": "07:00",
+        "end": "17:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "HOT energy",
+      "plan": "חוסכים ביום",
+      "discount": 0.15,
+      "window": {
+        "days": "sun-thu",
+        "start": "07:00",
+        "end": "17:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "Partner Power",
+      "plan": "עובדים מהבית",
+      "discount": 0.15,
+      "window": {
+        "days": "sun-thu",
+        "start": "07:00",
+        "end": "17:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "סלקום אנרג׳י",
+      "plan": "חסכון למשפחות",
+      "discount": 0.18,
+      "window": {
+        "days": "sun-thu",
+        "start": "14:00",
+        "end": "20:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "ELECTRA POWER",
+      "plan": "10X10",
+      "discount": 0.1,
+      "window": {
+        "days": "sun-thu",
+        "start": "10:00",
+        "end": "22:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "ELECTRA POWER",
+      "plan": "לילה פלוס",
+      "discount": 0.21,
+      "window": {
+        "days": "sun-thu",
+        "start": "23:00",
+        "end": "07:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "בזק energy",
+      "plan": "חוסכים חכם בלילה",
+      "discount": 0.2,
+      "window": {
+        "days": "sun-thu",
+        "start": "23:00",
+        "end": "07:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "HOT energy",
+      "plan": "חוסכים בלילה",
+      "discount": 0.2,
+      "window": {
+        "days": "sun-thu",
+        "start": "23:00",
+        "end": "07:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "Partner Power",
+      "plan": "חיות לילה",
+      "discount": 0.2,
+      "window": {
+        "days": "sun-thu",
+        "start": "23:00",
+        "end": "07:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    },
+    {
+      "supplier": "סלקום אנרג׳י",
+      "plan": "חסכון בלילה",
+      "discount": 0.15,
+      "window": {
+        "days": "all",
+        "start": "23:00",
+        "end": "07:00"
+      },
+      "meter": "smart",
+      "eligibility": "מונה חכם",
+      "source": "https://shtipser.com/plans/",
+      "verified": "2026-09-27"
+    }
+  ]
+};

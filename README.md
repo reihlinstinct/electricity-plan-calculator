@@ -26,6 +26,14 @@ iec-calc --debug report export.csv                     # diagnostic logging (off
 
 Try it on the synthetic sample: `iec-calc report data/sample_consumption.csv`
 
+## Useful flags
+
+- `--phase {single,three}` - meter phase for the fixed-fee calculation (default: single)
+- `--no-smart-meter` / `--no-gas` / `--no-hot` - exclude plans you are not eligible for
+- `--current-plan LABEL` - mark your current plan (substring match; flat tariff and Taoz
+  labels work too) and see the top plan's saving versus it
+- `--weather` [--lat/--lon] - temperature sensitivity for the measured period (Open-Meteo)
+
 ## What you get
 
 - **Consumption profile**: totals, daily/hourly shape, base load, peak,

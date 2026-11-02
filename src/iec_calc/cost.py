@@ -32,6 +32,9 @@ DEFAULT_CUSTOMER = Customer()
 
 log = logging.getLogger(__name__)
 
+FLAT_LABEL = 'חברת החשמל - תעריף אחיד מפוקח'
+TAOZ_LABEL = 'תעו"ז מפוקח (מונה חכם)'
+
 
 @dataclass(frozen=True)
 class PlanCost:
@@ -86,7 +89,7 @@ def rank_plans(
     flat_annual = _annualize(base, days) + iec_fixed
     out = [
         PlanCost(
-            label='חברת החשמל - תעריף אחיד מפוקח',
+            label=FLAT_LABEL,
             kind="flat",
             period_cost=base,
             annual_cost=flat_annual,
@@ -98,7 +101,7 @@ def rank_plans(
     taoz_annual = _annualize(tc, days) + taoz_fixed
     out.append(
         PlanCost(
-            label='תעו"ז מפוקח (מונה חכם)',
+            label=TAOZ_LABEL,
             kind="taoz",
             period_cost=tc,
             annual_cost=taoz_annual,
