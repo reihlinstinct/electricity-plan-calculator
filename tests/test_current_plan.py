@@ -16,7 +16,7 @@ def _intervals():
 def test_current_plan_marked_and_delta_shown():
     cat = load_catalog()
     costs = rank_plans(_intervals(), cat, days=1)
-    text = format_ranking(costs, 1, cat.flat_rate, current_label="חסכון למשפחות")
+    text = format_ranking(costs, 1, cat, current_label="חסכון למשפחות")
     assert "<<< המסלול הנוכחי" in text
     assert "המסלול הנוכחי: סלקום אנרג׳י - חסכון למשפחות" in text
     assert "מול המסלול הנוכחי" in text
@@ -25,7 +25,7 @@ def test_current_plan_marked_and_delta_shown():
 def test_no_current_plan_keeps_old_output():
     cat = load_catalog()
     costs = rank_plans(_intervals(), cat, days=1)
-    text = format_ranking(costs, 1, cat.flat_rate)
+    text = format_ranking(costs, 1, cat)
     assert "המסלול הנוכחי" not in text
     assert "<<< הכי משתלם" in text
 
@@ -38,3 +38,26 @@ def test_unknown_label_errors_with_valid_list(tmp_path, capsys):
     rc = cli.main(["plans", str(csv), "--current-plan", "אין-כזה-מסלול"])
     assert rc == 2
     assert "no plan matches" in capsys.readouterr().err
+
+
+def test_ambiguous_label_errors(tmp_path, capsys):
+    csv = tmp_path / "x.csv"
+    csv.write_bytes(
+        '\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8")
+    )
+    rc = cli.main(["plans", str(csv), "--current-plan", "סלקום"])
+    assert rc == 2
+    assert "ambiguous" in capsys.readouterr().err
+
+
+def test_label_validated_before_csv_parse(capsys):
+    rc = cli.main(["plans", "/nonexistent/file.csv", "--current-plan", "אין-כזה-מסלול"])
+    assert rc == 2
+    assert "no plan matches" in capsys.readouterr().err
+
+
+def test_taoz_fee_text_from_catalog():
+    cat = load_catalog()
+    costs = rank_plans(_intervals(), cat, days=1)
+    text = format_ranking(costs, 1, cat)
+    assert f"{cat.taoz.fixed_fee_monthly_pre_vat:.2f}" in text
