@@ -6,7 +6,7 @@
   "notes": "Rates include 18% VAT. Supplier discounts apply to the energy (per-kWh) component only. Fixed monthly fees are identical for flat and supplier plans (single-phase 25.57 / three-phase 27.09 NIS pre-VAT, schedule 5.4-1); the Taoz fixed fee is higher (47.63 pre-VAT). Taoz holidays: yom-tov days and eves are off-peak in summer/transition only (decision 63609); winter peak applies daily.",
   "sources": [
     {
-      "name": "Electricity Authority tariff book, July 2026 (schedule 5.2-1, low voltage)",
+      "name": "Electricity Authority tariff book, January 2026 (schedule 5.2-1, low voltage)",
       "url": "https://www.gov.il/BlobFolder/generalpage/maagar_tarrifr_histoty/he/sefer_tariff_01_2026.pdf",
       "verified": "2026-08-06"
     },

@@ -61,7 +61,7 @@ Try it on the synthetic sample: `iec-calc report data/sample_consumption.csv`
 
 All rates, discounts, eligibility notes, source URLs and verification dates
 live in [`data/tariffs.json`](data/tariffs.json). Updating prices = editing
-that one file. Sources: Electricity Authority tariff book (July 2026),
+that one file. Sources: Electricity Authority tariff book (January 2026),
 IEC/EA cross-checks, and supplier-site-verified plan data (2026-09-27).
 
 ## Privacy

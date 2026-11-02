@@ -45,7 +45,6 @@ WASHER_MIN_EVENTS = 2         # need at least this many medium+ washer blocks
 SUSTAINED_MIN_EVENTS = 3      # sustained-high blocks needed for the conditional AC note
 SUSTAINED_MIN_MEAN_EXCESS_KW = 1.0  # mean excess kW per block for the AC note
 UNATTENDED_START_HOUR = 5     # blocks starting 00:00-04:xx
- # Shabbat start rate at most this share of the weekday rate
 
 
 def _israel_utc_offset(d: date) -> int:
@@ -301,8 +300,8 @@ def detect_efficiency(
                 confidence="medium",
                 text=(
                     f'מחזור כביסה ממוצע בבית: כ-{mean_cycle:.1f} קוט"ש (משוער מחתימת העומס, '
-                    f"{len(washers)} מחזורים). מכונה מודרנית בדירוג A: כ-{typical:.1f} "
-                    'קוט"ש למחזור בתוכנית eco 40-60. ההבדל תלוי בתוכנית ובטמפרטורה '
+                    f"{len(washers)} מחזורים). מכונה מודרנית: כ-{typical:.1f} "
+                    'קוט"ש למחזור (בקנה אחד עם ממוצע 2024 בישראל - 0.55 קוט"ש, ynet). ההבדל תלוי בתוכנית ובטמפרטורה '
                     "(כביסה חמה או ארוכה צורכת הרבה יותר) - זו לא פסיקה על המכונה; "
                     "אם המחזורים חמים או ארוכים, שווה לבדוק תוכנית eco"
                 ),
@@ -323,7 +322,7 @@ def detect_efficiency(
                 confidence="low",
                 text=(
                     f"זוהו {len(sustained)} בלוקים של עומס גבוה ממושך. "
-                    f"אם מדובר במזגן: מחקרי שדה מודדים חיסכון של {lo}-{hi}% במזגן אינוורטר "
+                    f"אם מדובר במזגן: מחקרים מודדים חיסכון של {lo}-{hi}% במזגן אינוורטר "
                     "לעומת מזגן on/off (טווח מחקרים, לא מדידה של הבית). "
                     "מצריכת כל הבית אי אפשר להבחין בין מזגן, תנור חימום או דוד - זה קונטקסט בלבד"
                 ),

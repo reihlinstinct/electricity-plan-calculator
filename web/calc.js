@@ -253,7 +253,7 @@ export function detectEfficiency({ appliances, nightBaseKw, flatRate, days }) {
     if (meanCycle > typical * WASHER_NOTE_RATIO) {
       const diffNis = (meanCycle - typical) * (washers.length / days * 365) * flatRate;
       notes.push({ kind: 'washer', confidence: 'medium',
-        text: `מחזור כביסה ממוצע בבית: כ-${meanCycle.toFixed(1)} קוט"ש (משוער מחתימת העומס, ${washers.length} מחזורים). מכונה מודרנית בדירוג A: כ-${typical.toFixed(1)} קוט"ש למחזור בתוכנית eco 40-60. ההבדל תלוי בתוכנית ובטמפרטורה (כביסה חמה או ארוכה צורכת הרבה יותר) - זו לא פסיקה על המכונה; אם המחזורים חמים או ארוכים, שווה לבדוק תוכנית eco`,
+        text: `מחזור כביסה ממוצע בבית: כ-${meanCycle.toFixed(1)} קוט"ש (משוער מחתימת העומס, ${washers.length} מחזורים). מכונה מודרנית: כ-${typical.toFixed(1)} קוט"ש למחזור (בקנה אחד עם ממוצע 2024 בישראל - 0.55 קוט"ש, ynet). ההבדל תלוי בתוכנית ובטמפרטורה (כביסה חמה או ארוכה צורכת הרבה יותר) - זו לא פסיקה על המכונה; אם המחזורים חמים או ארוכים, שווה לבדוק תוכנית eco`,
         annualNis: diffNis });
     }
   }
@@ -264,7 +264,7 @@ export function detectEfficiency({ appliances, nightBaseKw, flatRate, days }) {
       const lo = Math.round(BENCHMARKS.ac.inverter_savings_min * 100);
       const hi = Math.round(BENCHMARKS.ac.inverter_savings_max * 100);
       notes.push({ kind: 'sustained', confidence: 'low',
-        text: `זוהו ${sustained.length} בלוקים של עומס גבוה ממושך. אם מדובר במזגן: מחקרי שדה מודדים חיסכון של ${lo}-${hi}% במזגן אינוורטר לעומת מזגן on/off (טווח מחקרים, לא מדידה של הבית). מצריכת כל הבית אי אפשר להבחין בין מזגן, תנור חימום או דוד - זה קונטקסט בלבד`,
+        text: `זוהו ${sustained.length} בלוקים של עומס גבוה ממושך. אם מדובר במזגן: מחקרים מודדים חיסכון של ${lo}-${hi}% במזגן אינוורטר לעומת מזגן on/off (טווח מחקרים, לא מדידה של הבית). מצריכת כל הבית אי אפשר להבחין בין מזגן, תנור חימום או דוד - זה קונטקסט בלבד`,
         annualNis: null });
     }
   }

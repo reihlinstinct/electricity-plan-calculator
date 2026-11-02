@@ -226,7 +226,7 @@ def test_efficiency_floor_and_washer_notes():
     assert "floor" in kinds  # 200W floor >= 150W threshold
     assert "washer" in kinds  # mean cycle 1.25 kWh > 0.5 * 1.3
     washer = next(n for n in rep.efficiency if n.kind == "washer")
-    assert "eco 40-60" in washer.text and "לא פסיקה" in washer.text  # never a verdict
+    assert "ממוצע 2024" in washer.text and "0.55" in washer.text and "לא פסיקה" in washer.text  # never a verdict
     assert washer.annual_nis and washer.annual_nis > 0
     from iec_calc.report import format_insights
     text = format_insights(rep, cat.flat_rate)

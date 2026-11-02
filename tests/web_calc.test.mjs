@@ -135,7 +135,7 @@ function setBlock(ivs, startIdx, kws) {
   const kinds = ins.efficiency.map(n => n.kind);
   check('js: floor note fires', kinds.includes('floor'));
   check('js: washer note fires with eco caveat', kinds.includes('washer')
-    && ins.efficiency.find(n => n.kind === 'washer').text.includes('eco 40-60')
+    && ins.efficiency.find(n => n.kind === 'washer').text.includes('ממוצע 2024')
     && ins.efficiency.find(n => n.kind === 'washer').text.includes('לא פסיקה'));
   const quiet = [];
   for (let i = 0; i < 10; i++) quiet.push(...flatDay(new Date(2026, 9, 5 + i), 0.1));
@@ -160,16 +160,14 @@ function setBlock(ivs, startIdx, kws) {
   check('icon: apple-touch-icon link', html.includes('rel="apple-touch-icon"'));
 
   // repo footer link (issue #28): plain <a>, and it is the ONLY external URL reference
-  check('footer: repo link', html.includes('קוד מקור פתוח: <a href="https://github.com/reihlinstinct/electricity-plan-calculator">GitHub</a>'));
+  check('footer: links only, no prefix', html.includes('<a href="https://github.com/reihlinstinct/electricity-plan-calculator">GitHub</a> · <a href="sources.html">Sources</a>') && !html.includes('קוד מקור פתוח'));
   check('footer: no bare URL shown', !html.includes('>github.com/reihlinstinct'));
-  check('footer: Sources link', html.includes('<a href="sources.html">Sources</a>'));
   const src = readFileSync(join(root, 'web', 'sources.html'), 'utf-8');
   check('sources: tariff source links', src.includes('gov.il/BlobFolder') && src.includes('shtipser.com/plans/'));
   check('sources: benchmark links', src.includes('fridges-and-freezers_en') && src.includes('washing-machines_en')
     && src.includes('itu.edu.tr') && src.includes('kfupm.edu.sa') && src.includes('springer.com'));
   check('sources: RTL static, no external loads', src.includes('dir="rtl"') && !src.includes('<script src=') && !src.includes('@import'));
   check('sources: access date recorded', src.includes('2026-11-02'));
-  check('footer: base label renamed', html.includes('רצפת צריכה') || true); // label lives in app.js template
   const appJs = readFileSync(join(root, 'web', 'app.js'), 'utf-8');
   check('app: base label is רצפת צריכה', appJs.includes('רצפת צריכה (בסיס):') && !appJs.includes('עומס בסיס לילי'));
   check('app: efficiency renderer', appJs.includes('renderEfficiency'));
@@ -199,5 +197,32 @@ function setBlock(ivs, startIdx, kws) {
   const [fw, fh] = pngSize(join(root, 'web', 'favicon.png'));
   check('favicon is square and small', fw === fh && fw <= 64);
 }
+
+
+// --- link hygiene (issue #45): repo/source links point at main, hosts are expected, internal links exist ---
+import { existsSync, readdirSync } from 'node:fs';
+const ALLOWED_HOSTS = new Set([
+  'github.com', 'www.gov.il', 'chashmali.com', 'shtipser.com', 'kolhabait.com', 'www.hebcal.com', 'www.iec.co.il', 'reihlinstinct.github.io',
+  'www.ynet.co.il', 'energy-efficient-products.ec.europa.eu', 'research.itu.edu.tr',
+  'pure.kfupm.edu.sa', 'link.springer.com',
+]);
+const pagesAndDocs = ['web/index.html', 'web/guide.html', 'web/sources.html', 'README.md', 'DESIGN.md',
+  ...readdirSync(join(root, 'docs')).filter(f => f.endsWith('.md')).map(f => join('docs', f))];
+let linkFails = 0;
+for (const rel of pagesAndDocs) {
+  const body = readFileSync(join(root, rel), 'utf-8');
+  if (/design-doc|\/tree\/|\/blob\//.test(body)) { console.error('FAIL branch ref in', rel); linkFails++; }
+  for (const m of body.match(/https?:\/\/[^"'\s)>]+/g) || []) {
+    const host = m.replace(/^https?:\/\//, '').split('/')[0];
+    if (!m.startsWith('https://') || !ALLOWED_HOSTS.has(host)) { console.error('FAIL unexpected link', rel, m); linkFails++; }
+  }
+  if (rel.startsWith('web/')) {
+    for (const m of body.match(/(?:href|src)="(?!https?:|#|mailto:|data:)[^"]+"/g) || []) {
+      const target = m.replace(/^(?:href|src)="/, '').replace(/"$/, '').split('#')[0].split('?')[0];
+      if (target && !existsSync(join(root, 'web', target))) { console.error('FAIL broken internal link', rel, target); linkFails++; }
+    }
+  }
+}
+check('links: no branch refs, expected hosts only, internal links resolve (issue #45)', linkFails === 0);
 
 process.exit(failures ? 1 : 0);
