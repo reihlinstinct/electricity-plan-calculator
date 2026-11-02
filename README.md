@@ -75,7 +75,7 @@ IEC/EA cross-checks, and supplier-site-verified plan data (2026-09-27).
 
 ## Development
 
-`scripts/generate_og_assets.py` regenerates the share/favicon PNGs in `web/` from the synthetic sample data (needs Pillow; the PNGs are committed, so CI does not run it).
+`scripts/generate_og_assets.py` regenerates the share/favicon PNGs in `web/` from the synthetic sample data (needs Pillow and Noto Sans Hebrew at `/usr/share/fonts/truetype/noto/`; the PNGs are committed, so CI does not run it).
 
 ```sh
 pytest --cov          # tests + coverage gate (>= 80%)
