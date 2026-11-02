@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { parseCsv, summarize, rankPlans, detectAppliances, buildInsights } from '../web/calc.js';
+import { parseCsv, summarize, rankPlans, detectAppliances, buildInsights, sunsetLocalMinutes } from '../web/calc.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const text = readFileSync(join(root, 'data', 'sample_consumption.csv'), 'utf-8');
@@ -76,6 +76,24 @@ function setBlock(ivs, startIdx, kws) {
   check('js: insights night base positive', ins.nightBaseKw > 0.1 && ins.nightBaseKw < 0.5);
   check('js: insights taoz peak share sane', ins.taozPeakCostShare > 0 && ins.taozPeakCostShare < 1);
   check('js: insights peak hours top=21', ins.peakHours[0][0] === 21);
+}
+
+{
+  // Shabbat-aware split: raised Friday/Saturday baseline must not pollute the weekday base
+  const ivs = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(2026, 9, 5 + i);
+    ivs.push(...flatDay(d, d.getDay() === 6 ? 0.45 : 0.2));
+  }
+  const ins = buildInsights(ivs);
+  check('js: shabbat split - weekday base low', ins.nightBaseKw < 0.25);
+  check('js: shabbat split - shabbat base high', ins.shabbatNightBaseKw > 0.4);
+  check('js: shabbat windows counted', ins.shabbatCount >= 1);
+  check('js: no appliance false positive from plate/urn', ins.appliances.length === 0);
+}
+{
+  const m = sunsetLocalMinutes(new Date(2026, 9, 15), 31.78, 35.21) / 60;
+  check('js: sunset Jerusalem Oct ~18.1h', m > 17.8 && m < 18.5);
 }
 
 process.exit(failures ? 1 : 0);

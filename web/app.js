@@ -64,10 +64,14 @@ $('go').addEventListener('click', async () => {
     const sum = summarize(intervals);
 
     $('summaryCard').style.display = '';
-    const total = sum.total.toFixed(1);
-    $('summary').innerHTML =
-      `<b>${sum.days} ימי מדידה</b> · סה"כ ${total} קוט"ש · ממוצע ${(sum.total / sum.days).toFixed(2)} קוט"ש/יום` +
-      ` · הערכה שנתית ${Math.round(sum.total / sum.days * 365).toLocaleString('he-IL')} קוט"ש`;
+    const sumEl = $('summary');
+    sumEl.innerHTML = '';
+    const daysB = document.createElement('b');
+    daysB.textContent = `${sum.days} ימי מדידה`;
+    sumEl.appendChild(daysB);
+    sumEl.appendChild(document.createTextNode(
+      ` · סה"כ ${sum.total.toFixed(1)} קוט"ש · ממוצע ${(sum.total / sum.days).toFixed(2)} קוט"ש/יום` +
+      ` · הערכה שנתית ${Math.round(sum.total / sum.days * 365).toLocaleString('he-IL')} קוט"ש`));
     barChart($('chHourly'), [...Array(24).keys()].map(h => h % 2 ? null : `${h}:00`),
       [...sum.hourlyAvg], '#0b6bcb');
     const days = [...sum.daily.keys()].sort();
@@ -126,6 +130,11 @@ $('go').addEventListener('click', async () => {
       `<p>שעות שיא ממוצעות: ${ins.peakHours.map(([h, v]) => `${String(h).padStart(2, '0')}:00 (${v.toFixed(2)})`).join(', ')} קוט"ש · ` +
       `יום חול ${ins.weekdayAvg.toFixed(2)} | שישי-שבת ${ins.weekendAvg.toFixed(2)} קוט"ש · ` +
       `עומס בסיס לילי: ${Math.round(ins.nightBaseKw * 1000)} וואט (כ-${Math.round(baseAnnual).toLocaleString('he-IL')} ₪ לשנה אם קבוע)</p>` +
+      (ins.shabbatCount
+        ? `<p>שבת (שקיעת ו' עד צאת השבת, ${ins.shabbatCount} שבתות): ממוצע ${ins.shabbatAvgKwh.toFixed(1)} קוט"ש לשבת; ` +
+          `צריכת לילה ${Math.round(ins.shabbatNightBaseKw * 1000)} וואט מול ${Math.round(ins.nightBaseKw * 1000)} בחול - ` +
+          `עומס קבוע (למשל פלטה/מיחם) הוא הסבר אפשרי, לא ודאי</p>`
+        : '') +
       (ins.notableDays.length ? `<p>ימים עם צריכה חריגה: ${ins.notableDays.map(fmtD).join(', ')}</p>` : '') +
       `<p>חלון השיא של תעו"ז: ${ins.taozPeakKwh.toFixed(0)} קוט"ש (${(ins.taozPeakCostShare * 100).toFixed(0)}% מהעלות אם היית בתעו"ז)</p>`;
     const KINDS = { washing_machine: 'מכונת כביסה אפשרית', oven: 'תנור אפייה אפשרי',

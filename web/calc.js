@@ -159,6 +159,42 @@ export function detectAppliances(intervals, baseKw) {
   return events;
 }
 
+// NOAA solar approximation, local clock minutes (Israeli DST aware). No network.
+function israelUtcOffset(d) {
+  const lastSunday = m => {
+    let x = new Date(d.getFullYear(), m, 0); // last day of month m-1... m is 1-based here
+    x = new Date(d.getFullYear(), m, 0);
+    while (x.getDay() !== 0) x = new Date(x.getFullYear(), x.getMonth(), x.getDate() - 1);
+    return x;
+  };
+  const end = lastSunday(10);
+  const ls3 = lastSunday(3);
+  const start = new Date(ls3.getFullYear(), ls3.getMonth(), ls3.getDate() - 2); // Friday before
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  return t >= start && t < end ? 3 : 2;
+}
+
+export function sunsetLocalMinutes(d, lat, lon) {
+  const g = 2 * Math.PI / 365 * (Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5) - 1);
+  const eqtime = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g)
+    - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+  const decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g)
+    + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+  const latr = lat * Math.PI / 180;
+  const cosHa = Math.cos(90.833 * Math.PI / 180) / (Math.cos(latr) * Math.cos(decl)) - Math.tan(latr) * Math.tan(decl);
+  const ha = Math.acos(Math.min(1, Math.max(-1, cosHa))) * 180 / Math.PI;
+  return 720 - 4 * (lon - ha) - eqtime + 60 * israelUtcOffset(d);
+}
+
+export function shabbatWindow(saturday) {
+  const sat0 = new Date(saturday.getFullYear(), saturday.getMonth(), saturday.getDate()); // midnight
+  const friday = new Date(sat0.getFullYear(), sat0.getMonth(), sat0.getDate() - 1);
+  const [lat, lon] = [31.7683, 35.2137];
+  const start = new Date(friday.getTime() + sunsetLocalMinutes(friday, lat, lon) * 60000);
+  const end = new Date(sat0.getTime() + (sunsetLocalMinutes(sat0, lat, lon) + 42) * 60000);
+  return [start, end];
+}
+
 export function buildInsights(intervals) {
   const sum = summarize(intervals);
   const days = [...sum.daily.keys()].sort();
@@ -169,8 +205,24 @@ export function buildInsights(intervals) {
   const weekday = days.filter(d => !FRI_SAT.has(new Date(d + 'T12:00:00').getDay()));
   const weekend = days.filter(d => FRI_SAT.has(new Date(d + 'T12:00:00').getDay()));
   const avg = list => list.reduce((s, d) => s + sum.daily.get(d), 0) / (list.length || 1);
-  const baseIvs = intervals.filter(i => i.start.getHours() >= 2 && i.start.getHours() < 5);
+  const saturdays = [...new Set(days.map(d => {
+    const dt = new Date(d + 'T12:00:00');
+    dt.setDate(dt.getDate() + (6 - dt.getDay()) % 7);
+    return dt.getTime();
+  }))].sort().map(t => new Date(t));
+  const windows = saturdays.map(shabbatWindow);
+  const inShabbat = dt => windows.some(([a, b]) => dt >= a && dt < b);
+  const nightIvs = intervals.filter(i => i.start.getHours() >= 2 && i.start.getHours() < 5);
+  const baseIvs = nightIvs.filter(i => !inShabbat(i.start));
+  const shabbatNightIvs = nightIvs.filter(i => inShabbat(i.start));
   const nightBaseKw = baseIvs.length ? baseIvs.reduce((s, i) => s + i.kwh, 0) / baseIvs.length / 0.25 : 0;
+  const shabbatNightKw = shabbatNightIvs.length ? shabbatNightIvs.reduce((s, i) => s + i.kwh, 0) / shabbatNightIvs.length / 0.25 : 0;
+  const shabbatKwh = windows.map(() => 0);
+  intervals.forEach(i => {
+    const n = windows.findIndex(([a, b]) => i.start >= a && i.start < b);
+    if (n >= 0) shabbatKwh[n] += i.kwh;
+  });
+  const usedShabbatot = shabbatKwh.filter(v => v > 0);
   let peakKwh = 0, peakCost = 0, totalCost = 0;
   for (const i of intervals) {
     const r = taozRate(i.start, TARIFFS.taoz);
@@ -185,5 +237,8 @@ export function buildInsights(intervals) {
     notableDays: notable,
     taozPeakKwh: peakKwh, taozPeakCostShare: totalCost ? peakCost / totalCost : 0,
     appliances: detectAppliances(intervals, nightBaseKw),
+    shabbatCount: usedShabbatot.length,
+    shabbatAvgKwh: usedShabbatot.length ? usedShabbatot.reduce((s, v) => s + v, 0) / usedShabbatot.length : 0,
+    shabbatNightBaseKw: shabbatNightKw,
   };
 }
