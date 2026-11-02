@@ -17,7 +17,10 @@ pip install -e '.[dev]'
 ## Quickstart
 
 ```sh
-iec-calc report path/to/your-iec-export.csv            # analysis + plan ranking
+iec-calc report path/to/your-iec-export.csv            # analysis + plan ranking + insights
+#                                                       (observations only: peak hours, baseline,
+#                                                       Taoz peak share, probabilistic appliance
+#                                                       signatures - no causal claims)
 iec-calc analyze path/to/your-iec-export.csv           # consumption profile only
 iec-calc analyze path/to/your-iec-export.csv --weather # + temperature sensitivity
 iec-calc plans  path/to/your-iec-export.csv            # plan ranking only
