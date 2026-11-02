@@ -56,7 +56,7 @@ IEC/EA cross-checks, and supplier-site-verified plan data (2026-09-27).
 
 - Annualization scales your measured window to 365 days; a single-season
   export skews summer/winter estimates. Use a 12-month export for decisions.
-- Fixed fees are identical across suppliers and excluded from the comparison.
+- Annual costs include fixed fees (incl. VAT): identical for flat and supplier plans (single/three-phase via `--phase`); Taoz's fixed fee is higher and included explicitly.
 
 ## Development
 
