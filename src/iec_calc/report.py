@@ -46,13 +46,21 @@ def format_ranking(
     days: int,
     flat_rate: float,
     excluded: list | None = None,
+    current_label: str | None = None,
 ) -> str:
     lines = [
         'דירוג מסלולים (עלות שנתית משוערת: צריכה + תשלומים קבועים, כולל מע"מ)',
         "====================================================",
     ]
+    current = None
+    if current_label:
+        current = next(
+            (c for c in costs if current_label in c.label), None
+        )
     for i, c in enumerate(costs, 1):
         marker = "  <<< הכי משתלם" if i == 1 else ""
+        if current is not None and c.label == current.label:
+            marker = "  <<< המסלול הנוכחי"
         lines.append(
             f"{i:2d}. {c.label:<48} {_nis(c.annual_cost):>9} | "
             f"חיסכון {_nis(c.savings_vs_flat_annual):>7}{marker}"
@@ -63,6 +71,14 @@ def format_ranking(
         "העלויות כוללות את התשלומים הקבועים (כולל מע\"מ).",
         'בתעו"ז התשלום הקבוע גבוה יותר (47.63 ₪/חודש לפני מע"מ). מסלולי שעות דורשים מונה חכם.',
     ]
+    if current is not None:
+        best = costs[0]
+        delta = current.annual_cost - best.annual_cost
+        lines += [
+            "",
+            f"המסלול הנוכחי: {current.label} ({_nis(current.annual_cost)} לשנה).",
+            f"מעבר ל{best.label} חוסך {_nis(delta)} לשנה מול המסלול הנוכחי.",
+        ]
     if excluded:
         lines += ["", "לא נכללו בדירוג לפי דגלי הזכאות שהוגדרו:"]
         lines += [f"  - {p.label} ({p.eligibility})" for p in excluded]
