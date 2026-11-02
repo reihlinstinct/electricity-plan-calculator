@@ -230,6 +230,15 @@ function setBlock(ivs, startIdx, kws) {
   }
   check('i18n: selector aria-label key in all languages', ['he', 'en'].every(l => I18N.strings['ui.lang_switch_label'][l]));
   check('i18n: option labels are 2-letter codes', Object.keys(I18N.languages).every(c => c.length === 2 && c.toUpperCase().length === 2));
+  // issue #56: no hostname-list box on the main page; sources live only on the Sources page
+  {
+    const idx = readFileSync(join(root, 'web', 'index.html'), 'utf-8');
+    check('index: no tariff-sources box', !idx.includes('ui.tariff_sources') && !idx.includes('id="sources"'));
+    const appJs = readFileSync(join(root, 'web', 'app.js'), 'utf-8');
+    check('index: app.js does not fill a sources list', !appJs.includes("$('sources')"));
+    const srcPage = readFileSync(join(root, 'web', 'sources.html'), 'utf-8');
+    check('sources page lists all tariff hosts', ['gov.il', 'chashmali.com', 'shtipser.com', 'kolhabait.com', 'hebcal.com'].every(h => srcPage.includes(h)));
+  }
 }
 
 // --- link hygiene (issue #45): repo/source links point at main, hosts are expected, internal links exist ---
@@ -376,6 +385,7 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
 // --- CSS contract: 360px no-overflow guards (#54 review) ---
 {
   const idx = readFileSync(join(root, 'web', 'index.html'), 'utf-8');
+  check('index: opts row exists', idx.includes('class="opts"'));
   check('css: .opts label may shrink (min-width:0)', /\.opts label \{[^}]*min-width:0/.test(idx));
   check('css: .opts select fills its label (width:100%)', /\.opts select \{[^}]*width:100%/.test(idx));
   for (const page of ['index.html', 'guide.html', 'sources.html']) {

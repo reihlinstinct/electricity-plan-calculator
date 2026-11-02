@@ -21,8 +21,8 @@ export const I18N = {
       "en": "Electricity plan calculator - which plan is cheapest for you?"
     },
     "ui.privacy": {
-      "he": "🔒 הקובץ לא נשלח לשום שרת. כל החישוב מתבצע בדפדפן שלך בלבד. מקור התעריפים: נתונים מפורסמים שאומתו מול חברת החשמל ואתרי השוואה (מצורף קישור במקור). הדף עצמו לא שולח שום בקשה לרשת; הקישור לקוד המקור למטה הוא קישור רגיל ושום דבר לא נטען ממנו עד שלוחצים עליו.",
-      "en": "🔒 The file is not sent to any server. All computation happens in your browser only. Tariff sources: published data verified against the Israel Electric Corporation and comparison sites (a link is attached per source). This page itself makes no network requests; the source-code link at the bottom is a plain link and nothing is loaded from it until you click it."
+      "he": "🔒 הקובץ לא נשלח לשום שרת. כל החישוב מתבצע בדפדפן שלך בלבד. מקורות התעריפים והאימותים מפורטים בדף Sources (קישור בתחתית העמוד). הדף עצמו לא שולח שום בקשה לרשת; הקישור לקוד המקור למטה הוא קישור רגיל ושום דבר לא נטען ממנו עד שלוחצים עליו.",
+      "en": "🔒 The file is not sent to any server. All computation happens in your browser only. Tariff sources and their verifications are listed on the Sources page (link at the bottom of the page). This page itself makes no network requests; the source-code link at the bottom is a plain link and nothing is loaded from it until you click it."
     },
     "ui.csv_label": {
       "he": "קובץ ייצוא צריכה של חברת החשמל (CSV):",
@@ -91,10 +91,6 @@ export const I18N = {
     "ui.plans_title": {
       "he": "דירוג מסלולים (עלות שנתית משוערת: צריכה + תשלומים קבועים, כולל מע\"מ)",
       "en": "Plan ranking (estimated annual cost: consumption + fixed charges, incl. VAT)"
-    },
-    "ui.tariff_sources": {
-      "he": "מקורות תעריפים:",
-      "en": "Tariff sources:"
     },
     "ui.footer_github": {
       "he": "GitHub",

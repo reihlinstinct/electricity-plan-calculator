@@ -26,7 +26,6 @@ function populatePlanSelect() {
   sel.selectedIndex = idx >= 0 ? idx : 0;
 }
 populatePlanSelect();
-$('sources').textContent = [...new Set(TARIFFS.sources.map(s => new URL(s.url).hostname))].join(', ');
 
 function axis(ctx, w, h, pad) {
   ctx.strokeStyle = '#999'; ctx.lineWidth = 1;
