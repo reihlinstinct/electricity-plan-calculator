@@ -3,6 +3,9 @@ on:
   pull_request:
   push:
     branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -10,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        # full matrix on main; single version on PRs to save Actions minutes
+        python-version: ${{ github.event_name == 'push' && fromJSON('["3.11", "3.12"]') || fromJSON('["3.12"]') }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
