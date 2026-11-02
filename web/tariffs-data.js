@@ -7,7 +7,7 @@ export const TARIFFS = {
   "notes": "Rates include 18% VAT. Supplier discounts apply to the energy (per-kWh) component only. Fixed monthly fees are identical for flat and supplier plans (single-phase 25.57 / three-phase 27.09 NIS pre-VAT, schedule 5.4-1); the Taoz fixed fee is higher (47.63 pre-VAT). Taoz holidays: yom-tov days and eves are off-peak in summer/transition only (decision 63609); winter peak applies daily.",
   "sources": [
     {
-      "name": "Electricity Authority tariff book, July 2026 (schedule 5.2-1, low voltage)",
+      "name": "Electricity Authority tariff book, January 2026 (schedule 5.2-1, low voltage)",
       "url": "https://www.gov.il/BlobFolder/generalpage/maagar_tarrifr_histoty/he/sefer_tariff_01_2026.pdf",
       "verified": "2026-08-06"
     },
@@ -416,7 +416,7 @@ export const BENCHMARKS = {
     "typical_modern_kwh_per_cycle": 0.5,
     "israel_2021_kwh_per_cycle": 0.93,
     "israel_2024_kwh_per_cycle": 0.55,
-    "unit_note": "EU energy label, eco 40-60 program, kWh per 100 cycles; program and temperature change consumption materially",
+    "unit_note": "Benchmark 0.5 kWh/cycle is consistent with the Israeli 2024 average 0.55 (ynet); the EC page gives the eco 40-60 label methodology (kWh per 100 cycles), it is not the source of the figure. Program and temperature change consumption materially",
     "sources": [
       {
         "label": "European Commission - washing machines energy label (consumption per 100 cycles, eco 40-60)",
@@ -431,14 +431,14 @@ export const BENCHMARKS = {
   "ac": {
     "inverter_savings_min": 0.2,
     "inverter_savings_max": 0.4,
-    "unit_note": "Field-study range for inverter vs on/off room AC: 11-38% (Istanbul), ~24% (Saudi Arabia), ~44% (Jeddah)",
+    "unit_note": "Range across studies for inverter vs on/off room AC: 11-38% (Istanbul field test), ~24% (Saudi Arabia 1989: measured single-speed unit vs simulated inverter), ~44% (Jeddah)",
     "sources": [
       {
         "label": "Istanbul Technical University field test: inverter saves 11-38%",
         "url": "https://research.itu.edu.tr/en/publications/an-experimental-investigation-of-energy-saving-potentials-for-roo/"
       },
       {
-        "label": "KFUPM assessment: inverter-driven system used 24% less energy",
+        "label": "KFUPM 1989 (ASHRAE Transactions): measured single-speed unit vs simulated inverter; inverter used 24% less energy",
         "url": "https://pure.kfupm.edu.sa/en/publications/an-assessment-of-inverter-driven-variable-speed-air-conditioners-/"
       },
       {
