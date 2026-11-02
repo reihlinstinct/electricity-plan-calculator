@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, features
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTO = "/usr/share/fonts/truetype/noto"
@@ -20,9 +20,22 @@ INK = (248, 250, 252)
 MUTED = (148, 163, 184)
 
 
-def rtl(s: str) -> str:
-    """Reverse a pure-Hebrew string for LTR rendering (no bidi lib needed)."""
-    return s[::-1]
+RAQM = features.check("raqm")
+
+
+def draw_rtl(d: ImageDraw.ImageDraw, pos, text: str, font, fill) -> None:
+    """Right-aligned Hebrew text. With raqm, Pillow does the bidi layout itself
+    (direction="rtl"); without it, fall back to a manual single reversal."""
+    if RAQM:
+        d.text(pos, text, font=font, fill=fill, anchor="ra", direction="rtl", language="he")
+    else:
+        d.text(pos, text[::-1], font=font, fill=fill, anchor="ra")
+
+
+def rtl_width(d: ImageDraw.ImageDraw, text: str, font) -> float:
+    if RAQM:
+        return d.textlength(text, font=font, direction="rtl", language="he")
+    return d.textlength(text[::-1], font=font)
 
 
 def bolt_poly(cx: float, cy: float, h: float) -> list[tuple[float, float]]:
@@ -57,10 +70,10 @@ def make_og() -> None:
     # bar strip from synthetic data (decorative, bottom)
     hourly = synthetic_hourly()
     peak = max(hourly) or 1.0
-    bw, gap, base_y = 36, 14, h - 60
+    bw, gap, base_y = 36, 14, h - 30
     x0 = (w - 24 * (bw + gap)) // 2
     for i, v in enumerate(hourly):
-        bh = int(120 * v / peak) + 4
+        bh = int(95 * v / peak) + 4
         od.rounded_rectangle([x0 + i * (bw + gap), base_y - bh, x0 + i * (bw + gap) + bw, base_y],
                              radius=6, fill=(56, 130, 246, 90))
     img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
@@ -77,14 +90,14 @@ def make_og() -> None:
     size = 96
     while size > 40:
         title_f = ImageFont.truetype(f"{NOTO}/NotoSansHebrew-Black.ttf", size)
-        if right - d.textlength(rtl("מחשבון חיסכון בחשמל"), font=title_f) >= left_limit:
+        if right - rtl_width(d, "מחשבון חיסכון בחשמל", title_f) >= left_limit:
             break
         size -= 4
     sub_f = ImageFont.truetype(f"{NOTO}/NotoSansHebrew-Regular.ttf", 44)
     foot_f = ImageFont.truetype(f"{NOTO}/NotoSansHebrew-Regular.ttf", 34)
-    d.text((right, 190), rtl("מחשבון חיסכון בחשמל"), font=title_f, fill=INK, anchor="ra")
-    d.text((right, 330), rtl("איזה מסלול הכי משתלם לכם"), font=sub_f, fill=BOLT, anchor="ra")
-    d.text((right, 410), rtl("מהנתונים שלכם מחברת החשמל - בדפדפן בלי שרת"), font=foot_f, fill=MUTED, anchor="ra")
+    draw_rtl(d, (right, 190), "מחשבון חיסכון בחשמל", title_f, INK)
+    draw_rtl(d, (right, 330), "איזה מסלול הכי משתלם לכם", sub_f, BOLT)
+    draw_rtl(d, (right, 390), "מהנתונים שלכם מחברת החשמל - בדפדפן בלי שרת", foot_f, MUTED)
     img.save(ROOT / "web" / "og-image.png", optimize=True)
 
 
