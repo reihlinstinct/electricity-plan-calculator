@@ -9,13 +9,23 @@ const nis = v => `${Math.round(v).toLocaleString('he-IL')} ₪`;
 
 $('csv').addEventListener('change', () => { $('go').disabled = !$('csv').files.length; });
 
-// populate current-plan select from catalog
-{
+let lastIntervals = null;
+let lastErrorNoRows = false;
+
+// (re)populate the current-plan select in the active language, keeping the
+// chosen plan (by position - labels change with the language)
+function populatePlanSelect() {
   const sel = $('currentPlan');
+  const idx = sel.selectedIndex;
+  const placeholder = sel.querySelector('option[value=""]');
   const labels = [t('plan.flat_label'), t('plan.taoz_label'),
     ...TARIFFS.supplier_plans.map(p => `${p.supplier} - ${p.plan}`)];
+  sel.replaceChildren();
+  if (placeholder) sel.appendChild(placeholder);
   for (const l of labels) { const o = document.createElement('option'); o.value = l; o.textContent = l; sel.appendChild(o); }
+  sel.selectedIndex = idx >= 0 ? idx : 0;
 }
+populatePlanSelect();
 $('sources').textContent = [...new Set(TARIFFS.sources.map(s => new URL(s.url).hostname))].join(', ');
 
 function axis(ctx, w, h, pad) {
@@ -59,11 +69,7 @@ function plansChart(canvas, plans, currentLabel) {
   });
 }
 
-$('go').addEventListener('click', async () => {
-  const err = $('err'); err.style.display = 'none';
-  try {
-    const text = await $('csv').files[0].text();
-    const intervals = parseCsv(text);
+function renderAnalysis(intervals) {
     const sum = summarize(intervals);
 
     $('summaryCard').style.display = '';
@@ -229,10 +235,28 @@ $('go').addEventListener('click', async () => {
       appText.appendChild(ul);
     }
     renderEfficiency();
+}
 
+$('go').addEventListener('click', async () => {
+  const err = $('err'); err.style.display = 'none';
+  try {
+    const text = await $('csv').files[0].text();
+    lastIntervals = parseCsv(text);
+    lastErrorNoRows = false;
+    renderAnalysis(lastIntervals);
     $('status').textContent = '';
   } catch (e) {
+    lastErrorNoRows = e.message === t('calc.err_no_rows');
     err.textContent = e.message; err.style.display = '';
     $('status').textContent = '';
   }
+});
+
+// Language switch re-renders every dynamically built string (select options,
+// results, tables, insights, a visible validation error) - applyI18n handles
+// the static markup; this event covers the rest.
+document.addEventListener('iec:langchange', () => {
+  populatePlanSelect();
+  if (lastIntervals) renderAnalysis(lastIntervals);
+  else if (lastErrorNoRows) $('err').textContent = t('calc.err_no_rows');
 });

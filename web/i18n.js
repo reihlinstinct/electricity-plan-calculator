@@ -56,19 +56,26 @@ export function applyI18n(doc = document) {
   const sel = doc.getElementById('langSwitch');
   if (sel) {
     sel.setAttribute('aria-label', t('ui.lang_switch_label', {}, lang));
-    if (!sel.options || sel.options.length !== Object.keys(I18N.languages).length) {
+    const codes = Object.keys(I18N.languages);
+    const stale = !sel.options || sel.options.length !== codes.length
+      || [...sel.options].some((o, i) => o.value !== codes[i] || o.textContent !== codes[i].toUpperCase());
+    if (stale) {
       sel.replaceChildren();
-      for (const code of Object.keys(I18N.languages)) {
+      for (const code of codes) {
         const opt = doc.createElement('option');
         opt.value = code;
         opt.textContent = code.toUpperCase();
         sel.appendChild(opt);
       }
+    }
+    if (!sel.dataset || !sel.dataset.langBound) {
+      (sel.dataset ||= {}).langBound = '1';
       sel.addEventListener('change', () => {
         const q = new URLSearchParams(window.location.search);
         q.set('lang', sel.value);
         window.history.replaceState(null, '', `${window.location.pathname}?${q}`);
         applyI18n();
+        doc.dispatchEvent(new (window.CustomEvent || CustomEvent)('iec:langchange'));
       });
     }
     sel.value = lang;
