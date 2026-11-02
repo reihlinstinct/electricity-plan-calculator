@@ -32,7 +32,8 @@ Try it on the synthetic sample: `iec-calc report data/sample_consumption.csv`
 - `--no-smart-meter` / `--no-gas` / `--no-hot` - exclude plans you are not eligible for
 - `--current-plan LABEL` - mark your current plan (substring match; flat tariff and Taoz
   labels work too) and see the top plan's saving versus it
-- `--weather` [--lat/--lon] - temperature sensitivity for the measured period (Open-Meteo),
+- `--weather` [--lat/--lon] - opt-in (off by default, makes a network call to Open-Meteo);
+  an experimental temperature-sensitivity estimate only - never used in the plan ranking,
   plus a cooling/heating degree-day split with per-month attribution
 - `--cooling-base` / `--heating-base` - degree-day base temperatures (defaults: 22/18 C)
 

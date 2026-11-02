@@ -31,7 +31,7 @@ def format_analysis(s: Summary) -> str:
 def format_weather(w: WeatherReport) -> str:
     return "\n".join(
         [
-            "רגישות למזג אוויר",
+            "רגישות למזג אוויר (אומדן ניסיוני, לא חלק מהמלצת המסלול)",
             "=================",
             f"מתאם צריכה-טמפ' (יומי): r={w.correlation:.2f} "
             f"(טווח {w.temp_min:.0f}-{w.temp_max:.0f} מעלות, {w.days} ימים)",
@@ -103,7 +103,7 @@ def lines_to_text(lines: list[str]) -> str:
 
 def format_hvac(h: HvacReport) -> str:
     lines = [
-        "פיצול קירור/חימום (מעלות-יום)",
+        "פיצול קירור/חימום (אומדן ניסיוני, לא חלק מהמלצת המסלול)",
         "=============================",
         (
             f"קירור: {h.kwh_per_cooling_degree:+.2f} קוט\"ש/יום לכל מעלה מעל {h.cooling_base:.0f}°"
