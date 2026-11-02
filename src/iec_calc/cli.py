@@ -85,6 +85,21 @@ def _weather_block(args, summary) -> str:
 def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     _configure_logging(args.debug)
+    catalog = None
+    if args.command in ("plans", "report"):
+        catalog = tariffs.load_catalog(args.tariffs)
+        if args.current_plan:
+            matches = [p.label for p in catalog.plans if args.current_plan in p.label]
+            if len(matches) != 1:
+                valid = "\n".join(f"  {p.label}" for p in catalog.plans)
+                reason = (
+                    f"no plan matches '{args.current_plan}'"
+                    if not matches
+                    else f"'{args.current_plan}' is ambiguous ({len(matches)} matches: "
+                         + "; ".join(matches) + ")"
+                )
+                print(f"error: {reason}. valid labels:\n{valid}", file=sys.stderr)
+                return 2
     try:
         intervals = csv_parser.parse(args.csv)
     except (OSError, ValueError) as exc:
@@ -97,16 +112,6 @@ def main(argv: list[str] | None = None) -> int:
         if getattr(args, "weather", False):
             out.append(_weather_block(args, summary))
     if args.command in ("plans", "report"):
-        catalog = tariffs.load_catalog(args.tariffs)
-        if args.current_plan and not any(
-            args.current_plan in p.label for p in catalog.plans
-        ):
-            valid = "\n".join(f"  {p.label}" for p in catalog.plans)
-            print(
-                f"error: no plan matches '{args.current_plan}'. valid labels:\n{valid}",
-                file=sys.stderr,
-            )
-            return 2
         customer = cost.Customer(
             smart_meter=args.smart_meter,
             gas_customer=args.gas_customer,
@@ -119,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
         excluded = cost.unavailable_plans(catalog, customer)
         out.append(
             report.format_ranking(
-                costs, summary.days, catalog.flat_rate, excluded, args.current_plan
+                costs, summary.days, catalog, excluded, args.current_plan
             )
         )
     print("\n\n".join(out))

@@ -44,7 +44,7 @@ def format_weather(w: WeatherReport) -> str:
 def format_ranking(
     costs: list[PlanCost],
     days: int,
-    flat_rate: float,
+    catalog,
     excluded: list | None = None,
     current_label: str | None = None,
 ) -> str:
@@ -67,9 +67,10 @@ def format_ranking(
         )
     lines += [
         "",
-        f"בסיס ההשוואה: תעריף אחיד {flat_rate:.4f} ₪/קוט\"ש כולל מע\"מ; {days} ימי מדידה, הוכפל לשנה.",
+        f"בסיס ההשוואה: תעריף אחיד {catalog.flat_rate:.4f} ₪/קוט\"ש כולל מע\"מ; {days} ימי מדידה, הוכפל לשנה.",
         "העלויות כוללות את התשלומים הקבועים (כולל מע\"מ).",
-        'בתעו"ז התשלום הקבוע גבוה יותר (47.63 ₪/חודש לפני מע"מ). מסלולי שעות דורשים מונה חכם.',
+        f'בתעו"ז התשלום הקבוע גבוה יותר ({catalog.taoz.fixed_fee_monthly_pre_vat:.2f} ₪/חודש לפני מע"מ).',
+        "מסלולי שעות דורשים מונה חכם.",
     ]
     if current is not None:
         best = costs[0]
