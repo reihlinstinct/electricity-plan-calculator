@@ -31,7 +31,7 @@ check('best is taoz on the sample', ranked[0].kind === 'taoz');
 
 // eligibility flags
 const noGas = rankPlans(intervals, { gasCustomer: false });
-check('--no-gas drops Amisragas', !noGas.some(p => p.label.includes('אמישראגז')));
+check('gas plan excluded by default', !noGas.some(p => p.label.includes('אמישראגז')));
 
 // 24:00 normalization covered implicitly: sample has a 24:00 row -> parsed to next day 00:00
 check('no hour-24 timestamps', intervals.every(i => i.start.getHours() < 24));
@@ -98,6 +98,32 @@ function setBlock(ivs, startIdx, kws) {
 {
   const m = sunsetLocalMinutes(new Date(2026, 9, 15), 31.78, 35.21) / 60;
   check('js: sunset Jerusalem Oct ~18.1h', m > 17.8 && m < 18.5);
+}
+
+// --- share preview + favicon (issue #26): tags present, absolute URLs, assets on disk ---
+{
+  const html = readFileSync(join(root, 'web', 'index.html'), 'utf-8');
+  const BASE = 'https://reihlinstinct.github.io/electricity-plan-calculator/web/';
+  check('meta: og:title', html.includes('property="og:title"'));
+  check('meta: og:description', html.includes('property="og:description"'));
+  check('meta: og:locale he_IL', html.includes('property="og:locale" content="he_IL"'));
+  check('meta: og:image absolute', html.includes(`property="og:image" content="${BASE}og-image.png"`));
+  check('meta: twitter card', html.includes('name="twitter:card" content="summary_large_image"'));
+  check('meta: twitter image absolute', html.includes(`name="twitter:image" content="${BASE}og-image.png"`));
+  check('icon: favicon link', html.includes('rel="icon"') && html.includes('favicon.png'));
+  check('icon: apple-touch-icon link', html.includes('rel="apple-touch-icon"'));
+
+  const pngSize = path => {
+    const b = readFileSync(path);
+    check(`${path} is a PNG`, b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47);
+    return [b.readUInt32BE(16), b.readUInt32BE(20)];
+  };
+  const [ow, oh] = pngSize(join(root, 'web', 'og-image.png'));
+  check('og:image is 1200x630', ow === 1200 && oh === 630);
+  const [aw, ah] = pngSize(join(root, 'web', 'apple-touch-icon.png'));
+  check('apple-touch-icon is 180x180', aw === 180 && ah === 180);
+  const [fw, fh] = pngSize(join(root, 'web', 'favicon.png'));
+  check('favicon is square and small', fw === fh && fw <= 64);
 }
 
 process.exit(failures ? 1 : 0);
