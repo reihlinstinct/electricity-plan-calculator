@@ -115,7 +115,8 @@ function setBlock(ivs, startIdx, kws) {
   check('icon: apple-touch-icon link', html.includes('rel="apple-touch-icon"'));
 
   // repo footer link (issue #28): plain <a>, and it is the ONLY external URL reference
-  check('footer: repo link', html.includes('<a href="https://github.com/reihlinstinct/electricity-plan-calculator">'));
+  check('footer: repo link', html.includes('קוד מקור פתוח: <a href="https://github.com/reihlinstinct/electricity-plan-calculator">GitHub</a>'));
+  check('footer: no bare URL shown', !html.includes('>github.com/reihlinstinct'));
   const extRefs = html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || [];
   check('zero external requests: only the repo link is external', extRefs.length === 1 && extRefs[0].includes('github.com/reihlinstinct/electricity-plan-calculator'));
   // CSV export guide (issue #32): web page + images + link from the upload box
