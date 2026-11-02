@@ -105,15 +105,24 @@ def format_hvac(h: HvacReport) -> str:
     lines = [
         "פיצול קירור/חימום (מעלות-יום)",
         "=============================",
-        f"קירור: {h.kwh_per_cooling_degree:+.2f} קוט\"ש/יום לכל מעלה מעל {h.cooling_base:.0f}° | "
-        f"חימום: {h.kwh_per_heating_degree:+.2f} קוט\"ש/יום לכל מעלה מתחת {h.heating_base:.0f}°",
+        (
+            f"קירור: {h.kwh_per_cooling_degree:+.2f} קוט\"ש/יום לכל מעלה מעל {h.cooling_base:.0f}°"
+            if h.kwh_per_cooling_degree is not None
+            else "קירור: אין מספיק שונות בטמפרטורה למדידה"
+        ) + " | " + (
+            f"חימום: {h.kwh_per_heating_degree:+.2f} קוט\"ש/יום לכל מעלה מתחת {h.heating_base:.0f}°"
+            if h.kwh_per_heating_degree is not None
+            else "חימום: אין מספיק שונות בטמפרטורה למדידה"
+        ),
         f"הסבר המודל: R²={h.r_squared:.2f} ({h.days} ימים)",
         "",
-        "חודש     " + '  סה"כ' + "   בסיס" + '  סופ"ש' + "   קירור" + "   חימום",
+        "חודש     " + '  סה"כ' + "   בסיס" + '  סופ"ש' + "   קירור" + "   חימום" + "    שאר",
     ]
     for m in h.monthly:
+        cells = [m.total_kwh, m.base_kwh, m.weekend_kwh, m.cooling_kwh, m.heating_kwh, m.residual_kwh]
+        # round-off can leave a tiny negative that renders as "-0"; snap to 0
+        cells = [0.0 if round(v) == 0 else v for v in cells]
         lines.append(
-            f"{m.month:<9}{m.total_kwh:>8.0f}{m.base_kwh:>8.0f}{m.weekend_kwh:>8.0f}"
-            f"{m.cooling_kwh:>8.0f}{m.heating_kwh:>8.0f}"
+            f"{m.month:<9}" + "".join(f"{v:>8.0f}" for v in cells)
         )
     return lines_to_text(lines)

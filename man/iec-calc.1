@@ -60,6 +60,12 @@ Correlate daily consumption with temperature (Open-Meteo archive API).
 .TP
 .BI --lat " DEG" , --lon " DEG"
 Coordinates for weather lookup. Default: 31.78, 35.21 (Jerusalem).
+.TP
+.BI "--cooling-base " DEG
+Cooling degree-day base temperature for the heating/cooling split (default: 22).
+.TP
+.BI "--heating-base " DEG
+Heating degree-day base temperature for the heating/cooling split (default: 18).
 .SH EXIT STATUS
 0 on success, 2 on unreadable or empty input.
 .SH FILES

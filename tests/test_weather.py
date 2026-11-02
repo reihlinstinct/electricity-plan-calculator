@@ -116,3 +116,52 @@ def test_hvac_split_none_without_variance():
     temps = {d: 20.0 for d in days}  # between the bases: no CDD/HDD at all
     kwh = {d: 6.0 + (i % 2) for i, d in enumerate(days)}
     assert hvac_split(kwh, temps) is None
+
+
+def test_hvac_single_sided_variance():
+    # only cooling variance: heating coefficient is None, cooling still fitted
+    kwh, temps = _synthetic_hvac_days()
+    temps = {d: max(t, 20.0) for d, t in temps.items()}  # never below 18
+    rep = hvac_split(kwh, temps)
+    assert rep is not None
+    assert rep.kwh_per_heating_degree is None
+    assert rep.kwh_per_cooling_degree is not None
+
+
+def test_hvac_report_render():
+    from iec_calc.report import format_hvac
+    kwh, temps = _synthetic_hvac_days()
+    text = format_hvac(hvac_split(kwh, temps))
+    assert "קירור" in text and "חימום" in text and "שאר" in text
+    assert "2026-09" in text
+
+
+def test_hvac_report_render_one_sided():
+    from iec_calc.report import format_hvac
+    kwh, temps = _synthetic_hvac_days()
+    temps = {d: max(t, 20.0) for d, t in temps.items()}
+    text = format_hvac(hvac_split(kwh, temps))
+    assert "אין מספיק שונות" in text
+
+
+def test_hvac_debug_log_one_sided_no_crash(caplog):
+    # regression: the final debug log used %.2f with a None regressor -> TypeError
+    import logging
+    kwh, temps = _synthetic_hvac_days()
+    temps = {d: max(t, 20.0) for d, t in temps.items()}  # heating-only fit
+    with caplog.at_level(logging.DEBUG, logger="iec_calc.weather"):
+        rep = hvac_split(kwh, temps)
+    assert rep is not None and rep.kwh_per_heating_degree is None
+    assert "n/a" in caplog.text
+
+
+def test_hvac_report_no_negative_zero():
+    from iec_calc.report import format_hvac
+    from iec_calc.weather import HvacReport, MonthAttribution
+    rep = HvacReport(
+        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=None,
+        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.5, 20.0, -0.5),),
+    )
+    text = format_hvac(rep)
+    assert "-0" not in text.split("2026-09", 1)[1]

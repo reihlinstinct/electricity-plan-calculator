@@ -39,8 +39,8 @@ class MonthAttribution:
 @dataclass(frozen=True)
 class HvacReport:
     days: int
-    kwh_per_cooling_degree: float
-    kwh_per_heating_degree: float
+    kwh_per_cooling_degree: float | None  # None when too little cooling variance to fit
+    kwh_per_heating_degree: float | None  # None when too little heating variance to fit
     r_squared: float
     cooling_base: float
     heating_base: float
@@ -179,17 +179,35 @@ def hvac_split(
         return None
     cdd = {d: max(0.0, temps[d] - cooling_base) for d in common}
     hdd = {d: max(0.0, heating_base - temps[d]) for d in common}
-    if statistics.pstdev([cdd[d] for d in common]) < 0.2 and statistics.pstdev([hdd[d] for d in common]) < 0.2:
+    cdd_var = statistics.pstdev([cdd[d] for d in common]) >= 0.2
+    hdd_var = statistics.pstdev([hdd[d] for d in common]) >= 0.2
+    if not cdd_var and not hdd_var:
         log.debug("hvac: no degree-day variance in period, skipping")
         return None
+    if not cdd_var:
+        log.debug("hvac: too little cooling variance, fitting heating only")
+    if not hdd_var:
+        log.debug("hvac: too little heating variance, fitting cooling only")
     weekend = [1.0 if d.weekday() in FRI_SAT else 0.0 for d in common]
-    rows = [[1.0, w, cdd[d], hdd[d]] for d, w in zip(common, weekend, strict=False)]
     ys = [daily_kwh[d] for d in common]
+    rows = []
+    for d, w in zip(common, weekend, strict=False):
+        row = [1.0, w]
+        if cdd_var:
+            row.append(cdd[d])
+        if hdd_var:
+            row.append(hdd[d])
+        rows.append(row)
     try:
-        (b0, b_weekend, b_cool, b_heat), r2 = ols(rows, ys)
+        coef, r2 = ols(rows, ys)
     except ValueError:
         log.debug("hvac: singular design matrix, skipping")
         return None
+    b0, b_weekend = coef[0], coef[1]
+    i = 2
+    b_cool = coef[i] if cdd_var else None
+    i += 1 if cdd_var else 0
+    b_heat = coef[i] if hdd_var else None
     by_month: dict[str, list[date]] = {}
     for d in common:
         by_month.setdefault(d.strftime("%Y-%m"), []).append(d)
@@ -199,8 +217,8 @@ def hvac_split(
         total = sum(daily_kwh[d] for d in days)
         base = b0 * len(days)
         wknd = b_weekend * sum(1.0 for d in days if d.weekday() in FRI_SAT)
-        cool = b_cool * sum(cdd[d] for d in days)
-        heat = b_heat * sum(hdd[d] for d in days)
+        cool = (b_cool or 0.0) * sum(cdd[d] for d in days)
+        heat = (b_heat or 0.0) * sum(hdd[d] for d in days)
         monthly.append(MonthAttribution(m, len(days), total, base, wknd, cool, heat,
                                         total - base - wknd - cool - heat))
     report = HvacReport(
@@ -212,5 +230,10 @@ def hvac_split(
         heating_base=heating_base,
         monthly=tuple(monthly),
     )
-    log.debug("hvac: %.2f kWh/CDD, %.2f kWh/HDD, R2=%.2f", b_cool, b_heat, r2)
+    log.debug(
+        "hvac: %s kWh/CDD, %s kWh/HDD, R2=%.2f",
+        f"{b_cool:.2f}" if b_cool is not None else "n/a",
+        f"{b_heat:.2f}" if b_heat is not None else "n/a",
+        r2,
+    )
     return report
