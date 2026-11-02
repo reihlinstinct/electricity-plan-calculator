@@ -98,7 +98,11 @@ def sensitivity(
     ys = [daily_kwh[d] for d in common]
     ts = [temps[d] for d in common]
     weekend = [1.0 if d.weekday() in FRI_SAT else 0.0 for d in common]
-    _, b_weekend, b_temp, r2 = ols3(weekend, ts, ys)
+    try:
+        _, b_weekend, b_temp, r2 = ols3(weekend, ts, ys)
+    except ValueError:
+        log.debug("weather: singular design matrix (constant inputs?), skipping")
+        return None
     report = WeatherReport(
         days=len(common),
         correlation=pearson(ts, ys),
