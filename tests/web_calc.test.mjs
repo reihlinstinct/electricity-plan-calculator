@@ -373,4 +373,15 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   check('langswitch: back to he, no stale English UI strings', !texts.includes('Annual cost') && texts.includes('עלות שנתית'));
 }
 
+// --- CSS contract: 360px no-overflow guards (#54 review) ---
+{
+  const idx = readFileSync(join(root, 'web', 'index.html'), 'utf-8');
+  check('css: .opts label may shrink (min-width:0)', /\.opts label \{[^}]*min-width:0/.test(idx));
+  check('css: .opts select fills its label (width:100%)', /\.opts select \{[^}]*width:100%/.test(idx));
+  for (const page of ['index.html', 'guide.html', 'sources.html']) {
+    const body = readFileSync(join(root, 'web', page), 'utf-8');
+    check(`css: ${page} global select max-width guard`, /select \{ max-width:100%/.test(body));
+  }
+}
+
 process.exit(failures ? 1 : 0);
