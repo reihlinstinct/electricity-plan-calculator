@@ -97,6 +97,28 @@ function setBlock(ivs, startIdx, kws) {
   check('js: no appliance false positive from plate/urn', ins.appliances.length === 0);
 }
 {
+  // Shabbat-observance detection parity with the Python engine (issue #38)
+  const household = (days, shabbatNightKw, weekdayWashers, shabbatWashers) => {
+    const out = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(2026, 9, 7 + i); // starts Wednesday
+      const day = flatDay(d, 0.2);
+      if (d.getDay() === 6) for (let h = 2; h < 5; h++) setBlock(day, h * 4, [shabbatNightKw, shabbatNightKw, shabbatNightKw, shabbatNightKw]);
+      if (weekdayWashers.includes(i) || shabbatWashers.includes(i))
+        setBlock(day, 10 * 4, [0.4, 0.4, 0.4, 2.0, 2.0, 0.4, 0.4, 0.6]);
+      out.push(...day);
+    }
+    return out;
+  };
+  let ins = buildInsights(household(21, 0.5, [0, 1, 4, 6, 8, 12], []));
+  check('js: observance high on both signals', ins.observance && ins.observance.confidence === 'high'
+    && ins.observance.signals.includes('base') && ins.observance.signals.includes('appliances'));
+  ins = buildInsights(household(21, 0.2, [1, 8, 15], [3, 10])); // flat nights, washers on Shabbat too
+  check('js: observance neutral for non-observant', ins.observance === null);
+  ins = buildInsights(household(6, 0.5, [1, 3], [])); // too little data
+  check('js: observance neutral with 1 Shabbat', ins.observance === null);
+}
+{
   const m = sunsetLocalMinutes(new Date(2026, 9, 15), 31.78, 35.21) / 60;
   check('js: sunset Jerusalem Oct ~18.1h', m > 17.8 && m < 18.5);
 }

@@ -167,6 +167,28 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
             f"לשבת; צריכת לילה {rep.shabbat_night_base_kw * 1000:.0f} וואט מול "
             f"{rep.night_base_kw * 1000:.0f} בחול - עומס קבוע (למשל פלטה/מיחם) הוא הסבר אפשרי, לא ודאי"
         )
+    ob = rep.observance
+    if ob is not None:
+        pct = round((ob.base_ratio - 1) * 100)
+        base_txt = (
+            f"צריכת ליל שבת גבוהה ב-{pct}% מליל חול"
+        )
+        appl_txt = (
+            f"{ob.shabbat_starts} הפעלות מכשירים ב-{ob.shabbat_count} שבתות "
+            f"(מול {ob.weekday_rate:.1f} ליום חול בממוצע)"
+        )
+        if ob.confidence == "high":
+            detail = base_txt + " ו" + appl_txt
+        elif "base" in ob.signals:
+            detail = base_txt + " - עומס קבוע כמו פלטה/מיחם הוא הסבר אפשרי"
+        else:
+            detail = appl_txt
+        level = "גבוה" if ob.confidence == "high" else "בינוני"
+        lead = "נראה" if ob.confidence == "high" else "ייתכן"
+        lines.append(
+            f"{lead} שבמשק הבית שומרים שבת (ביטחון {level}): {detail}. "
+            "תצפית סטטיסטית מהקובץ בלבד, לא ודאות"
+        )
     if rep.notable_days:
         days = ", ".join(f"{d:%d.%m}" for d in rep.notable_days)
         lines.append(f"ימים עם צריכה חריגה: {days}")

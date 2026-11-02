@@ -141,3 +141,77 @@ def test_no_appliance_false_positive_from_shabbat_plate():
     s = summarize(ivs)
     rep = build_insights(ivs, s, cat)
     assert rep.appliances == ()
+
+
+def _household(start: date, days: int, *, shabbat_night_kw: float = 0.2,
+               weekday_washers: tuple[int, ...] = (), shabbat_washers: tuple[int, ...] = ()) -> list[Interval]:
+    """Synthetic household: flat base, elevated Shabbat-night base, optional washer blocks.
+
+    weekday_washers/shabbat_washers: day offsets (from start) that get a washer
+    block at 10:00. Shabbat-night elevation applies to Saturday 02:00-05:00.
+    """
+    ivs: list[Interval] = []
+    for off in range(days):
+        d = start + timedelta(days=off)
+        day = _day_intervals(d, base_kw=0.2)
+        if d.weekday() == 5:  # Saturday early morning is inside the Shabbat window
+            for iv in day:
+                if 2 <= iv.start.hour < 5:
+                    ivs_idx = day.index(iv)
+                    day[ivs_idx] = Interval(iv.start, shabbat_night_kw * 0.25, 0.0)
+        if off in weekday_washers or off in shabbat_washers:
+            _add_block(day, d, 10, [0.4, 0.4, 0.4, 2.0, 2.0, 0.4, 0.4, 0.6])
+        ivs.extend(day)
+    return ivs
+
+
+def test_observance_high_both_signals():
+    cat = load_catalog()
+    start = date(2026, 10, 7)  # Wednesday; covers 3 Shabbats in 21 days
+    ivs = _household(start, 21, shabbat_night_kw=0.5, weekday_washers=(0, 1, 4, 6, 8, 12))  # Wed/Thu/Sun/Tue only
+    rep = build_insights(ivs, summarize(ivs), cat)
+    assert rep.observance is not None
+    assert rep.observance.confidence == "high"
+    assert set(rep.observance.signals) == {"base", "appliances"}
+    from iec_calc.report import format_insights
+    text = format_insights(rep, cat.flat_rate)
+    assert "נראה שבמשק הבית שומרים שבת (ביטחון גבוה)" in text
+
+
+def test_observance_neutral_for_non_observant():
+    cat = load_catalog()
+    start = date(2026, 10, 7)
+    # flat nights, washers on Saturdays too -> no signal fires
+    ivs = _household(start, 21, shabbat_night_kw=0.2,
+                     weekday_washers=(1, 8, 15), shabbat_washers=(3, 10))  # Sat offsets are 3/10/17
+    rep = build_insights(ivs, summarize(ivs), cat)
+    assert rep.observance is None
+    from iec_calc.report import format_insights
+    text = format_insights(rep, cat.flat_rate)
+    assert "שומרים שבת" not in text  # neutral: no claim in either direction
+
+
+def test_observance_neutral_with_too_little_data():
+    cat = load_catalog()
+    ivs = _household(date(2026, 10, 7), 6, shabbat_night_kw=0.5, weekday_washers=(1, 3))
+    rep = build_insights(ivs, summarize(ivs), cat)
+    assert rep.observance is None
+
+
+def test_observance_medium_single_signal():
+    from iec_calc.insights import detect_shabbat_observance
+    ob = detect_shabbat_observance(
+        shabbat_count=3, weekday_days=15, night_base_kw=0.2, shabbat_night_base_kw=0.5,
+        shabbat_starts=3, weekday_starts=3,  # appliances present on Shabbat -> only base fires
+    )
+    assert ob is not None and ob.confidence == "medium" and ob.signals == ("base",)
+    ob = detect_shabbat_observance(
+        shabbat_count=3, weekday_days=15, night_base_kw=0.2, shabbat_night_base_kw=0.2,
+        shabbat_starts=0, weekday_starts=5,  # flat nights -> only appliances fires
+    )
+    assert ob is not None and ob.confidence == "medium" and ob.signals == ("appliances",)
+    # negative direction must never produce a claim
+    assert detect_shabbat_observance(
+        shabbat_count=3, weekday_days=15, night_base_kw=0.5, shabbat_night_base_kw=0.2,
+        shabbat_starts=4, weekday_starts=3,
+    ) is None

@@ -210,6 +210,26 @@ export function shabbatWindow(saturday) {
   return [start, end];
 }
 
+// Shabbat-observance detection thresholds (statistics only, never a negative claim).
+// Keep in parity with src/iec_calc/insights.py.
+const OBS_MIN_SHABBATOT = 2;
+const OBS_MIN_WEEKDAYS = 5;
+const OBS_BASE_MIN_DELTA_KW = 0.05;
+const OBS_BASE_RATIO = 1.3;
+const OBS_WEEKDAY_MIN_RATE = 0.15;
+const OBS_SHABBAT_MAX_SHARE = 0.25;
+
+export function detectShabbatObservance({ shabbatCount, weekdayDays, nightBaseKw, shabbatNightBaseKw, shabbatStarts, weekdayStarts }) {
+  if (shabbatCount < OBS_MIN_SHABBATOT || weekdayDays < OBS_MIN_WEEKDAYS) return null;
+  const signals = [];
+  const baseRatio = nightBaseKw > 0 ? shabbatNightBaseKw / nightBaseKw : 0;
+  if (nightBaseKw > 0 && shabbatNightBaseKw - nightBaseKw >= OBS_BASE_MIN_DELTA_KW && baseRatio >= OBS_BASE_RATIO) signals.push('base');
+  const weekdayRate = weekdayStarts / weekdayDays;
+  if (weekdayRate >= OBS_WEEKDAY_MIN_RATE && shabbatStarts / shabbatCount <= OBS_SHABBAT_MAX_SHARE * weekdayRate) signals.push('appliances');
+  if (!signals.length) return null;
+  return { confidence: signals.length === 2 ? 'high' : 'medium', signals, baseRatio, shabbatStarts, shabbatCount, weekdayRate };
+}
+
 export function buildInsights(intervals) {
   const sum = summarize(intervals);
   const days = [...sum.daily.keys()].sort();
@@ -249,14 +269,25 @@ export function buildInsights(intervals) {
   const hourTotals = new Array(24).fill(0);
   intervals.forEach(i => { hourTotals[i.start.getHours()] += i.kwh; });
   const peakHours = hourTotals.map((v, h) => [h, v / days.length]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const appliances = detectAppliances(intervals, nightBaseKw);
+  const inShabbatStart = e => inShabbat(e.start);
+  const observance = detectShabbatObservance({
+    shabbatCount: usedShabbatot.length,
+    weekdayDays: weekday.length,
+    nightBaseKw,
+    shabbatNightBaseKw: shabbatNightKw,
+    shabbatStarts: appliances.filter(inShabbatStart).length,
+    weekdayStarts: appliances.filter(e => !inShabbatStart(e)).length,
+  });
   return {
     days: days.length, first: days[0], last: days[days.length - 1],
     coversFullYear: days.length >= 350,
     peakHours, weekdayAvg: avg(weekday), weekendAvg: avg(weekend), nightBaseKw,
     notableDays: notable,
     taozPeakKwh: peakKwh, taozPeakCostShare: totalCost ? peakCost / totalCost : 0,
-    appliances: detectAppliances(intervals, nightBaseKw),
+    appliances,
     shabbatCount: usedShabbatot.length,
+    observance,
     shabbatAvgKwh: usedShabbatot.length ? usedShabbatot.reduce((s, v) => s + v, 0) / usedShabbatot.length : 0,
     shabbatNightBaseKw: shabbatNightKw,
   };

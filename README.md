@@ -78,6 +78,7 @@ IEC/EA cross-checks, and supplier-site-verified plan data (2026-09-27).
   export skews summer/winter estimates. Use a 12-month export for decisions.
 - Annual costs include fixed fees (incl. VAT): identical for flat and supplier plans (single/three-phase via `--phase`); Taoz's fixed fee is higher and included explicitly.
 - The Shabbat split (Friday sunset to Saturday nightfall) uses fixed Jerusalem coordinates with a NOAA sunset approximation; times can differ from local calendars by a few minutes.
+- Shabbat-observance detection is statistical and opt-out by silence: it combines an elevated Shabbat-night base (plate/urn signature) with near-absence of appliance starts on Shabbat, shows "נראה שבמשק הבית שומרים שבת" only above its confidence threshold with the supporting numbers, stays neutral below it, and never concludes non-observance.
 
 ## Development
 

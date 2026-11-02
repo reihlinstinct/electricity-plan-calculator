@@ -34,6 +34,11 @@ Includes an insights block (observations only): coverage warning when the file
 spans under 350 days, peak hours, night baseline, notable days, Taoz peak share,
 and probabilistic appliance-signature detection (washing machine / oven /
 sustained high-power load, type unclear) with confidence and triggering pattern.
+When at least two Shabbat windows and five weekdays are present, a statistical
+Shabbat-observance estimate may appear: it fires only above its confidence
+threshold (elevated Shabbat-night base and/or near-absence of appliance starts
+on Shabbat), always with the supporting numbers, and never reports
+non-observance.
 .SH OPTIONS
 .TP
 .B --debug

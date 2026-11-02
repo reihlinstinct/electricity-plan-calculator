@@ -12,7 +12,7 @@ import statistics
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 
-from .analysis import Summary
+from .analysis import FRI_SAT, Summary
 from .parser import Interval
 from .tariffs import Catalog
 
@@ -28,6 +28,14 @@ OVEN_MIN_MIN, OVEN_MAX_MIN = 20, 150
 SUSTAINED_MIN_MIN = 45
 SUSTAINED_MAX_MIN = 360  # longer blocks are daytime activity, not one appliance
 SUSTAINED_MIN_MEAN_KW = 0.8
+
+# Shabbat-observance detection thresholds (statistics only, never a negative claim)
+OBS_MIN_SHABBATOT = 2        # need at least this many Shabbat windows
+OBS_MIN_WEEKDAYS = 5         # and this many weekdays for a meaningful rate
+OBS_BASE_MIN_DELTA_KW = 0.05 # absolute Shabbat-night elevation over weekday-night base
+OBS_BASE_RATIO = 1.3         # and at least 30% higher
+OBS_WEEKDAY_MIN_RATE = 0.15  # appliance starts per weekday: household uses appliances at all
+OBS_SHABBAT_MAX_SHARE = 0.25 # Shabbat start rate at most this share of the weekday rate
 
 
 def _israel_utc_offset(d: date) -> int:
@@ -78,6 +86,18 @@ class ApplianceEvent:
 
 
 @dataclass(frozen=True)
+class ObservanceReport:
+    """Statistical Shabbat-observance estimate; never a negative conclusion."""
+
+    confidence: str  # "high" (both signals) | "medium" (one)
+    signals: tuple[str, ...]  # subset of ("base", "appliances")
+    base_ratio: float  # shabbat_night_base / night_base (0 when night_base is 0)
+    shabbat_starts: int  # appliance events starting inside Shabbat windows
+    shabbat_count: int
+    weekday_rate: float  # appliance starts per weekday
+
+
+@dataclass(frozen=True)
 class InsightsReport:
     days: int
     first: date
@@ -94,6 +114,7 @@ class InsightsReport:
     shabbat_count: int  # distinct Shabbat windows overlapping the data
     shabbat_avg_kwh: float  # mean kWh per Shabbat window
     shabbat_night_base_kw: float  # mean 02:00-05:00 draw on Shabbat nights
+    observance: ObservanceReport | None = None  # None = below threshold, stay neutral
 
 
 def _interval_hours(intervals: list[Interval]) -> float:
@@ -103,6 +124,48 @@ def _interval_hours(intervals: list[Interval]) -> float:
         if 0 < (b.start - a.start).total_seconds() <= 3600
     ]
     return (statistics.median(deltas) if deltas else 900) / 3600
+
+
+def detect_shabbat_observance(
+    *,
+    shabbat_count: int,
+    weekday_days: int,
+    night_base_kw: float,
+    shabbat_night_base_kw: float,
+    shabbat_starts: int,
+    weekday_starts: int,
+) -> ObservanceReport | None:
+    """Estimate likely Shabbat observance from two local statistics.
+
+    Signal "base": Shabbat-night base elevated over weekday-night base
+    (plate/urn signature). Signal "appliances": near-absence of appliance
+    starts inside Shabbat windows while weekdays show normal use. Returns
+    None below the combined threshold - the caller stays neutral and never
+    reports non-observance.
+    """
+    if shabbat_count < OBS_MIN_SHABBATOT or weekday_days < OBS_MIN_WEEKDAYS:
+        return None
+    signals: list[str] = []
+    base_ratio = shabbat_night_base_kw / night_base_kw if night_base_kw > 0 else 0.0
+    if (
+        night_base_kw > 0
+        and shabbat_night_base_kw - night_base_kw >= OBS_BASE_MIN_DELTA_KW
+        and base_ratio >= OBS_BASE_RATIO
+    ):
+        signals.append("base")
+    weekday_rate = weekday_starts / weekday_days
+    if weekday_rate >= OBS_WEEKDAY_MIN_RATE and shabbat_starts / shabbat_count <= OBS_SHABBAT_MAX_SHARE * weekday_rate:
+        signals.append("appliances")
+    if not signals:
+        return None
+    return ObservanceReport(
+        confidence="high" if len(signals) == 2 else "medium",
+        signals=tuple(signals),
+        base_ratio=base_ratio,
+        shabbat_starts=shabbat_starts,
+        shabbat_count=shabbat_count,
+        weekday_rate=weekday_rate,
+    )
 
 
 def detect_appliances(intervals: list[Interval], base_kw: float) -> tuple[ApplianceEvent, ...]:
@@ -215,6 +278,18 @@ def build_insights(
     peak_cost = sum(i.kwh * catalog.taoz.rate(i.start) for i in ordered if catalog.taoz.is_peak(i.start))
     total_cost = sum(i.kwh * catalog.taoz.rate(i.start) for i in ordered)
     appliances = detect_appliances(ordered, base_kw)
+    shabbat_starts = sum(1 for a in appliances if in_shabbat(a.start))
+    weekday_days = sum(1 for d in days if d.weekday() not in FRI_SAT)
+    observance = detect_shabbat_observance(
+        shabbat_count=len(shabbat_kwh),
+        weekday_days=weekday_days,
+        night_base_kw=base_kw,
+        shabbat_night_base_kw=(
+            statistics.mean(shabbat_night) / hours if shabbat_night else 0.0
+        ),
+        shabbat_starts=shabbat_starts,
+        weekday_starts=len(appliances) - shabbat_starts,
+    )
     log.debug("insights: %d days, %d appliance candidates", len(days), len(appliances))
     return InsightsReport(
         days=len(days),
@@ -232,4 +307,5 @@ def build_insights(
         shabbat_count=len(shabbat_kwh),
         shabbat_avg_kwh=statistics.mean(shabbat_kwh.values()) if shabbat_kwh else 0.0,
         shabbat_night_base_kw=(statistics.mean(shabbat_night) / hours) if shabbat_night else 0.0,
+        observance=observance,
     )

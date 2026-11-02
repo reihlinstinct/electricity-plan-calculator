@@ -154,6 +154,19 @@ $('go').addEventListener('click', async () => {
           `עומס קבוע (למשל פלטה/מיחם) הוא הסבר אפשרי, לא ודאי`;
       });
     }
+    if (ins.observance) {
+      const ob = ins.observance;
+      const pct = Math.round((ob.baseRatio - 1) * 100);
+      const baseTxt = `צריכת ליל שבת גבוהה ב-${pct}% מליל חול`;
+      const applTxt = `${ob.shabbatStarts} הפעלות מכשירים ב-${ob.shabbatCount} שבתות (מול ${ob.weekdayRate.toFixed(1)} ליום חול בממוצע)`;
+      const detail = ob.confidence === 'high' ? `${baseTxt} ו${applTxt}`
+        : ob.signals.includes('base') ? `${baseTxt} - עומס קבוע כמו פלטה/מיחם הוא הסבר אפשרי` : applTxt;
+      const level = ob.confidence === 'high' ? 'גבוה' : 'בינוני';
+      const lead = ob.confidence === 'high' ? 'נראה' : 'ייתכן';
+      addP(p => {
+        p.textContent = `${lead} שבמשק הבית שומרים שבת (ביטחון ${level}): ${detail}. תצפית סטטיסטית מהקובץ בלבד, לא ודאות`;
+      });
+    }
     if (ins.notableDays.length) {
       addP(p => { p.textContent = `ימים עם צריכה חריגה: ${ins.notableDays.map(fmtD).join(', ')}`; });
     }

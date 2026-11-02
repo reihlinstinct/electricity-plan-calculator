@@ -68,3 +68,16 @@ costs, API URLs. Never logs customer metadata (name/address/contract/meter).
   single-season export skews the estimate (reported as a caveat in output).
 - Israeli holidays are approximated as Fri/Sat unless supplied in
   `data/tariffs.json` (`holidays` list).
+
+## Shabbat-observance detection (issue #38)
+
+Statistical only, local, never negative. Two signals: (1) Shabbat-night
+02:00-05:00 base elevated >=0.05 kW and >=1.3x over the weekday-night base
+(plate/urn signature); (2) appliance-start rate inside Shabbat windows <= 25%
+of the weekday rate (with a weekday rate >=0.15/day so absence is meaningful).
+Both signals -> "high", one -> "medium"; below that the report stays neutral.
+Needs >=2 Shabbat windows and >=5 weekdays. The wording is always positive-
+leaning with the supporting numbers ("נראה/ייתכן שבמשק הבית שומרים שבת") and
+there is no code path that concludes non-observance. Python and the JS port
+share the same constants and tests.
+
