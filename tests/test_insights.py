@@ -103,3 +103,40 @@ def test_format_insights_observational_language():
     assert "מכונת כביסה אפשרית" in text
     assert "יום שני" in text
     assert "עומס בסיס" in text
+
+
+def test_sunset_approximation_reasonable():
+    from iec_calc.insights import sunset_local_minutes
+    # Jerusalem mid-October: ~18:10 IDT; mid-January ~16:55; mid-July ~19:45
+    assert 17.8 * 60 < sunset_local_minutes(date(2026, 10, 15), 31.78, 35.21) < 18.5 * 60
+    assert 16.5 * 60 < sunset_local_minutes(date(2026, 1, 15), 31.78, 35.21) < 17.3 * 60
+    assert 19.3 * 60 < sunset_local_minutes(date(2026, 7, 15), 31.78, 35.21) < 20.1 * 60
+
+
+def test_shabbat_baseline_separation():
+    from iec_calc.insights import build_insights
+    cat = load_catalog()
+    ivs = []
+    d0 = date(2026, 10, 5)  # Monday
+    for i in range(14):
+        d = d0 + timedelta(days=i)
+        base = 0.45 if d.weekday() == 5 or (d.weekday() == 4) else 0.2  # Shabbat+Friday raised
+        ivs += _day_intervals(d, base)
+    s = summarize(ivs)
+    rep = build_insights(ivs, s, cat)
+    assert rep.night_base_kw < 0.25  # weekday nights only
+    assert rep.shabbat_night_base_kw > 0.4
+    assert rep.shabbat_count >= 1
+
+
+def test_no_appliance_false_positive_from_shabbat_plate():
+    from iec_calc.insights import build_insights
+    cat = load_catalog()
+    ivs = []
+    d0 = date(2026, 10, 5)
+    for i in range(14):
+        d = d0 + timedelta(days=i)
+        ivs += _day_intervals(d, 0.45 if d.weekday() == 5 else 0.2)
+    s = summarize(ivs)
+    rep = build_insights(ivs, s, cat)
+    assert rep.appliances == ()

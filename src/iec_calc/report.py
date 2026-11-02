@@ -161,6 +161,12 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
         f"עומס בסיס לילי: {rep.night_base_kw * 1000:.0f} וואט"
         f" (כ-{base_annual_nis:,.0f} ₪ לשנה אם קבוע)"
     )
+    if rep.shabbat_count:
+        lines.append(
+            f'שבת (שקיעת ו\' עד צאת השבת, {rep.shabbat_count} שבתות): ממוצע {rep.shabbat_avg_kwh:.1f} קוט"ש '
+            f"לשבת; צריכת לילה {rep.shabbat_night_base_kw * 1000:.0f} וואט מול "
+            f"{rep.night_base_kw * 1000:.0f} בחול - עומס קבוע (למשל פלטה/מיחם) הוא הסבר אפשרי, לא ודאי"
+        )
     if rep.notable_days:
         days = ", ".join(f"{d:%d.%m}" for d in rep.notable_days)
         lines.append(f"ימים עם צריכה חריגה: {days}")

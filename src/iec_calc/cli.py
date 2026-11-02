@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
     if args.command == "report":
-        ins = insights.build_insights(intervals, summary, catalog)
+        ins = insights.build_insights(intervals, summary, catalog, lat=args.lat, lon=args.lon)
         out.append(report.format_insights(ins, catalog.flat_rate))
     print("\n\n".join(out))
     return 0

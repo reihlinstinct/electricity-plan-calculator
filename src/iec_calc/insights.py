@@ -7,9 +7,10 @@ from 15-minute load signatures, with the triggering pattern spelled out.
 from __future__ import annotations
 
 import logging
+import math
 import statistics
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 
 from .analysis import Summary
 from .parser import Interval
@@ -27,6 +28,43 @@ OVEN_MIN_MIN, OVEN_MAX_MIN = 20, 150
 SUSTAINED_MIN_MIN = 45
 SUSTAINED_MAX_MIN = 360  # longer blocks are daytime activity, not one appliance
 SUSTAINED_MIN_MEAN_KW = 0.8
+
+
+def _israel_utc_offset(d: date) -> int:
+    """+3 during IDT (Friday before the last Sunday of March .. last Sunday of October), else +2."""
+
+    def last_sunday(month: int) -> date:
+        d_ = date(d.year, month + 1, 1) - timedelta(days=1) if month < 12 else date(d.year, 12, 31)
+        while d_.weekday() != 6:
+            d_ -= timedelta(days=1)
+        return d_
+
+    end = last_sunday(10)
+    start = last_sunday(3) - timedelta(days=2)  # the Friday before
+    return 3 if start <= d < end else 2
+
+
+def sunset_local_minutes(d: date, lat: float, lon: float) -> float:
+    """NOAA solar approximation of sunset, in local clock minutes. No network."""
+    g = 2 * math.pi / 365 * (d.timetuple().tm_yday - 1)
+    eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
+                       - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
+    decl = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g) - 0.006758 * math.cos(2 * g)
+            + 0.000907 * math.sin(2 * g) - 0.002697 * math.cos(3 * g) + 0.00148 * math.sin(3 * g))
+    latr = math.radians(lat)
+    cos_ha = (math.cos(math.radians(90.833)) / (math.cos(latr) * math.cos(decl))
+              - math.tan(latr) * math.tan(decl))
+    ha = math.degrees(math.acos(min(1.0, max(-1.0, cos_ha))))
+    utc = 720 - 4 * (lon - ha) - eqtime  # solar noon + hour angle
+    return utc + 60 * _israel_utc_offset(d)
+
+
+def shabbat_window(saturday: date, lat: float, lon: float) -> tuple[datetime, datetime]:
+    """Friday sunset to Saturday nightfall (~42 min after sunset)."""
+    friday = saturday - timedelta(days=1)
+    start = datetime.combine(friday, time()) + timedelta(minutes=sunset_local_minutes(friday, lat, lon))
+    end = datetime.combine(saturday, time()) + timedelta(minutes=sunset_local_minutes(saturday, lat, lon) + 42)
+    return start, end
 
 
 @dataclass(frozen=True)
@@ -53,6 +91,9 @@ class InsightsReport:
     taoz_peak_kwh: float
     taoz_peak_cost_share: float
     appliances: tuple[ApplianceEvent, ...]
+    shabbat_count: int  # distinct Shabbat windows overlapping the data
+    shabbat_avg_kwh: float  # mean kWh per Shabbat window
+    shabbat_night_base_kw: float  # mean 02:00-05:00 draw on Shabbat nights
 
 
 def _interval_hours(intervals: list[Interval]) -> float:
@@ -135,15 +176,44 @@ def detect_appliances(intervals: list[Interval], base_kw: float) -> tuple[Applia
     return tuple(events)
 
 
-def build_insights(intervals: list[Interval], summary: Summary, catalog: Catalog) -> InsightsReport:
-    """Descriptive observations over the file; no weather, no inference beyond the CSV."""
+def build_insights(
+    intervals: list[Interval],
+    summary: Summary,
+    catalog: Catalog,
+    lat: float = 31.78,
+    lon: float = 35.21,
+) -> InsightsReport:
+    """Descriptive observations over the file; no weather, no inference beyond the CSV.
+
+    Shabbat-aware: the night baseline and appliance detection use non-Shabbat
+    nights only (a plate/urn legitimately raises the Shabbat baseline), and
+    Shabbat (Friday sunset to Saturday nightfall) gets its own averages.
+    """
     ordered = sorted(intervals, key=lambda i: i.start)
     days = sorted(summary.daily)
+    saturdays = sorted({(d + timedelta(days=(5 - d.weekday()) % 7)) for d in days})
+    windows = [shabbat_window(sat, lat, lon) for sat in saturdays]
+
+    def in_shabbat(dt: datetime) -> bool:
+        return any(a <= dt < b for a, b in windows)
+
+    non_shabbat_night = [
+        i.kwh for i in ordered if 2 <= i.start.hour < 5 and not in_shabbat(i.start)
+    ]
+    shabbat_night = [i.kwh for i in ordered if 2 <= i.start.hour < 5 and in_shabbat(i.start)]
+    hours = _interval_hours(ordered)
+    base_kw = statistics.mean(non_shabbat_night) / hours if non_shabbat_night else summary.base_load_kw
+    shabbat_kwh: dict[int, float] = {}
+    for i in ordered:
+        for n, (a, b) in enumerate(windows):
+            if a <= i.start < b:
+                shabbat_kwh[n] = shabbat_kwh.get(n, 0.0) + i.kwh
+                break
     peak_hours = tuple(sorted(enumerate(summary.hourly), key=lambda kv: kv[1], reverse=True)[:3])
     peak_kwh = sum(i.kwh for i in ordered if catalog.taoz.is_peak(i.start))
     peak_cost = sum(i.kwh * catalog.taoz.rate(i.start) for i in ordered if catalog.taoz.is_peak(i.start))
     total_cost = sum(i.kwh * catalog.taoz.rate(i.start) for i in ordered)
-    appliances = detect_appliances(ordered, summary.base_load_kw)
+    appliances = detect_appliances(ordered, base_kw)
     log.debug("insights: %d days, %d appliance candidates", len(days), len(appliances))
     return InsightsReport(
         days=len(days),
@@ -153,9 +223,12 @@ def build_insights(intervals: list[Interval], summary: Summary, catalog: Catalog
         peak_hours=peak_hours,
         weekday_avg=summary.weekday_avg,
         weekend_avg=summary.fri_sat_avg,
-        night_base_kw=summary.base_load_kw,
+        night_base_kw=base_kw,
         notable_days=summary.anomaly_days,
         taoz_peak_kwh=peak_kwh,
         taoz_peak_cost_share=peak_cost / total_cost if total_cost else 0.0,
         appliances=appliances,
+        shabbat_count=len(shabbat_kwh),
+        shabbat_avg_kwh=statistics.mean(shabbat_kwh.values()) if shabbat_kwh else 0.0,
+        shabbat_night_base_kw=(statistics.mean(shabbat_night) / hours) if shabbat_night else 0.0,
     )
