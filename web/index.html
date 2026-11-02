@@ -47,7 +47,7 @@
 <main>
   <div class="card">
     <div class="privacy">🔒 הקובץ לא נשלח לשום שרת. כל החישוב מתבצע בדפדפן שלך בלבד.
-      מקור התעריפים: נתונים מפורסמים שאומתו מול חברת החשמל ואתרי השוואה (מצורף קישור במקור). הדף לא פונה לשום שירות חיצוני.</div>
+      מקור התעריפים: נתונים מפורסמים שאומתו מול חברת החשמל ואתרי השוואה (מצורף קישור במקור). הדף עצמו לא שולח שום בקשה לרשת; הקישור לקוד המקור למטה הוא קישור רגיל ושום דבר לא נטען ממנו עד שלוחצים עליו.</div>
     <p>
       <label>קובץ ייצוא צריכה של חברת החשמל (CSV):
         <input type="file" id="csv" accept=".csv,text/csv"></label>
@@ -94,6 +94,9 @@
     מקורות תעריפים: <span id="sources"></span>.
   </div>
 </main>
+<footer class="muted" style="text-align:center;padding:1rem;">
+  קוד מקור פתוח: <a href="https://github.com/reihlinstinct/electricity-plan-calculator">github.com/reihlinstinct/electricity-plan-calculator</a>
+</footer>
 <script type="module" src="app.js"></script>
 </body>
 </html>

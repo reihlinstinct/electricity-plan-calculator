@@ -114,6 +114,11 @@ function setBlock(ivs, startIdx, kws) {
   check('icon: favicon link', html.includes('rel="icon"') && html.includes('favicon.png'));
   check('icon: apple-touch-icon link', html.includes('rel="apple-touch-icon"'));
 
+  // repo footer link (issue #28): plain <a>, and it is the ONLY external URL reference
+  check('footer: repo link', html.includes('<a href="https://github.com/reihlinstinct/electricity-plan-calculator">'));
+  const extRefs = html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || [];
+  check('zero external requests: only the repo link is external', extRefs.length === 1 && extRefs[0].includes('github.com/reihlinstinct/electricity-plan-calculator'));
+
   const pngSize = path => {
     const b = readFileSync(path);
     check(`${path} is a PNG`, b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47);
