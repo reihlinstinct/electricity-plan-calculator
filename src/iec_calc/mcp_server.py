@@ -103,7 +103,11 @@ def _text_result(text: str, is_error: bool = False) -> dict:
     return {"content": [{"type": "text", "text": text}], "isError": is_error}
 
 
-def _parse_args(arguments: dict) -> tuple[list, dict]:
+_BOOL_ARGS = ("weather", "gas", "hot", "smart_meter")
+_NUM_ARGS = ("lat", "lon")
+
+
+def _parse_args(arguments: dict) -> tuple[str, dict]:
     """Validate and normalize the shared path argument."""
     path = arguments.get("path")
     if not isinstance(path, str) or not path:
@@ -111,8 +115,24 @@ def _parse_args(arguments: dict) -> tuple[list, dict]:
     return path, arguments
 
 
+def _validate_args(arguments: dict) -> None:
+    """Reject wrong-typed optional arguments before they reach the engine."""
+    for key in _BOOL_ARGS:
+        if key in arguments and not isinstance(arguments[key], bool):
+            raise ValueError(f"argument {key!r} must be a boolean")
+    for key in _NUM_ARGS:
+        value = arguments.get(key)
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
+            raise ValueError(f"argument {key!r} must be a number")
+    if "phase" in arguments and arguments["phase"] not in ("single", "three"):
+        raise ValueError("argument 'phase' must be 'single' or 'three'")
+    if "current_plan" in arguments and not isinstance(arguments["current_plan"], str):
+        raise ValueError("argument 'current_plan' must be a string")
+
+
 def _call_tool(name: str, arguments: dict) -> dict:
     path, args = _parse_args(arguments or {})
+    _validate_args(args)
     intervals = csv_parser.parse(Path(path))
     summary = analysis.summarize(intervals)
     catalog = tariffs.load_catalog(None)
@@ -168,6 +188,9 @@ def _call_tool(name: str, arguments: dict) -> dict:
 
 def handle(message: dict, out) -> None:
     """Handle one parsed JSON-RPC message; notifications get no response."""
+    if not isinstance(message, dict):
+        out.write(json.dumps(_error(-32600, "invalid request", None)) + "\n")
+        return
     msg_id = message.get("id")
     method = message.get("method")
     if not isinstance(method, str):
@@ -195,14 +218,19 @@ def handle(message: dict, out) -> None:
         }, ensure_ascii=False) + "\n")
         return
     if method == "tools/call":
-        params = message.get("params") or {}
+        params = message.get("params")
+        arguments = params.get("arguments") if isinstance(params, dict) else None
+        if not isinstance(params, dict) or (arguments is not None and not isinstance(arguments, dict)):
+            if msg_id is not None:
+                out.write(json.dumps(_error(-32602, "invalid params", msg_id)) + "\n")
+            return
         try:
-            result = _call_tool(params.get("name", ""), params.get("arguments"))
+            result = _call_tool(params.get("name", ""), arguments or {})
             out.write(json.dumps({
                 "jsonrpc": "2.0", "id": msg_id, "result": result,
             }, ensure_ascii=False) + "\n")
-        except (OSError, ValueError) as exc:
-            log.debug("tools/call failed: %s", exc)
+        except Exception as exc:  # never let one bad call kill the stdio loop
+            log.debug("tools/call failed: %s", type(exc).__name__)
             out.write(json.dumps({
                 "jsonrpc": "2.0", "id": msg_id,
                 "result": _text_result(f"error: {exc}", is_error=True),
@@ -228,6 +256,10 @@ def main() -> int:
             message = json.loads(line)
         except json.JSONDecodeError:
             sys.stdout.write(json.dumps(_error(-32700, "parse error", None)) + "\n")
+            sys.stdout.flush()
+            continue
+        if not isinstance(message, dict):
+            sys.stdout.write(json.dumps(_error(-32600, "invalid request", None)) + "\n")
             sys.stdout.flush()
             continue
         handle(message, sys.stdout)

@@ -153,3 +153,45 @@ def test_main_loop(monkeypatch, capsys):
     out = capsys.readouterr().out.splitlines()
     assert json.loads(out[0])["error"]["code"] == -32700
     assert json.loads(out[1])["result"] == {}
+
+
+def test_non_object_json_line(monkeypatch, capsys):
+    lines = iter(["[1, 2]", json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping"}), ""])
+    monkeypatch.setattr("sys.stdin", lines)
+    assert mcp_server.main() == 0
+    out = capsys.readouterr().out.splitlines()
+    assert json.loads(out[0])["error"]["code"] == -32600
+    assert json.loads(out[1])["result"] == {}
+
+
+def test_wrong_typed_arguments():
+    bad = (
+        {"path": str(SAMPLE), "lat": "a"},
+        {"path": str(SAMPLE), "lat": True},
+        {"path": str(SAMPLE), "weather": 1},
+        {"path": str(SAMPLE), "gas": "yes"},
+        {"path": str(SAMPLE), "phase": 5},
+        {"path": str(SAMPLE), "phase": "quad"},
+        {"path": str(SAMPLE), "current_plan": 3},
+    )
+    for args in bad:
+        assert call_tool("analyze_csv", args)["isError"] is True
+
+
+def test_non_dict_arguments_and_params():
+    res = call({"jsonrpc": "2.0", "id": 8, "method": "tools/call",
+                "params": {"name": "analyze_csv", "arguments": "x"}})
+    assert res[0]["error"]["code"] == -32602
+    res = call({"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": "nope"})
+    assert res[0]["error"]["code"] == -32602
+
+
+def test_stays_alive_after_error():
+    out = io.StringIO()
+    mcp_server.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                       "params": {"name": "analyze_csv",
+                                  "arguments": {"path": str(SAMPLE), "lat": "a"}}}, out)
+    mcp_server.handle({"jsonrpc": "2.0", "id": 2, "method": "ping"}, out)
+    lines = out.getvalue().splitlines()
+    assert json.loads(lines[0])["result"]["isError"] is True
+    assert json.loads(lines[1])["result"] == {}
