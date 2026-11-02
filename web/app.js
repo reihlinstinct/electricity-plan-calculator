@@ -1,5 +1,5 @@
 import { TARIFFS } from './tariffs-data.js';
-import { parseCsv, summarize, rankPlans } from './calc.js';
+import { parseCsv, summarize, rankPlans, buildInsights } from './calc.js';
 
 const $ = id => document.getElementById(id);
 const nis = v => `${Math.round(v).toLocaleString('he-IL')} ₪`;
@@ -112,6 +112,44 @@ $('go').addEventListener('click', async () => {
       const p = document.createElement('p'); p.appendChild(b); note.appendChild(p);
     }
     $('plansNote').textContent = 'בתעו"ז התשלום הקבוע גבוה יותר. מסלולי שעות דורשים מונה חכם.';
+
+    // insights: observations only, from the CSV alone
+    const ins = buildInsights(intervals);
+    const HEDAY = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+    const fmtD = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7);
+    const baseAnnual = ins.nightBaseKw * 24 * 365 * TARIFFS.regulated.flat_rate_per_kwh;
+    $('insightsCard').style.display = '';
+    $('insightsText').innerHTML =
+      (ins.coversFullYear
+        ? `<p>כיסוי: ${ins.days} ימים (${fmtD(ins.first)} - ${fmtD(ins.last)}) - שנה מלאה.</p>`
+        : `<p><b>כיסוי: ${ins.days} ימים בלבד.</b> השוואה עונתית (חורף/קיץ) דורשת ייצוא של שנה מלאה; אין להסיק מהקובץ על עונות שאינן בו.</p>`) +
+      `<p>שעות שיא ממוצעות: ${ins.peakHours.map(([h, v]) => `${String(h).padStart(2, '0')}:00 (${v.toFixed(2)})`).join(', ')} קוט"ש · ` +
+      `יום חול ${ins.weekdayAvg.toFixed(2)} | שישי-שבת ${ins.weekendAvg.toFixed(2)} קוט"ש · ` +
+      `עומס בסיס לילי: ${Math.round(ins.nightBaseKw * 1000)} וואט (כ-${Math.round(baseAnnual).toLocaleString('he-IL')} ₪ לשנה אם קבוע)</p>` +
+      (ins.notableDays.length ? `<p>ימים עם צריכה חריגה: ${ins.notableDays.map(fmtD).join(', ')}</p>` : '') +
+      `<p>חלון השיא של תעו"ז: ${ins.taozPeakKwh.toFixed(0)} קוט"ש (${(ins.taozPeakCostShare * 100).toFixed(0)}% מהעלות אם היית בתעו"ז)</p>`;
+    const KINDS = { washing_machine: 'מכונת כביסה אפשרית', oven: 'תנור אפייה אפשרי',
+      sustained_high: 'עומס גבוה ממושך (ייתכן מזגן/חימום/דוד - לא ניתן להבחין מהצריכה בלבד)' };
+    const CONF = { high: 'ביטחון גבוה', medium: 'ביטחון בינוני', low: 'ביטחון נמוך' };
+    const fmtT = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (ins.appliances.length) {
+      let html = '<p><b>זיהוי מכשירים (הערכה הסתברותית מחתימת העומס בלבד, לא ודאות):</b></p><ul>';
+      for (const [kind, label] of Object.entries(KINDS)) {
+        const evs = ins.appliances.filter(e => e.kind === kind);
+        if (!evs.length) continue;
+        const confs = {};
+        evs.forEach(e => { confs[e.confidence] = (confs[e.confidence] || 0) + 1; });
+        html += `<li>${label}: ${evs.length} אירועים (${Object.entries(confs).map(([c, n]) => `${n} ב${CONF[c]}`).join(', ')}).<ul>`;
+        for (const e of evs.slice().sort((x, y) => y.excessKwh - x.excessKwh).slice(0, 2)) {
+          html += `<li>למשל יום ${HEDAY[e.start.getDay()]} ${String(e.start.getDate()).padStart(2, '0')}.${String(e.start.getMonth() + 1).padStart(2, '0')} ` +
+            `${fmtT(e.start)}-${fmtT(e.end)} (${e.excessKwh.toFixed(1)} קוט"ש, ${CONF[e.confidence]}): ${e.pattern}</li>`;
+        }
+        html += '</ul></li>';
+      }
+      $('applianceText').innerHTML = html + '</ul>';
+    } else {
+      $('applianceText').innerHTML = '';
+    }
 
     $('status').textContent = '';
   } catch (e) {

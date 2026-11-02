@@ -44,7 +44,7 @@ export function summarize(intervals) {
 }
 
 // --- Taoz rate ---
-export function taozRate(when, taoz) {
+export function taozIsPeak(when, taoz) {
   const m = when.getMonth() + 1;
   const season = Object.entries(taoz.seasons).find(([, s]) => s.months.includes(m));
   if (!season) throw new Error('no taoz season for month ' + m);
@@ -60,7 +60,14 @@ export function taozRate(when, taoz) {
   peak = peak && mins >= sh * 60 + sm && mins < eh * 60 + em;
   if (peak && season[0] !== 'winter' &&
       ((taoz.holidays || []).includes(dateStr) || (taoz.holiday_eves || []).includes(dateStr))) peak = false;
-  return peak ? s.rates.peak : s.rates.off_peak;
+  return peak;
+}
+
+export function taozRate(when, taoz) {
+  const m = when.getMonth() + 1;
+  const season = Object.entries(taoz.seasons).find(([, s]) => s.months.includes(m));
+  if (!season) throw new Error('no taoz season for month ' + m);
+  return taozIsPeak(when, taoz) ? season[1].rates.peak : season[1].rates.off_peak;
 }
 
 // --- plan costs ---
@@ -103,4 +110,80 @@ export function rankPlans(intervals, opts = {}) {
   }
   out.sort((a, b) => a.annual - b.annual);
   return out;
+}
+
+// --- insights (descriptive, CSV-only; appliances are probabilistic load signatures) ---
+const MIN_EXCESS_KW = 0.15, HIGH_KW = 1.2;
+const WASHER_MIN = 45, WASHER_MAX = 180, OVEN_MIN = 20, OVEN_MAX = 150;
+const SUST_MIN = 45, SUST_MAX = 360, SUST_MIN_MEAN = 0.8;
+
+export function detectAppliances(intervals, baseKw) {
+  const hours = 0.25;
+  const ex = intervals.map(i => i.kwh / hours - baseKw);
+  const blocks = [];
+  let i = 0;
+  while (i < ex.length) {
+    if (ex[i] > MIN_EXCESS_KW) {
+      let j = i;
+      while (j + 1 < ex.length && (ex[j + 1] > MIN_EXCESS_KW || (j + 2 < ex.length && ex[j + 2] > MIN_EXCESS_KW)))
+        j += ex[j + 1] > MIN_EXCESS_KW ? 1 : 2;
+      blocks.push([i, j]);
+      i = j + 1;
+    } else i++;
+  }
+  const events = [];
+  for (const [a, b] of blocks) {
+    const exs = ex.slice(a, b + 1);
+    const durMin = exs.length * hours * 60;
+    const energy = exs.reduce((s, e) => s + e * hours, 0);
+    const start = intervals[a].start, end = intervals[b].start;
+    let run = 0, maxConsecHi = 0;
+    for (const e of exs) { run = e >= HIGH_KW ? run + 1 : 0; maxConsecHi = Math.max(maxConsecHi, run); }
+    let transitions = 0;
+    for (let k = 0; k + 1 < exs.length; k++)
+      if ((exs[k] >= HIGH_KW) !== (exs[k + 1] >= HIGH_KW) && Math.min(exs[k], exs[k + 1]) < 0.6) transitions++;
+    const maxEx = Math.max(...exs), meanEx = exs.reduce((s, e) => s + e, 0) / exs.length;
+    if (durMin >= WASHER_MIN && durMin <= WASHER_MAX && maxConsecHi >= 2 &&
+        exs.filter(e => e > MIN_EXCESS_KW && e < HIGH_KW).length >= 3 && energy >= 0.4 && energy <= 2.5) {
+      events.push({ kind: 'washing_machine', confidence: maxEx >= 1.5 && energy >= 0.6 ? 'high' : 'medium',
+        start, end, excessKwh: Math.round(energy * 100) / 100,
+        pattern: `בלוק ${Math.round(durMin)} דק' עם ${maxConsecHi} רבעי-שעה רצופים ~${maxEx.toFixed(1)} קילוואט (חימום מים) + פעילות מתונה (מנוע)` });
+    } else if (durMin >= OVEN_MIN && durMin <= OVEN_MAX && maxEx >= 1.5 && transitions >= 3) {
+      events.push({ kind: 'oven', confidence: 'medium', start, end, excessKwh: Math.round(energy * 100) / 100,
+        pattern: `בלוק ${Math.round(durMin)} דק' עם ${transitions} מעברי דלוק/כבוי (תרמוסטט) ושיא ~${maxEx.toFixed(1)} קילוואט` });
+    } else if (durMin >= SUST_MIN && durMin <= SUST_MAX && meanEx >= SUST_MIN_MEAN) {
+      events.push({ kind: 'sustained_high', confidence: 'low', start, end, excessKwh: Math.round(energy * 100) / 100,
+        pattern: `עומס רציף ~${meanEx.toFixed(1)} קילוואט למשך ${Math.round(durMin)} דק'` });
+    }
+  }
+  return events;
+}
+
+export function buildInsights(intervals) {
+  const sum = summarize(intervals);
+  const days = [...sum.daily.keys()].sort();
+  const values = [...sum.daily.values()];
+  const mean = values.reduce((s, v) => s + v, 0) / values.length;
+  const std = Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length);
+  const notable = days.filter(d => sum.daily.get(d) > mean + 2 * std);
+  const weekday = days.filter(d => !FRI_SAT.has(new Date(d + 'T12:00:00').getDay()));
+  const weekend = days.filter(d => FRI_SAT.has(new Date(d + 'T12:00:00').getDay()));
+  const avg = list => list.reduce((s, d) => s + sum.daily.get(d), 0) / (list.length || 1);
+  const baseIvs = intervals.filter(i => i.start.getHours() >= 2 && i.start.getHours() < 5);
+  const nightBaseKw = baseIvs.length ? baseIvs.reduce((s, i) => s + i.kwh, 0) / baseIvs.length / 0.25 : 0;
+  let peakKwh = 0, peakCost = 0, totalCost = 0;
+  for (const i of intervals) {
+    const r = taozRate(i.start, TARIFFS.taoz);
+    totalCost += i.kwh * r;
+    if (taozIsPeak(i.start, TARIFFS.taoz)) { peakKwh += i.kwh; peakCost += i.kwh * r; }
+  }
+  const peakHours = sum.hourlyAvg.map((v, h) => [h, v]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return {
+    days: days.length, first: days[0], last: days[days.length - 1],
+    coversFullYear: days.length >= 350,
+    peakHours, weekdayAvg: avg(weekday), weekendAvg: avg(weekend), nightBaseKw,
+    notableDays: notable,
+    taozPeakKwh: peakKwh, taozPeakCostShare: totalCost ? peakCost / totalCost : 0,
+    appliances: detectAppliances(intervals, nightBaseKw),
+  };
 }
