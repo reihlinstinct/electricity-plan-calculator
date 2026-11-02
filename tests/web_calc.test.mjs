@@ -118,6 +118,17 @@ function setBlock(ivs, startIdx, kws) {
   check('footer: repo link', html.includes('<a href="https://github.com/reihlinstinct/electricity-plan-calculator">'));
   const extRefs = html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || [];
   check('zero external requests: only the repo link is external', extRefs.length === 1 && extRefs[0].includes('github.com/reihlinstinct/electricity-plan-calculator'));
+  // CSV export guide (issue #32): web page + images + link from the upload box
+  check('guide: linked near upload', html.includes('<a href="guide.html">'));
+  const guide = readFileSync(join(root, 'web', 'guide.html'), 'utf-8');
+  check('guide: rtl hebrew page', guide.includes('dir="rtl"') && guide.includes('lang="he"'));
+  const guideImgs = [...guide.matchAll(/<img src="([^"]+)"/g)].map(m => m[1]);
+  check('guide: six step images', guideImgs.length === 6);
+  check('guide: images exist and are local', guideImgs.every(p => {
+    if (p.startsWith('http')) return false;
+    try { readFileSync(join(root, 'web', p)); return true; } catch { return false; }
+  }));
+  check('guide: no external resource loads', !(guide.match(/src="https?:/) || guide.match('<link[^>]+href="https?:')));
 
   const pngSize = path => {
     const b = readFileSync(path);

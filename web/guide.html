@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>איך שולפים את קובץ הצריכה מחברת החשמל</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg:#f7f7f9; --card:#fff; --ink:#1a1a2e; --accent:#0b6bcb; --muted:#666; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; }
+  header { background:var(--accent); color:#fff; padding:1rem 1.5rem; }
+  header h1 { margin:0; font-size:1.2rem; }
+  main { max-width:760px; margin:0 auto; padding:1rem; display:grid; gap:1rem; }
+  .card { background:var(--card); border-radius:12px; padding:1rem 1.25rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  img { max-width:100%; border-radius:8px; border:1px solid #e3e3e8; display:block; margin:.5rem 0; }
+  h2 { font-size:1.05rem; margin:.2rem 0; }
+  p, li { line-height:1.6; }
+  .muted { color:var(--muted); font-size:.85rem; }
+  .back { display:inline-block; margin-top:.5rem; }
+</style>
+</head>
+<body>
+<header><h1>איך שולפים את קובץ נתוני הצריכה (CSV) מאתר חברת החשמל</h1></header>
+<main>
+  <div class="card">
+    <p>מדריך קצר, צעד אחר צעד, להורדת קובץ הצריכה ברמת רבע שעה - זה הקובץ שמעלים למחשבון. נבדק מול האתר בנובמבר 2026.</p>
+    <p><b>מה צריך לפני שמתחילים:</b> מונה חכם (בלעדיו אין נתוני צריכה לפי שעות) · מספר תעודת זהות של בעל החשבון · גישה לטלפון או למייל הרשומים בחשבון, לקבלת קוד חד-פעמי. כל התהליך לוקח כמה דקות.</p>
+  </div>
+
+  <div class="card">
+    <h2>1. נכנסים לאתר חברת החשמל</h2>
+    <p>פותחים את <a href="https://www.iec.co.il">iec.co.il</a>. בשורת "פעולות נפוצות" לוחצים על "כל הפעולות".</p>
+    <img src="../docs/images/step1.png" alt="שורת פעולות נפוצות, כל הפעולות מסומן" loading="lazy">
+  </div>
+
+  <div class="card">
+    <h2>2. בוחרים "מונים וצריכה"</h2>
+    <p>בעמוד "כל הפעולות" לוחצים על האריח "מונים וצריכה".</p>
+    <img src="../docs/images/step2.png" alt="עמוד כל הפעולות, מונים וצריכה מסומן" loading="lazy">
+  </div>
+
+  <div class="card">
+    <h2>3. בוחרים "מצב הפעילות במונה"</h2>
+    <p>בתפריט "מונים וצריכה" לוחצים על "מצב הפעילות במונה".</p>
+    <img src="../docs/images/step3.png" alt="תפריט מונים וצריכה, מצב הפעילות במונה מסומן" loading="lazy">
+  </div>
+
+  <div class="card">
+    <h2>4. בוחרים "מצב צריכה עדכני"</h2>
+    <p>במסך "איזה נתונים מעניינים אותך?" לוחצים על הכרטיס "מצב צריכה עדכני" (לא "קריאות מונה קודמות").</p>
+    <img src="../docs/images/step4.png" alt="מסך איזה נתונים מעניינים אותך, מצב צריכה עדכני מסומן" loading="lazy">
+  </div>
+
+  <div class="card">
+    <h2>5. נפתח מסך הצריכה</h2>
+    <p>מגיעים למסך "מה היתה הצריכה במונה", עם לשונית "לפי תקופה" ובחירת יום, שבוע או חודש. אם מתבקשים להתחבר - מזינים מספר תעודת זהות ואת הקוד החד-פעמי שנשלח ב-SMS או במייל (את הקוד מקלידים רק באתר של חברת החשמל).</p>
+    <img src="../docs/images/step5.png" alt="מסך מה היתה הצריכה במונה, לשונית לפי תקופה מסומנת" loading="lazy">
+  </div>
+
+  <div class="card">
+    <h2>6. שולחים את הקובץ למייל</h2>
+    <p>מגללים למטה ולוחצים על "שליחת קובץ אקסל עם נתוני צריכה <b>מהשנתיים האחרונות</b> למייל שלך". הקובץ נשלח לכתובת המייל הרשומה בחשבון ומגיע בדרך כלל תוך כמה דקות (כדאי לבדוק גם בספאם).</p>
+    <img src="../docs/images/step6.png" alt="הקישור לשליחת קובץ נתוני הצריכה למייל" loading="lazy">
+  </div>
+
+  <div class="card">
+    <h2>7. מורידים מהמייל ומעלים למחשבון</h2>
+    <p>שומרים את הקובץ מהמייל במחשב כמו שהוא, ומעלים אותו למחשבון. הקובץ נקרא בדפדפן שלכם בלבד ולא נשלח לשום שרת.</p>
+    <a class="back" href="./">חזרה למחשבון ◀</a>
+  </div>
+
+  <div class="card">
+    <h2>הערות</h2>
+    <ul>
+      <li><b>CSV או אקסל?</b> המייל מכיל קובץ נתונים (CSV; לפעמים מגיע כאקסל). אם קיבלתם קובץ xlsx והמחשבון מבקש CSV - פותחים ושומרים מחדש בפורמט CSV (קובץ ← שמירה בשם ← CSV).</li>
+      <li><b>כמה נתונים יש בקובץ?</b> שנתיים אחורה, מדידה לכל רבע שעה. הנתונים מתעדכנים כמה פעמים ביום, ויכול להיות שהשעות האחרונות עדיין חסרות.</li>
+      <li><b>אין אפשרות לקבל קובץ?</b> כנראה שאין מונה חכם. אפשר עדיין לעבור לתוכנית בהנחה קבועה, ומונה חכם מותקן בחינם במסגרת הפריסה הארצית.</li>
+    </ul>
+    <p class="muted">המדריך מבוסס על אתר חברת החשמל לישראל (iec.co.il), נבדק ב-2 בנובמבר 2026 עם צילומי מסך אמיתיים מהאתר (מספר המונה הושמט מהצילומים). שמות כפתורים ותפריטים משתנים מדי פעם; אם משהו נראה אחרת, חפשו באזור "מונים וצריכה" את האפשרות לקבל קובץ נתוני צריכה למייל.</p>
+  </div>
+</main>
+</body>
+</html>

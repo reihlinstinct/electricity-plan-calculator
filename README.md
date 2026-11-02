@@ -16,6 +16,8 @@ pip install -e '.[dev]'
 
 ## Quickstart
 
+New to the IEC export? `docs/download-iec-csv.md` is an illustrated Hebrew guide (also available as a page on the site).
+
 ```sh
 iec-calc report path/to/your-iec-export.csv            # analysis + plan ranking + insights
 #                                                       (observations only: peak hours, baseline,
