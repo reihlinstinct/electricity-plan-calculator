@@ -135,7 +135,8 @@ def detect_appliances(intervals: list[Interval], base_kw: float) -> tuple[Applia
         exs = [ex[k] for k in idxs]
         dur_min = len(idxs) * hours * 60
         energy = sum(e * hours for e in exs)
-        start, end = intervals[idxs[0]].start, intervals[idxs[-1]].start
+        start = intervals[idxs[0]].start
+        end = intervals[idxs[-1]].start + timedelta(seconds=hours * 3600)
         hi = [e >= HIGH_KW for e in exs]
         max_consec_hi = 0
         run = 0

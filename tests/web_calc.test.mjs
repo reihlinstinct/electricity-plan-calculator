@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { parseCsv, summarize, rankPlans, detectAppliances, buildInsights, sunsetLocalMinutes } from '../web/calc.js';
+import { intervalHours, parseCsv, summarize, rankPlans, detectAppliances, buildInsights, sunsetLocalMinutes } from '../web/calc.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const text = readFileSync(join(root, 'data', 'sample_consumption.csv'), 'utf-8');
@@ -51,6 +51,10 @@ function setBlock(ivs, startIdx, kws) {
   setBlock(ivs, 10 * 4, [0.4, 0.4, 0.4, 2.0, 2.0, 0.4, 0.4, 0.6]); // washer shape
   const ev = detectAppliances(ivs, 0.2);
   check('js: washer detected high', ev.length === 1 && ev[0].kind === 'washing_machine' && ev[0].confidence === 'high');
+  check('js: event end is end of last interval', ev[0].end - ev[0].start === 8 * 900 * 1000); // 10:00-12:00
+  check('js: intervalHours from data median', intervalHours(ivs) === 0.25);
+  const hourly = ivs.filter((_, i) => i % 4 === 0);
+  check('js: intervalHours hourly median', intervalHours(hourly) === 1);
 }
 {
   const ivs = flatDay(new Date(2026, 9, 6));

@@ -117,8 +117,22 @@ const MIN_EXCESS_KW = 0.15, HIGH_KW = 1.2;
 const WASHER_MIN = 45, WASHER_MAX = 180, OVEN_MIN = 20, OVEN_MAX = 150;
 const SUST_MIN = 45, SUST_MAX = 360, SUST_MIN_MEAN = 0.8;
 
+// Median interval length in hours, from the data itself (mirrors Python _interval_hours).
+export function intervalHours(intervals) {
+  const deltas = [];
+  for (let k = 0; k + 1 < intervals.length; k++) {
+    const d = (intervals[k + 1].start - intervals[k].start) / 1000;
+    if (d > 0 && d <= 3600) deltas.push(d);
+  }
+  if (!deltas.length) return 0.25;
+  deltas.sort((a, b) => a - b);
+  const mid = Math.floor(deltas.length / 2);
+  const med = deltas.length % 2 ? deltas[mid] : (deltas[mid - 1] + deltas[mid]) / 2;
+  return med / 3600;
+}
+
 export function detectAppliances(intervals, baseKw) {
-  const hours = 0.25;
+  const hours = intervalHours(intervals);
   const ex = intervals.map(i => i.kwh / hours - baseKw);
   const blocks = [];
   let i = 0;
@@ -136,7 +150,8 @@ export function detectAppliances(intervals, baseKw) {
     const exs = ex.slice(a, b + 1);
     const durMin = exs.length * hours * 60;
     const energy = exs.reduce((s, e) => s + e * hours, 0);
-    const start = intervals[a].start, end = intervals[b].start;
+    const start = intervals[a].start;
+    const end = new Date(intervals[b].start.getTime() + hours * 3600e3); // end of last interval, not its start
     let run = 0, maxConsecHi = 0;
     for (const e of exs) { run = e >= HIGH_KW ? run + 1 : 0; maxConsecHi = Math.max(maxConsecHi, run); }
     let transitions = 0;
@@ -161,14 +176,14 @@ export function detectAppliances(intervals, baseKw) {
 
 // NOAA solar approximation, local clock minutes (Israeli DST aware). No network.
 function israelUtcOffset(d) {
+  // Last Sunday of a month: day 0 of month m+1 is the last day of month m (m 0-based).
   const lastSunday = m => {
-    let x = new Date(d.getFullYear(), m, 0); // last day of month m-1... m is 1-based here
-    x = new Date(d.getFullYear(), m, 0);
+    let x = new Date(d.getFullYear(), m + 1, 0);
     while (x.getDay() !== 0) x = new Date(x.getFullYear(), x.getMonth(), x.getDate() - 1);
     return x;
   };
-  const end = lastSunday(10);
-  const ls3 = lastSunday(3);
+  const end = lastSunday(9); // October: DST ends
+  const ls3 = lastSunday(2); // March: DST starts the Friday before
   const start = new Date(ls3.getFullYear(), ls3.getMonth(), ls3.getDate() - 2); // Friday before
   const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   return t >= start && t < end ? 3 : 2;
@@ -215,8 +230,9 @@ export function buildInsights(intervals) {
   const nightIvs = intervals.filter(i => i.start.getHours() >= 2 && i.start.getHours() < 5);
   const baseIvs = nightIvs.filter(i => !inShabbat(i.start));
   const shabbatNightIvs = nightIvs.filter(i => inShabbat(i.start));
-  const nightBaseKw = baseIvs.length ? baseIvs.reduce((s, i) => s + i.kwh, 0) / baseIvs.length / 0.25 : 0;
-  const shabbatNightKw = shabbatNightIvs.length ? shabbatNightIvs.reduce((s, i) => s + i.kwh, 0) / shabbatNightIvs.length / 0.25 : 0;
+  const hours = intervalHours(intervals);
+  const nightBaseKw = baseIvs.length ? baseIvs.reduce((s, i) => s + i.kwh, 0) / baseIvs.length / hours : 0;
+  const shabbatNightKw = shabbatNightIvs.length ? shabbatNightIvs.reduce((s, i) => s + i.kwh, 0) / shabbatNightIvs.length / hours : 0;
   const shabbatKwh = windows.map(() => 0);
   intervals.forEach(i => {
     const n = windows.findIndex(([a, b]) => i.start >= a && i.start < b);

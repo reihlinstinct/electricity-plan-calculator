@@ -123,41 +123,74 @@ $('go').addEventListener('click', async () => {
     const fmtD = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7);
     const baseAnnual = ins.nightBaseKw * 24 * 365 * TARIFFS.regulated.flat_rate_per_kwh;
     $('insightsCard').style.display = '';
-    $('insightsText').innerHTML =
-      (ins.coversFullYear
-        ? `<p>כיסוי: ${ins.days} ימים (${fmtD(ins.first)} - ${fmtD(ins.last)}) - שנה מלאה.</p>`
-        : `<p><b>כיסוי: ${ins.days} ימים בלבד.</b> השוואה עונתית (חורף/קיץ) דורשת ייצוא של שנה מלאה; אין להסיק מהקובץ על עונות שאינן בו.</p>`) +
-      `<p>שעות שיא ממוצעות: ${ins.peakHours.map(([h, v]) => `${String(h).padStart(2, '0')}:00 (${v.toFixed(2)})`).join(', ')} קוט"ש · ` +
-      `יום חול ${ins.weekdayAvg.toFixed(2)} | שישי-שבת ${ins.weekendAvg.toFixed(2)} קוט"ש · ` +
-      `עומס בסיס לילי: ${Math.round(ins.nightBaseKw * 1000)} וואט (כ-${Math.round(baseAnnual).toLocaleString('he-IL')} ₪ לשנה אם קבוע)</p>` +
-      (ins.shabbatCount
-        ? `<p>שבת (שקיעת ו' עד צאת השבת, ${ins.shabbatCount} שבתות): ממוצע ${ins.shabbatAvgKwh.toFixed(1)} קוט"ש לשבת; ` +
+    const insText = $('insightsText');
+    insText.replaceChildren();
+    const addP = build => {
+      const p = document.createElement('p');
+      build(p);
+      insText.appendChild(p);
+    };
+    addP(p => {
+      if (ins.coversFullYear) {
+        p.textContent = `כיסוי: ${ins.days} ימים (${fmtD(ins.first)} - ${fmtD(ins.last)}) - שנה מלאה.`;
+      } else {
+        const b = document.createElement('b');
+        b.textContent = `כיסוי: ${ins.days} ימים בלבד.`;
+        p.appendChild(b);
+        p.append(' השוואה עונתית (חורף/קיץ) דורשת ייצוא של שנה מלאה; אין להסיק מהקובץ על עונות שאינן בו.');
+      }
+    });
+    addP(p => {
+      p.textContent =
+        `שעות שיא ממוצעות: ${ins.peakHours.map(([h, v]) => `${String(h).padStart(2, '0')}:00 (${v.toFixed(2)})`).join(', ')} קוט"ש · ` +
+        `יום חול ${ins.weekdayAvg.toFixed(2)} | שישי-שבת ${ins.weekendAvg.toFixed(2)} קוט"ש · ` +
+        `עומס בסיס לילי: ${Math.round(ins.nightBaseKw * 1000)} וואט (כ-${Math.round(baseAnnual).toLocaleString('he-IL')} ₪ לשנה אם קבוע)`;
+    });
+    if (ins.shabbatCount) {
+      addP(p => {
+        p.textContent =
+          `שבת (שקיעת ו' עד צאת השבת, ${ins.shabbatCount} שבתות): ממוצע ${ins.shabbatAvgKwh.toFixed(1)} קוט"ש לשבת; ` +
           `צריכת לילה ${Math.round(ins.shabbatNightBaseKw * 1000)} וואט מול ${Math.round(ins.nightBaseKw * 1000)} בחול - ` +
-          `עומס קבוע (למשל פלטה/מיחם) הוא הסבר אפשרי, לא ודאי</p>`
-        : '') +
-      (ins.notableDays.length ? `<p>ימים עם צריכה חריגה: ${ins.notableDays.map(fmtD).join(', ')}</p>` : '') +
-      `<p>חלון השיא של תעו"ז: ${ins.taozPeakKwh.toFixed(0)} קוט"ש (${(ins.taozPeakCostShare * 100).toFixed(0)}% מהעלות אם היית בתעו"ז)</p>`;
+          `עומס קבוע (למשל פלטה/מיחם) הוא הסבר אפשרי, לא ודאי`;
+      });
+    }
+    if (ins.notableDays.length) {
+      addP(p => { p.textContent = `ימים עם צריכה חריגה: ${ins.notableDays.map(fmtD).join(', ')}`; });
+    }
+    addP(p => {
+      p.textContent = `חלון השיא של תעו"ז: ${ins.taozPeakKwh.toFixed(0)} קוט"ש (${(ins.taozPeakCostShare * 100).toFixed(0)}% מהעלות אם היית בתעו"ז)`;
+    });
     const KINDS = { washing_machine: 'מכונת כביסה אפשרית', oven: 'תנור אפייה אפשרי',
       sustained_high: 'עומס גבוה ממושך (ייתכן מזגן/חימום/דוד - לא ניתן להבחין מהצריכה בלבד)' };
     const CONF = { high: 'ביטחון גבוה', medium: 'ביטחון בינוני', low: 'ביטחון נמוך' };
     const fmtT = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const appText = $('applianceText');
+    appText.replaceChildren();
     if (ins.appliances.length) {
-      let html = '<p><b>זיהוי מכשירים (הערכה הסתברותית מחתימת העומס בלבד, לא ודאות):</b></p><ul>';
+      const headB = document.createElement('b');
+      headB.textContent = 'זיהוי מכשירים (הערכה הסתברותית מחתימת העומס בלבד, לא ודאות):';
+      const headP = document.createElement('p');
+      headP.appendChild(headB);
+      appText.appendChild(headP);
+      const ul = document.createElement('ul');
       for (const [kind, label] of Object.entries(KINDS)) {
         const evs = ins.appliances.filter(e => e.kind === kind);
         if (!evs.length) continue;
         const confs = {};
         evs.forEach(e => { confs[e.confidence] = (confs[e.confidence] || 0) + 1; });
-        html += `<li>${label}: ${evs.length} אירועים (${Object.entries(confs).map(([c, n]) => `${n} ב${CONF[c]}`).join(', ')}).<ul>`;
+        const li = document.createElement('li');
+        li.textContent = `${label}: ${evs.length} אירועים (${Object.entries(confs).map(([c, n]) => `${n} ב${CONF[c]}`).join(', ')}).`;
+        const sub = document.createElement('ul');
         for (const e of evs.slice().sort((x, y) => y.excessKwh - x.excessKwh).slice(0, 2)) {
-          html += `<li>למשל יום ${HEDAY[e.start.getDay()]} ${String(e.start.getDate()).padStart(2, '0')}.${String(e.start.getMonth() + 1).padStart(2, '0')} ` +
-            `${fmtT(e.start)}-${fmtT(e.end)} (${e.excessKwh.toFixed(1)} קוט"ש, ${CONF[e.confidence]}): ${e.pattern}</li>`;
+          const ex = document.createElement('li');
+          ex.textContent = `למשל יום ${HEDAY[e.start.getDay()]} ${String(e.start.getDate()).padStart(2, '0')}.${String(e.start.getMonth() + 1).padStart(2, '0')} ` +
+            `${fmtT(e.start)}-${fmtT(e.end)} (${e.excessKwh.toFixed(1)} קוט"ש, ${CONF[e.confidence]}): ${e.pattern}`;
+          sub.appendChild(ex);
         }
-        html += '</ul></li>';
+        li.appendChild(sub);
+        ul.appendChild(li);
       }
-      $('applianceText').innerHTML = html + '</ul>';
-    } else {
-      $('applianceText').innerHTML = '';
+      appText.appendChild(ul);
     }
 
     $('status').textContent = '';

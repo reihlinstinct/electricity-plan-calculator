@@ -33,6 +33,7 @@ def test_washing_machine_signature():
     assert e.kind == "washing_machine"
     assert e.confidence == "high"
     assert "חימום מים" in e.pattern
+    assert (e.end - e.start).total_seconds() == 8 * 900  # 10:00-12:00: end of last interval
 
 
 def test_oven_signature():
