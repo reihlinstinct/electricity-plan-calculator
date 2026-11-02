@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 
 from .analysis import FRI_SAT, Summary
+from .benchmarks import Benchmarks, load_benchmarks
 from .parser import Interval
 from .tariffs import Catalog
 
@@ -35,7 +36,16 @@ OBS_MIN_WEEKDAYS = 5         # and this many weekdays for a meaningful rate
 OBS_BASE_MIN_DELTA_KW = 0.05 # absolute Shabbat-night elevation over weekday-night base
 OBS_BASE_RATIO = 1.3         # and at least 30% higher
 OBS_WEEKDAY_MIN_RATE = 0.15  # appliance starts per weekday: household uses appliances at all
-OBS_SHABBAT_MAX_SHARE = 0.25 # Shabbat start rate at most this share of the weekday rate
+OBS_SHABBAT_MAX_SHARE = 0.25
+
+# efficiency-note thresholds (context only, never a verdict)
+FLOOR_NOTE_KW = 0.15          # floor above this -> worth mapping always-on devices
+WASHER_NOTE_RATIO = 1.3       # measured mean cycle above 1.3x the modern typical -> note
+WASHER_MIN_EVENTS = 2         # need at least this many medium+ washer blocks
+SUSTAINED_MIN_EVENTS = 3      # sustained-high blocks needed for the conditional AC note
+SUSTAINED_MIN_MEAN_EXCESS_KW = 1.0  # mean excess kW per block for the AC note
+UNATTENDED_START_HOUR = 5     # blocks starting 00:00-04:xx
+ # Shabbat start rate at most this share of the weekday rate
 
 
 def _israel_utc_offset(d: date) -> int:
@@ -98,6 +108,16 @@ class ObservanceReport:
 
 
 @dataclass(frozen=True)
+class EfficiencyNote:
+    """Efficiency context from load patterns. Never brand/model or replace advice."""
+
+    kind: str  # "floor" | "washer" | "sustained" | "unattended"
+    confidence: str
+    text: str  # Hebrew sentence(s) with the supporting numbers
+    annual_nis: float | None = None  # estimated yearly cost difference, when meaningful
+
+
+@dataclass(frozen=True)
 class InsightsReport:
     days: int
     first: date
@@ -115,6 +135,7 @@ class InsightsReport:
     shabbat_avg_kwh: float  # mean kWh per Shabbat window
     shabbat_night_base_kw: float  # mean 02:00-05:00 draw on Shabbat nights
     observance: ObservanceReport | None = None  # None = below threshold, stay neutral
+    efficiency: tuple[EfficiencyNote, ...] = ()
 
 
 def _interval_hours(intervals: list[Interval]) -> float:
@@ -240,6 +261,91 @@ def detect_appliances(intervals: list[Interval], base_kw: float) -> tuple[Applia
     return tuple(events)
 
 
+def detect_efficiency(
+    *,
+    appliances: tuple[ApplianceEvent, ...],
+    night_base_kw: float,
+    flat_rate: float,
+    benchmarks: Benchmarks,
+    days: int,
+) -> tuple[EfficiencyNote, ...]:
+    """Pattern-based efficiency context: typical-technology benchmarks, no verdicts."""
+    notes: list[EfficiencyNote] = []
+
+    # floor context: a modern fridge-freezer averages ~20 W; a high floor means
+    # more always-on loads. Context only, never a verdict on any device.
+    if night_base_kw >= FLOOR_NOTE_KW:
+        fridge_w = benchmarks.fridge_typical_kwh_per_year * 1000 / (24 * 365)
+        notes.append(EfficiencyNote(
+            kind="floor",
+            confidence="low",
+            text=(
+                f"רצפת הצריכה {night_base_kw * 1000:.0f} וואט כוללת גם מכשירים שמחוברים תמיד. "
+                f"לקונטקסט בלבד: מקרר-מקפיא מודרני טיפוסי צורך כ-{benchmarks.fridge_typical_kwh_per_year:.0f} "
+                f'קוט"ש בשנה (כ-{fridge_w:.0f} וואט בממוצע). אם הרצפה גבוהה בהרבה מזה, '
+                "שווה לבדוק מה עוד מחובר קבוע - זו לא פסיקה על מכשיר מסוים"
+            ),
+            annual_nis=night_base_kw * 24 * 365 * flat_rate,
+        ))
+
+    # washer: mean measured cycle vs the modern typical; only medium+ identified blocks
+    washers = [a for a in appliances if a.kind == "washing_machine" and a.confidence in ("high", "medium")]
+    if len(washers) >= WASHER_MIN_EVENTS:
+        mean_cycle = sum(a.excess_kwh for a in washers) / len(washers)
+        typical = benchmarks.washer_typical_kwh_per_cycle
+        if mean_cycle > typical * WASHER_NOTE_RATIO:
+            cycles_year = len(washers) / days * 365
+            diff_nis = (mean_cycle - typical) * cycles_year * flat_rate
+            notes.append(EfficiencyNote(
+                kind="washer",
+                confidence="medium",
+                text=(
+                    f'מחזור כביסה ממוצע בבית: כ-{mean_cycle:.1f} קוט"ש (משוער מחתימת העומס, '
+                    f"{len(washers)} מחזורים). מכונה מודרנית בדירוג A: כ-{typical:.1f} "
+                    'קוט"ש למחזור בתוכנית eco 40-60. ההבדל תלוי בתוכנית ובטמפרטורה '
+                    "(כביסה חמה או ארוכה צורכת הרבה יותר) - זו לא פסיקה על המכונה; "
+                    "אם המחזורים חמים או ארוכים, שווה לבדוק תוכנית eco"
+                ),
+                annual_nis=diff_nis,
+            ))
+
+    # sustained high: conditional AC context; the type itself cannot be told apart
+    sustained = [a for a in appliances if a.kind == "sustained_high"]
+    if len(sustained) >= SUSTAINED_MIN_EVENTS:
+        mean_ex_kw = statistics.mean(
+            a.excess_kwh / ((a.end - a.start).total_seconds() / 3600) for a in sustained
+        )  # mean of per-event kW, same as the JS port
+        if mean_ex_kw >= SUSTAINED_MIN_MEAN_EXCESS_KW:
+            lo = round(benchmarks.ac_inverter_savings_min * 100)
+            hi = round(benchmarks.ac_inverter_savings_max * 100)
+            notes.append(EfficiencyNote(
+                kind="sustained",
+                confidence="low",
+                text=(
+                    f"זוהו {len(sustained)} בלוקים של עומס גבוה ממושך. "
+                    f"אם מדובר במזגן: מחקרי שדה מודדים חיסכון של {lo}-{hi}% במזגן אינוורטר "
+                    "לעומת מזגן on/off (טווח מחקרים, לא מדידה של הבית). "
+                    "מצריכת כל הבית אי אפשר להבחין בין מזגן, תנור חימום או דוד - זה קונטקסט בלבד"
+                ),
+            ))
+
+    # unattended: high blocks starting deep at night
+    unattended = [a for a in appliances if a.start.hour < UNATTENDED_START_HOUR]
+    if unattended:
+        annual_kwh = sum(a.excess_kwh for a in unattended) / days * 365
+        notes.append(EfficiencyNote(
+            kind="unattended",
+            confidence="medium",
+            text=(
+                f"{len(unattended)} בלוקי עומס גבוה התחילו בין חצות ל-05:00. "
+                "אם זה לא מתוכנן (למשל טיימר של דוד), אולי נשכח מכשיר דולק - שווה לבדוק"
+            ),
+            annual_nis=annual_kwh * flat_rate,
+        ))
+
+    return tuple(notes)
+
+
 def build_insights(
     intervals: list[Interval],
     summary: Summary,
@@ -280,8 +386,9 @@ def build_insights(
     appliances = detect_appliances(ordered, base_kw)
     shabbat_starts = sum(1 for a in appliances if in_shabbat(a.start))
     weekday_days = sum(1 for d in days if d.weekday() not in FRI_SAT)
+    used_shabbatot = {n: v for n, v in shabbat_kwh.items() if v > 0}  # align with JS: kWh > 0
     observance = detect_shabbat_observance(
-        shabbat_count=len(shabbat_kwh),
+        shabbat_count=len(used_shabbatot),
         weekday_days=weekday_days,
         night_base_kw=base_kw,
         shabbat_night_base_kw=(
@@ -304,8 +411,15 @@ def build_insights(
         taoz_peak_kwh=peak_kwh,
         taoz_peak_cost_share=peak_cost / total_cost if total_cost else 0.0,
         appliances=appliances,
-        shabbat_count=len(shabbat_kwh),
-        shabbat_avg_kwh=statistics.mean(shabbat_kwh.values()) if shabbat_kwh else 0.0,
+        shabbat_count=len(used_shabbatot),
+        shabbat_avg_kwh=statistics.mean(used_shabbatot.values()) if used_shabbatot else 0.0,
         shabbat_night_base_kw=(statistics.mean(shabbat_night) / hours) if shabbat_night else 0.0,
         observance=observance,
+        efficiency=detect_efficiency(
+            appliances=appliances,
+            night_base_kw=base_kw,
+            flat_rate=catalog.flat_rate,
+            benchmarks=load_benchmarks(),
+            days=len(days),
+        ),
     )

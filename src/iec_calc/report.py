@@ -19,7 +19,7 @@ def format_analysis(s: Summary) -> str:
         f'תקופה: {s.days} ימים | סה"כ {s.total_kwh:.1f} קוט"ש'
         f" | ממוצע {s.avg_daily_kwh:.2f} קוט\"ש/יום",
         f"הערכה שנתית: {s.annualized_kwh:,.0f} קוט\"ש",
-        f"עומס בסיס (02:00-05:00): {s.base_load_kw * 1000:.0f} וואט",
+        f"רצפת צריכה (בסיס, 02:00-05:00): {s.base_load_kw * 1000:.0f} וואט",
         f"שיא: {s.peak_interval_kw:.2f} קילוואט ({s.peak_interval_at})",
         f"לילה (23:00-07:00): {s.night_share:.1%} | שישי-שבת: {s.fri_sat_share:.1%}",
         f"ממוצע יום חול: {s.weekday_avg:.2f} | ממוצע שישי-שבת: {s.fri_sat_avg:.2f} קוט\"ש",
@@ -158,8 +158,9 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
     )
     base_annual_nis = rep.night_base_kw * 24 * 365 * flat_rate
     lines.append(
-        f"עומס בסיס לילי: {rep.night_base_kw * 1000:.0f} וואט"
-        f" (כ-{base_annual_nis:,.0f} ₪ לשנה אם קבוע)"
+        f"רצפת צריכה (בסיס): {rep.night_base_kw * 1000:.0f} וואט"
+        f" (כ-{base_annual_nis:,.0f} ₪ לשנה אם קבוע) - מקרר שעובד תמיד "
+        "ועוד מכשירים מחוברים שכל אחד צורך מעט; יחד הם יוצרים את הרצפה"
     )
     if rep.shabbat_count:
         lines.append(
@@ -216,5 +217,12 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
                     f"  למשל יום {_HE_DAY[e.start.weekday()]} {e.start:%d.%m %H:%M}-{e.end:%H:%M}"
                     f" ({e.excess_kwh:.1f} קוט\"ש, {_CONF_LABELS[e.confidence]}): {e.pattern}"
                 )
+    if rep.efficiency:
+        lines.append("")
+        lines.append("יעילות מכשירים (השוואה לטיפוסי מודרני, בלי פסיקה על מכשיר):")
+        for n in rep.efficiency:
+            cost = f" הערכת הפרש/עלות שנתית: ~{n.annual_nis:,.0f} ₪." if n.annual_nis is not None else ""
+            lines.append(f"- {n.text} ({_CONF_LABELS[n.confidence]}).{cost}")
+        lines.append("מקורות ההשוואה: ראו data/benchmarks.json (אומתו ב-2026-11-02)")
     return lines_to_text(lines)
 

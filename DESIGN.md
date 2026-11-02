@@ -81,3 +81,15 @@ leaning with the supporting numbers ("נראה/ייתכן שבמשק הבית ש
 there is no code path that concludes non-observance. Python and the JS port
 share the same constants and tests.
 
+## Efficiency benchmarks (issue #40)
+
+Context, never a verdict. Figures live in data/benchmarks.json with sources and
+an access date, generated into the web bundle by scripts/gen_web_data.py and
+shown on web/sources.html. Four notes: floor context (base >= 150 W vs a modern
+fridge-freezer's ~181 kWh/year), washer mean cycle vs 0.5 kWh (only 2+ medium+
+blocks; the note always says program/temperature changes consumption), a
+conditional sustained-high AC note (3+ blocks averaging >= 1 kW excess; always
+says whole-house data cannot separate AC from heating/boiler; field-study range
+20-40%), and unattended night blocks (start < 05:00). Python and JS share the
+same thresholds and wording.
+

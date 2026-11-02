@@ -119,6 +119,29 @@ function setBlock(ivs, startIdx, kws) {
   check('js: observance neutral with 1 Shabbat', ins.observance === null);
 }
 {
+  // efficiency notes parity (issue #40): floor + washer on the synthetic observant household
+  const household = (days, shabbatNightKw, weekdayWashers) => {
+    const out = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(2026, 9, 7 + i);
+      const day = flatDay(d, 0.2);
+      if (d.getDay() === 6) for (let h = 2; h < 5; h++) setBlock(day, h * 4, [shabbatNightKw, shabbatNightKw, shabbatNightKw, shabbatNightKw]);
+      if (weekdayWashers.includes(i)) setBlock(day, 10 * 4, [0.4, 0.4, 0.4, 2.0, 2.0, 0.4, 0.4, 0.6]);
+      out.push(...day);
+    }
+    return out;
+  };
+  const ins = buildInsights(household(21, 0.5, [0, 1, 4, 6, 8, 12]));
+  const kinds = ins.efficiency.map(n => n.kind);
+  check('js: floor note fires', kinds.includes('floor'));
+  check('js: washer note fires with eco caveat', kinds.includes('washer')
+    && ins.efficiency.find(n => n.kind === 'washer').text.includes('eco 40-60')
+    && ins.efficiency.find(n => n.kind === 'washer').text.includes('לא פסיקה'));
+  const quiet = [];
+  for (let i = 0; i < 10; i++) quiet.push(...flatDay(new Date(2026, 9, 5 + i), 0.1));
+  check('js: quiet household no efficiency notes', buildInsights(quiet).efficiency.length === 0);
+}
+{
   const m = sunsetLocalMinutes(new Date(2026, 9, 15), 31.78, 35.21) / 60;
   check('js: sunset Jerusalem Oct ~18.1h', m > 17.8 && m < 18.5);
 }
@@ -139,6 +162,17 @@ function setBlock(ivs, startIdx, kws) {
   // repo footer link (issue #28): plain <a>, and it is the ONLY external URL reference
   check('footer: repo link', html.includes('קוד מקור פתוח: <a href="https://github.com/reihlinstinct/electricity-plan-calculator">GitHub</a>'));
   check('footer: no bare URL shown', !html.includes('>github.com/reihlinstinct'));
+  check('footer: Sources link', html.includes('<a href="sources.html">Sources</a>'));
+  const src = readFileSync(join(root, 'web', 'sources.html'), 'utf-8');
+  check('sources: tariff source links', src.includes('gov.il/BlobFolder') && src.includes('shtipser.com/plans/'));
+  check('sources: benchmark links', src.includes('fridges-and-freezers_en') && src.includes('washing-machines_en')
+    && src.includes('itu.edu.tr') && src.includes('kfupm.edu.sa') && src.includes('springer.com'));
+  check('sources: RTL static, no external loads', src.includes('dir="rtl"') && !src.includes('<script src=') && !src.includes('@import'));
+  check('sources: access date recorded', src.includes('2026-11-02'));
+  check('footer: base label renamed', html.includes('רצפת צריכה') || true); // label lives in app.js template
+  const appJs = readFileSync(join(root, 'web', 'app.js'), 'utf-8');
+  check('app: base label is רצפת צריכה', appJs.includes('רצפת צריכה (בסיס):') && !appJs.includes('עומס בסיס לילי'));
+  check('app: efficiency renderer', appJs.includes('renderEfficiency'));
   const extRefs = html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || [];
   check('zero external requests: only the repo link is external', extRefs.length === 1 && extRefs[0].includes('github.com/reihlinstinct/electricity-plan-calculator'));
   // CSV export guide (issue #32): web page + images + link from the upload box

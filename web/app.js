@@ -144,7 +144,7 @@ $('go').addEventListener('click', async () => {
       p.textContent =
         `שעות שיא ממוצעות: ${ins.peakHours.map(([h, v]) => `${String(h).padStart(2, '0')}:00 (${v.toFixed(2)})`).join(', ')} קוט"ש · ` +
         `יום חול ${ins.weekdayAvg.toFixed(2)} | שישי-שבת ${ins.weekendAvg.toFixed(2)} קוט"ש · ` +
-        `עומס בסיס לילי: ${Math.round(ins.nightBaseKw * 1000)} וואט (כ-${Math.round(baseAnnual).toLocaleString('he-IL')} ₪ לשנה אם קבוע)`;
+        `רצפת צריכה (בסיס): ${Math.round(ins.nightBaseKw * 1000)} וואט (כ-${Math.round(baseAnnual).toLocaleString('he-IL')} ₪ לשנה אם קבוע) - מקרר שעובד תמיד ועוד מכשירים מחוברים שכל אחד צורך מעט; יחד הם יוצרים את הרצפה`;
     });
     if (ins.shabbatCount) {
       addP(p => {
@@ -173,6 +173,25 @@ $('go').addEventListener('click', async () => {
     addP(p => {
       p.textContent = `חלון השיא של תעו"ז: ${ins.taozPeakKwh.toFixed(0)} קוט"ש (${(ins.taozPeakCostShare * 100).toFixed(0)}% מהעלות אם היית בתעו"ז)`;
     });
+    const renderEfficiency = () => {
+      if (!ins.efficiency || !ins.efficiency.length) return;
+      const headP = document.createElement('p');
+      const hb = document.createElement('b');
+      hb.textContent = 'יעילות מכשירים (השוואה לטיפוסי מודרני, בלי פסיקה על מכשיר):';
+      headP.appendChild(hb);
+      appText.appendChild(headP);
+      const ul = document.createElement('ul');
+      for (const n of ins.efficiency) {
+        const li = document.createElement('li');
+        li.textContent = n.text + ` (${CONF[n.confidence]})` +
+          (n.annualNis != null ? ` הערכת הפרש/עלות שנתית: ~${Math.round(n.annualNis).toLocaleString('he-IL')} ₪.` : '');
+        ul.appendChild(li);
+      }
+      appText.appendChild(ul);
+      const srcP = document.createElement('p');
+      srcP.textContent = 'מקורות ההשוואה מפורטים בדף Sources (אומתו ב-2026-11-02).';
+      appText.appendChild(srcP);
+    };
     const KINDS = { washing_machine: 'מכונת כביסה אפשרית', oven: 'תנור אפייה אפשרי',
       sustained_high: 'עומס גבוה ממושך (ייתכן מזגן/חימום/דוד - לא ניתן להבחין מהצריכה בלבד)' };
     const CONF = { high: 'ביטחון גבוה', medium: 'ביטחון בינוני', low: 'ביטחון נמוך' };
@@ -205,6 +224,7 @@ $('go').addEventListener('click', async () => {
       }
       appText.appendChild(ul);
     }
+    renderEfficiency();
 
     $('status').textContent = '';
   } catch (e) {

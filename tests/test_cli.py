@@ -25,7 +25,7 @@ def test_analyze_only(sample_csv, capsys):
     rc = main(["analyze", str(sample_csv)])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "עומס בסיס" in out
+    assert "רצפת צריכה" in out
     assert "דירוג מסלולים" not in out
 
 

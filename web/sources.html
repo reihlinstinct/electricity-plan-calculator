@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מקורות - מחשבון מסלולי חשמל</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg:#f7f7f9; --card:#fff; --ink:#1a1a2e; --accent:#0b6bcb; --muted:#666; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; }
+  header { background:var(--accent); color:#fff; padding:1rem 1.5rem; }
+  header h1 { margin:0; font-size:1.2rem; }
+  main { max-width:760px; margin:0 auto; padding:1rem; display:grid; gap:1rem; }
+  .card { background:var(--card); border-radius:12px; padding:1rem 1.25rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  h2 { font-size:1.05rem; margin:.2rem 0; }
+  p, li { line-height:1.6; }
+  .muted { color:var(--muted); font-size:.85rem; }
+</style>
+</head>
+<body>
+<header><h1>מקורות - מחשבון מסלולי חשמל</h1></header>
+<main>
+  <div class="card">
+    <h2>מקורות תעריפים</h2>
+    <ul>
+      <li><a href="https://www.gov.il/BlobFolder/generalpage/maagar_tarrifr_histoty/he/sefer_tariff_01_2026.pdf">ספר התעריפים של רשות החשמל, יולי 2026 (נספח 5.2-1, מתח נמוך)</a> - אומת 2026-08-06</li>
+      <li><a href="https://chashmali.com/electricity-tariff/">chashmali.com - אימות תעריף מול ספר התעריפים</a> - אומת 2026-08-06</li>
+      <li><a href="https://shtipser.com/tariff/">shtipser.com - עמוד תעריפים (אומת מול עמוד התעריף של חברת החשמל)</a> - אומת 2026-08-01</li>
+      <li><a href="https://kolhabait.com/chashmal/taoz">שעות שיא/שפל של תעו"ז, החלטת רשות החשמל 63609 (נספח 5.1-1)</a> - אומת 2026-10-01</li>
+      <li><a href="https://shtipser.com/plans/">מסלולי ספקים פרטיים (אומתו מול אתרי הספקים)</a> - אומת 2026-09-27</li>
+      <li><a href="https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&i=on&year=2026">hebcal.com - זמני שבת (שימוש קודם; חלון השבת מחושב היום מקומית)</a></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>מקורות השוואת יעילות (benchmarks)</h2>
+    <p>ההשוואות בבלוק "יעילות מכשירים" הן לערכי טכנולוגיה טיפוסית בלבד - קונטקסט, לא פסיקה על מכשיר מסוים. אומתו ב-2026-11-02.</p>
+    <ul>
+      <li><b>מכונת כביסה:</b> מכונה מודרנית בדירוג A - כ-0.5 קוט"ש למחזור בתוכנית eco 40-60 (תווית האנרגיה האירופית, קוט"ש ל-100 מחזורים):
+        <a href="https://energy-efficient-products.ec.europa.eu/product-list/washing-machines_en">European Commission - Washing Machines</a>.
+        בישראל: ירידה מ-0.93 ל-0.55 קוט"ש למחזור בין 2021 ל-2024 (-41%), בדיקת משרד האנרגיה:
+        <a href="https://www.ynet.co.il/economy/article/h1tu9ogzgl">ynet</a>.</li>
+      <li><b>מזגן:</b> טווח מחקרי שדה לחיסכון של אינוורטר מול on/off - 20-40% (11-38% באיסטנבול, ~24% בערב הסעודית, ~44% בג'דה):
+        <a href="https://research.itu.edu.tr/en/publications/an-experimental-investigation-of-energy-saving-potentials-for-roo/">ITU</a>,
+        <a href="https://pure.kfupm.edu.sa/en/publications/an-assessment-of-inverter-driven-variable-speed-air-conditioners-/">KFUPM</a>,
+        <a href="https://link.springer.com/article/10.1007/s41825-020-00033-y">Springer</a>.</li>
+      <li><b>מקרר:</b> מקרר-מקפיא מודרני טיפוסי - כ-181 קוט"ש בשנה (ממוצע אירופי 2020; ב-1990 היה 477):
+        <a href="https://energy-efficient-products.ec.europa.eu/product-list/fridges-and-freezers_en">European Commission - Fridges and Freezers</a>.
+        בישראל: ירידה של 29% בצריכת מקררים 2021→2024 (~80 ₪ בשנה), משרד האנרגיה:
+        <a href="https://www.ynet.co.il/economy/article/h1tu9ogzgl">ynet</a>.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>הערות מתודולוגיה</h2>
+    <ul>
+      <li>חלון שבת מחושב מקומית (שקיעת שישי עד צאת השבת) לפי קואורדינטות ירושלים וקירוב NOAA לשקיעה; ייתכנו סטיות של דקות ספורות מול לוחות מקומיים.</li>
+      <li>זיהוי מכשירים הוא הסתברותי מחתימת העומס בלבד - מזגן, תנור חימום ודוד אינם ניתנים להבחנה מצריכת כל הבית.</li>
+      <li>הקוד הפתוח מכיל את כל הקבועים והנוסחאות: <a href="https://github.com/reihlinstinct/electricity-plan-calculator">GitHub</a>.</li>
+    </ul>
+    <p class="muted"><a href="index.html">חזרה למחשבון</a></p>
+  </div>
+</main>
+</body>
+</html>

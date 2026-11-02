@@ -1,5 +1,5 @@
 // Pure calculation core - no DOM, testable in node. Mirrors src/iec_calc/*.
-import { TARIFFS } from './tariffs-data.js';
+import { TARIFFS, BENCHMARKS } from './tariffs-data.js';
 
 const FRI_SAT = new Set([5, 6]); // JS getDay(): 5=Fri, 6=Sat
 
@@ -230,6 +230,54 @@ export function detectShabbatObservance({ shabbatCount, weekdayDays, nightBaseKw
   return { confidence: signals.length === 2 ? 'high' : 'medium', signals, baseRatio, shabbatStarts, shabbatCount, weekdayRate };
 }
 
+// Efficiency-note thresholds (context only, never a verdict). Parity: src/iec_calc/insights.py.
+const FLOOR_NOTE_KW = 0.15;
+const WASHER_NOTE_RATIO = 1.3;
+const WASHER_MIN_EVENTS = 2;
+const SUSTAINED_MIN_EVENTS = 3;
+const SUSTAINED_MIN_MEAN_EXCESS_KW = 1.0;
+const UNATTENDED_START_HOUR = 5;
+
+export function detectEfficiency({ appliances, nightBaseKw, flatRate, days }) {
+  const notes = [];
+  if (nightBaseKw >= FLOOR_NOTE_KW) {
+    const fridgeW = BENCHMARKS.fridge.typical_modern_kwh_per_year * 1000 / (24 * 365);
+    notes.push({ kind: 'floor', confidence: 'low',
+      text: `רצפת הצריכה ${Math.round(nightBaseKw * 1000)} וואט כוללת גם מכשירים שמחוברים תמיד. לקונטקסט בלבד: מקרר-מקפיא מודרני טיפוסי צורך כ-${Math.round(BENCHMARKS.fridge.typical_modern_kwh_per_year)} קוט"ש בשנה (כ-${Math.round(fridgeW)} וואט בממוצע). אם הרצפה גבוהה בהרבה מזה, שווה לבדוק מה עוד מחובר קבוע - זו לא פסיקה על מכשיר מסוים`,
+      annualNis: nightBaseKw * 24 * 365 * flatRate });
+  }
+  const washers = appliances.filter(a => a.kind === 'washing_machine' && (a.confidence === 'high' || a.confidence === 'medium'));
+  if (washers.length >= WASHER_MIN_EVENTS) {
+    const meanCycle = washers.reduce((s, a) => s + a.excessKwh, 0) / washers.length;
+    const typical = BENCHMARKS.washer.typical_modern_kwh_per_cycle;
+    if (meanCycle > typical * WASHER_NOTE_RATIO) {
+      const diffNis = (meanCycle - typical) * (washers.length / days * 365) * flatRate;
+      notes.push({ kind: 'washer', confidence: 'medium',
+        text: `מחזור כביסה ממוצע בבית: כ-${meanCycle.toFixed(1)} קוט"ש (משוער מחתימת העומס, ${washers.length} מחזורים). מכונה מודרנית בדירוג A: כ-${typical.toFixed(1)} קוט"ש למחזור בתוכנית eco 40-60. ההבדל תלוי בתוכנית ובטמפרטורה (כביסה חמה או ארוכה צורכת הרבה יותר) - זו לא פסיקה על המכונה; אם המחזורים חמים או ארוכים, שווה לבדוק תוכנית eco`,
+        annualNis: diffNis });
+    }
+  }
+  const sustained = appliances.filter(a => a.kind === 'sustained_high');
+  if (sustained.length >= SUSTAINED_MIN_EVENTS) {
+    const meanExKw = sustained.reduce((s, a) => s + a.excessKwh / ((a.end - a.start) / 3600e3), 0) / sustained.length;
+    if (meanExKw >= SUSTAINED_MIN_MEAN_EXCESS_KW) {
+      const lo = Math.round(BENCHMARKS.ac.inverter_savings_min * 100);
+      const hi = Math.round(BENCHMARKS.ac.inverter_savings_max * 100);
+      notes.push({ kind: 'sustained', confidence: 'low',
+        text: `זוהו ${sustained.length} בלוקים של עומס גבוה ממושך. אם מדובר במזגן: מחקרי שדה מודדים חיסכון של ${lo}-${hi}% במזגן אינוורטר לעומת מזגן on/off (טווח מחקרים, לא מדידה של הבית). מצריכת כל הבית אי אפשר להבחין בין מזגן, תנור חימום או דוד - זה קונטקסט בלבד`,
+        annualNis: null });
+    }
+  }
+  const unattended = appliances.filter(a => a.start.getHours() < UNATTENDED_START_HOUR);
+  if (unattended.length) {
+    const annualKwh = unattended.reduce((s, a) => s + a.excessKwh, 0) / days * 365;
+    notes.push({ kind: 'unattended', confidence: 'medium',
+      text: `${unattended.length} בלוקי עומס גבוה התחילו בין חצות ל-05:00. אם זה לא מתוכנן (למשל טיימר של דוד), אולי נשכח מכשיר דולק - שווה לבדוק`,
+      annualNis: annualKwh * flatRate });
+  }
+  return notes;
+}
+
 export function buildInsights(intervals) {
   const sum = summarize(intervals);
   const days = [...sum.daily.keys()].sort();
@@ -288,6 +336,7 @@ export function buildInsights(intervals) {
     appliances,
     shabbatCount: usedShabbatot.length,
     observance,
+    efficiency: detectEfficiency({ appliances, nightBaseKw, flatRate: TARIFFS.regulated.flat_rate_per_kwh, days: days.length }),
     shabbatAvgKwh: usedShabbatot.length ? usedShabbatot.reduce((s, v) => s + v, 0) / usedShabbatot.length : 0,
     shabbatNightBaseKw: shabbatNightKw,
   };

@@ -103,7 +103,7 @@ def test_format_insights_observational_language():
     assert "הסתברותית" in text and "לא ודאות" in text
     assert "מכונת כביסה אפשרית" in text
     assert "יום שני" in text
-    assert "עומס בסיס" in text
+    assert "רצפת צריכה" in text
 
 
 def test_sunset_approximation_reasonable():
@@ -215,3 +215,49 @@ def test_observance_medium_single_signal():
         shabbat_count=3, weekday_days=15, night_base_kw=0.5, shabbat_night_base_kw=0.2,
         shabbat_starts=4, weekday_starts=3,
     ) is None
+
+
+def test_efficiency_floor_and_washer_notes():
+    cat = load_catalog()
+    start = date(2026, 10, 7)
+    ivs = _household(start, 21, shabbat_night_kw=0.5, weekday_washers=(0, 1, 4, 6, 8, 12))
+    rep = build_insights(ivs, summarize(ivs), cat)
+    kinds = {n.kind for n in rep.efficiency}
+    assert "floor" in kinds  # 200W floor >= 150W threshold
+    assert "washer" in kinds  # mean cycle 1.25 kWh > 0.5 * 1.3
+    washer = next(n for n in rep.efficiency if n.kind == "washer")
+    assert "eco 40-60" in washer.text and "לא פסיקה" in washer.text  # never a verdict
+    assert washer.annual_nis and washer.annual_nis > 0
+    from iec_calc.report import format_insights
+    text = format_insights(rep, cat.flat_rate)
+    assert "יעילות מכשירים" in text and "benchmarks.json" in text
+
+
+def test_efficiency_quiet_household_no_notes():
+    cat = load_catalog()
+    # low floor (0.1 kW), no appliance blocks -> no efficiency notes at all
+    days = [date(2026, 10, 5) + timedelta(days=i) for i in range(10)]
+    ivs = [iv for d in days for iv in _day_intervals(d, base_kw=0.1)]
+    rep = build_insights(ivs, summarize(ivs), cat)
+    assert rep.efficiency == ()
+
+
+def test_efficiency_sustained_and_unattended():
+    cat = load_catalog()
+    start = date(2026, 10, 7)
+    ivs = []
+    for off in range(14):
+        d = start + timedelta(days=off)
+        day = _day_intervals(d, base_kw=0.1)
+        if off in (0, 2, 4):  # 3 sustained blocks: 2h steady 1.3 kW at 19:00
+            _add_block(day, d, 19, [1.3] * 8)
+        if off == 1:  # one unattended block starting 02:00
+            _add_block(day, d, 2, [1.5, 1.5, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4])
+        ivs.extend(day)
+    rep = build_insights(ivs, summarize(ivs), cat)
+    kinds = {n.kind for n in rep.efficiency}
+    assert "sustained" in kinds
+    assert "unattended" in kinds
+    sustained = next(n for n in rep.efficiency if n.kind == "sustained")
+    assert "אם מדובר במזגן" in sustained.text and "20-40%" in sustained.text
+    assert "אי אפשר להבחין" in sustained.text
