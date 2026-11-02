@@ -91,7 +91,9 @@ class TaozSeason:
 @dataclass(frozen=True)
 class Taoz:
     seasons: tuple[TaozSeason, ...]
-    holidays: frozenset[date] = field(default=frozenset)
+    holidays: frozenset[date] = field(default_factory=frozenset)
+    holiday_eves: frozenset[date] = field(default_factory=frozenset)
+    fixed_fee_monthly_pre_vat: float = 0.0
     requires_smart_meter: bool = True
     voluntary_below_annual_kwh: int = 40000
 
@@ -99,19 +101,30 @@ class Taoz:
         season = next(s for s in self.seasons if when.month in s.months)
         # Peak windows (17:00-22:00/23:00) never wrap midnight, and each
         # season's window already encodes its day rule ("all" in winter,
-        # "sun-thu" in summer/transition). Holidays are off-peak all day.
-        peak = season.peak_window.contains(when) and when.date() not in self.holidays
+        # "sun-thu" in summer/transition). Holidays and holiday eves are
+        # off-peak all day in summer/transition; in winter the peak applies
+        # every day, holidays included (schedule 5.1-1, decision 63609).
+        peak = season.peak_window.contains(when)
+        if peak and season.name != "winter" and when.date() in (self.holidays | self.holiday_eves):
+            peak = False
         return season.peak_rate if peak else season.off_peak_rate
 
 
 @dataclass(frozen=True)
 class Catalog:
     flat_rate: float
-    fixed_fees_bimonthly: dict
+    fixed_fees_monthly_pre_vat: dict
+    vat: float
     taoz: Taoz
     plans: tuple[SupplierPlan, ...]
     sources: tuple[dict, ...]
     retrieved: str
+
+    def fixed_fee_annual(self, phase: str = "single", taoz: bool = False) -> float:
+        """Annual fixed fee incl. VAT for a meter phase ('single'/'three')."""
+        key = "three_phase" if phase == "three" else "single_phase"
+        monthly = self.taoz.fixed_fee_monthly_pre_vat if taoz else self.fixed_fees_monthly_pre_vat[key]["total"]
+        return monthly * 12 * (1 + self.vat)
 
 
 def load_catalog(path: str | Path | None = None) -> Catalog:
@@ -119,6 +132,7 @@ def load_catalog(path: str | Path | None = None) -> Catalog:
     raw = json.loads(p.read_text(encoding="utf-8"))
     reg = raw["regulated"]
     holidays = frozenset(date.fromisoformat(d) for d in raw["taoz"].get("holidays", []))
+    holiday_eves = frozenset(date.fromisoformat(d) for d in raw["taoz"].get("holiday_eves", []))
     seasons = tuple(
         TaozSeason(
             name=name,
@@ -145,8 +159,14 @@ def load_catalog(path: str | Path | None = None) -> Catalog:
     log.debug("catalog %s: %d supplier plans, flat rate %.4f", p.name, len(plans), reg["flat_rate_per_kwh"])
     return Catalog(
         flat_rate=reg["flat_rate_per_kwh"],
-        fixed_fees_bimonthly=reg.get("fixed_fees_bimonthly", {}),
-        taoz=Taoz(seasons=seasons, holidays=holidays),
+        fixed_fees_monthly_pre_vat=reg.get("fixed_fees_monthly_pre_vat", {}),
+        vat=raw.get("vat_rate", 0.18),
+        taoz=Taoz(
+            seasons=seasons,
+            holidays=holidays,
+            holiday_eves=holiday_eves,
+            fixed_fee_monthly_pre_vat=raw["taoz"].get("fixed_fee_monthly_pre_vat", {}).get("total", 0.0),
+        ),
         plans=plans,
         sources=tuple(raw.get("sources", [])),
         retrieved=raw.get("retrieved", ""),
