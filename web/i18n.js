@@ -73,7 +73,7 @@ export function applyI18n(doc = document) {
       sel.addEventListener('change', () => {
         const q = new URLSearchParams(window.location.search);
         q.set('lang', sel.value);
-        window.history.replaceState(null, '', `${window.location.pathname}?${q}`);
+        window.history.replaceState(null, '', `${window.location.pathname}?${q}${window.location.hash}`);
         applyI18n();
         doc.dispatchEvent(new (window.CustomEvent || CustomEvent)('iec:langchange'));
       });

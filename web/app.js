@@ -245,8 +245,10 @@ $('go').addEventListener('click', async () => {
     renderAnalysis(lastIntervals);
     $('status').textContent = '';
   } catch (e) {
+    lastIntervals = null;
     lastErrorNoRows = e.message === t('calc.err_no_rows');
-    err.textContent = e.message; err.style.display = '';
+    err.textContent = e.message; err.style.display = 'block';
+    for (const id of ['summaryCard', 'plansCard', 'insightsCard']) $(id).style.display = 'none';
     $('status').textContent = '';
   }
 });

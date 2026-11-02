@@ -337,8 +337,12 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   };
   class CustomEventStub { constructor(type) { this.type = type; } }
   const windowStub = {
-    location: { search: '?lang=he', pathname: '/web/' },
-    history: { replaceState(s, t, u) { windowStub.location.search = u.includes('?') ? u.slice(u.indexOf('?')) : ''; } },
+    location: { search: '?lang=he', pathname: '/web/', hash: '' },
+    history: { replaceState(s, t, u) {
+      const qi = u.indexOf('?'), hi = u.indexOf('#');
+      windowStub.location.search = qi >= 0 ? u.slice(qi, hi >= 0 ? hi : undefined) : '';
+      windowStub.location.hash = hi >= 0 ? u.slice(hi) : '';
+    } },
     URLSearchParams, CustomEvent: CustomEventStub,
   };
   globalThis.document = documentStub;
@@ -381,6 +385,22 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   switchTo('he');
   texts = collect().join('\n');
   check('langswitch: back to he, no stale English UI strings', !texts.includes('Annual cost') && texts.includes('עלות שנתית'));
+
+  // hash preservation (#58): switching language must keep the URL fragment
+  windowStub.location.hash = '#plans';
+  switchTo('en');
+  check('langswitch: url fragment preserved', windowStub.location.hash === '#plans' && windowStub.location.search === '?lang=en');
+
+  // error path (#58): an invalid CSV after a successful calc must show the
+  // error box, hide the stale result cards, and a language switch must not
+  // resurrect stale results
+  documentStub.getElementById('csv').files = [{ text: async () => 'not,a,valid\n1,2,3\n' }];
+  await byId.go.listeners.click();
+  check('errpath: error box visible (display:block)', byId.err.style.display === 'block');
+  check('errpath: stale result cards hidden', ['summaryCard', 'plansCard', 'insightsCard'].every(id => byId[id].style.display === 'none'));
+  switchTo('he');
+  check('errpath: switch does not resurrect stale results', byId.plansCard.style.display === 'none' && byId.summaryCard.style.display === 'none');
+  check('errpath: error box still visible after switch', byId.err.style.display === 'block');
 }
 
 // --- CSS contract: 360px no-overflow guards (#54 review) ---
