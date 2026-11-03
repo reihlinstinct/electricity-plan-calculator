@@ -220,7 +220,7 @@ function setBlock(ivs, startIdx, kws) {
   check('i18n: en translation renders', t('ui.title', {}, 'en') === 'Electricity plan calculator');
   check('i18n: ar present rtl, not default', I18N.languages.ar && I18N.languages.ar.dir === 'rtl' && !I18N.languages.ar.default);
   check('i18n: ar translation renders', t('ui.title', {}, 'ar') === 'حاسبة مسارات الكهرباء');
-  check('i18n: og keys exist in all languages', ['he', 'en', 'ar'].every(l => I18N.strings['ui.og_title'][l] && I18N.strings['ui.og_desc'][l]));
+  check('i18n: og keys exist in all languages', ['he', 'en', 'ar', 'ru'].every(l => I18N.strings['ui.og_title'][l] && I18N.strings['ui.og_desc'][l]));
   check('i18n: unknown language falls back to he', t('ui.title', {}, 'fr') === t('ui.title', {}, 'he'));
   // selector redesign (issue #54): a native select inside the header on every page,
   // flex space-between puts it opposite the title in both directions
@@ -231,7 +231,7 @@ function setBlock(ivs, startIdx, kws) {
     check(`${page}: no old nav bar`, !body.includes('<nav id="langSwitch"'));
   }
   check('i18n: footer sources label localized', I18N.strings['ui.footer_sources'].he === 'מקורות' && I18N.strings['ui.footer_sources'].en === 'Sources');
-  check('i18n: selector aria-label key in all languages', ['he', 'en', 'ar'].every(l => I18N.strings['ui.lang_switch_label'][l]));
+  check('i18n: selector aria-label key in all languages', ['he', 'en', 'ar', 'ru'].every(l => I18N.strings['ui.lang_switch_label'][l]));
   check('i18n: option labels are 2-letter codes', Object.keys(I18N.languages).every(c => c.length === 2 && c.toUpperCase().length === 2));
   // issue #56: no hostname-list box on the main page; sources live only on the Sources page
   {
@@ -501,9 +501,9 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   const keys = [...new Set([...hsjs.matchAll(/k: '(guide\.hs_\w+)'/g)].map(m => m[1]))];
   check('hotspots: keys defined', keys.length >= 8);
   for (const k of keys) {
-    check(`hotspots: ${k} in all languages`, I18N.strings[k] && ['he', 'en', 'ar'].every(l => I18N.strings[k][l]));
+    check(`hotspots: ${k} in all languages`, I18N.strings[k] && ['he', 'en', 'ar', 'ru'].every(l => I18N.strings[k][l]));
   }
-  check('hotspots: hint key in all languages', I18N.strings['guide.hs_hint'] && ['he', 'en', 'ar'].every(l => I18N.strings['guide.hs_hint'][l]));
+  check('hotspots: hint key in all languages', I18N.strings['guide.hs_hint'] && ['he', 'en', 'ar', 'ru'].every(l => I18N.strings['guide.hs_hint'][l]));
   check('hotspots: skipped for Hebrew UI', hsjs.includes("if (lang === 'he') return;"));
   check('hotspots: rebuilt on language change', hsjs.includes("addEventListener('iec:langchange'"));
   check('hotspots: first-tap suppress guard (#68 review)', hsjs.includes('CLICK_SUPPRESS_MS'));

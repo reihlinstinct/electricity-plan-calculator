@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-03
+
+- Russian as the third additional language: full strings column, `--lang ru`,
+  `?lang=ru` on the site. (#44, #70)
+
 ## 2026-11-02
 
 - Arabic as the second additional language: full strings column, `--lang ar`,

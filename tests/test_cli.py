@@ -77,3 +77,17 @@ def test_report_runs_arabic(sample_csv, capsys):
     assert "ترتيب المسارات" in out
     # supplier plan names stay Hebrew (proper nouns from the tariff catalog)
     assert "ELECTRA POWER" in out
+
+
+def test_report_runs_russian(sample_csv, capsys):
+    import iec_calc.i18n as i18n
+    try:
+        rc = main(["--lang", "ru", "report", str(sample_csv)])
+    finally:
+        i18n.set_active_language(None)
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "Анализ потребления" in out
+    assert "Рейтинг планов" in out
+    # supplier plan names stay Hebrew (proper nouns from the tariff catalog)
+    assert "ELECTRA POWER" in out
