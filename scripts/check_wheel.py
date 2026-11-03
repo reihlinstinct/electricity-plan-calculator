@@ -23,7 +23,7 @@ def main(wheel: Path) -> None:
                 assert json.loads(archive.read("iec_calc/resources/" + name)) == json.loads(source.read_text())
             archive.extractall(target)
         code = """
-import sys
+import sys, io, contextlib
 sys.path.insert(0, sys.argv[1])
 from iec_calc import i18n, tariffs, benchmarks, mcp_server
 from pathlib import Path
@@ -32,7 +32,9 @@ from iec_calc.cli import main
 assert {"he", "en", "ar", "ru", "am"} <= i18n.languages().keys()
 assert tariffs.load_catalog().plans
 assert benchmarks.load_benchmarks().washer_typical_kwh_per_cycle > 0
-assert main(['--lang', 'en', 'report', sys.argv[2]]) == 0
+with contextlib.redirect_stdout(io.StringIO()) as output:
+    assert main(['--lang', 'en', 'report', sys.argv[2]]) == 0
+assert str(Path(sys.argv[1]) / 'iec_calc' / 'resources' / 'benchmarks.json') in output.getvalue()
 print('installed wheel smoke passed')
 """
         # -I ignores PYTHONPATH and user site packages, so an editable source

@@ -6,6 +6,7 @@ from .analysis import Summary
 from .cost import PlanCost
 from .i18n import t as _t
 from .insights import InsightsReport
+from .resources import resource_path
 from .tariffs import Catalog
 from .weather import HvacReport, WeatherReport
 
@@ -220,5 +221,5 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
         for n in rep.efficiency:
             cost = _t("app.eff_annual", nis=f"{n.annual_nis:,.0f}") if n.annual_nis is not None else ""
             lines.append(f"- {n.text} ({_t(_CONF_KEYS[n.confidence])}).{cost}")
-        lines.append(_t("report.eff_sources"))
+        lines.append(_t("report.eff_sources", path=str(resource_path("benchmarks.json"))))
     return lines_to_text(lines)

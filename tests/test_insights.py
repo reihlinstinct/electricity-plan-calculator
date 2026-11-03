@@ -259,6 +259,9 @@ def test_efficiency_floor_and_washer_notes():
 
     text = format_insights(rep, cat.flat_rate)
     assert "יעילות מכשירים" in text and "benchmarks.json" in text
+    from iec_calc.resources import resource_path
+
+    assert str(resource_path("benchmarks.json")) in text
 
 
 def test_efficiency_quiet_household_no_notes():

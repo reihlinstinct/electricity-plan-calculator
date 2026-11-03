@@ -120,7 +120,6 @@ translations. Build copies them from the canonical JSON files into the package;
 no duplicate source files are maintained. CI tests the wheel outside the checkout
 with `python scripts/check_wheel.py dist/iec_calc-*.whl`.
 
-
 `scripts/generate_og_assets.py` regenerates the share/favicon PNGs in `web/` from the synthetic sample data (needs Pillow and Noto Sans Hebrew at `/usr/share/fonts/truetype/noto/`; the PNGs are committed, so CI does not run it).
 
 ```sh
