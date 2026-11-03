@@ -24,6 +24,15 @@
   p, li { line-height:1.6; }
   .muted { color:var(--muted); font-size:.85rem; }
   .back { display:inline-block; margin-top:.5rem; }
+  /* translation hotspots over the Hebrew screenshots (#67) */
+  .shot { position:relative; }
+  .shot img { margin:.5rem 0; }
+  .hs { position:absolute; padding:0; border:2px dashed transparent; border-radius:6px;
+        background:transparent; cursor:help; }
+  .hs:hover, .hs:focus-visible, .hs.on { border-color:var(--accent); background:rgba(11,107,203,.15); outline:none; }
+  .hs-tip { position:absolute; z-index:5; background:#1a1a2e; color:#fff; padding:.3rem .6rem;
+            border-radius:6px; font-size:.85rem; max-width:80%; pointer-events:none;
+            box-shadow:0 2px 8px rgba(0,0,0,.3); }
 </style>
 </head>
 <body>
@@ -37,37 +46,49 @@
   <div class="card">
     <h2 data-i18n="guide.s1_h">1. נכנסים לאתר חברת החשמל</h2>
     <p><span data-i18n="guide.s1_p1">פותחים את </span><a href="https://www.iec.co.il">iec.co.il</a><span data-i18n="guide.s1_p2">. בשורת "פעולות נפוצות" לוחצים על "כל הפעולות".</span></p>
+    <div class="shot" data-shot="step1">
     <img src="../docs/images/step1.png" alt="שורת פעולות נפוצות, כל הפעולות מסומן" data-i18n-alt data-i18n="guide.s1_alt" loading="lazy">
+    </div>
   </div>
 
   <div class="card">
     <h2 data-i18n="guide.s2_h">2. בוחרים "מונים וצריכה"</h2>
     <p data-i18n="guide.s2_p">בעמוד "כל הפעולות" לוחצים על האריח "מונים וצריכה".</p>
+    <div class="shot" data-shot="step2">
     <img src="../docs/images/step2.png" alt="עמוד כל הפעולות, מונים וצריכה מסומן" data-i18n-alt data-i18n="guide.s2_alt" loading="lazy">
+    </div>
   </div>
 
   <div class="card">
     <h2 data-i18n="guide.s3_h">3. בוחרים "מצב הפעילות במונה"</h2>
     <p data-i18n="guide.s3_p">בתפריט "מונים וצריכה" לוחצים על "מצב הפעילות במונה".</p>
+    <div class="shot" data-shot="step3">
     <img src="../docs/images/step3.png" alt="תפריט מונים וצריכה, מצב הפעילות במונה מסומן" data-i18n-alt data-i18n="guide.s3_alt" loading="lazy">
+    </div>
   </div>
 
   <div class="card">
     <h2 data-i18n="guide.s4_h">4. בוחרים "מצב צריכה עדכני"</h2>
     <p data-i18n="guide.s4_p">במסך "איזה נתונים מעניינים אותך?" לוחצים על הכרטיס "מצב צריכה עדכני" (לא "קריאות מונה קודמות").</p>
+    <div class="shot" data-shot="step4">
     <img src="../docs/images/step4.png" alt="מסך איזה נתונים מעניינים אותך, מצב צריכה עדכני מסומן" data-i18n-alt data-i18n="guide.s4_alt" loading="lazy">
+    </div>
   </div>
 
   <div class="card">
     <h2 data-i18n="guide.s5_h">5. נפתח מסך הצריכה</h2>
     <p data-i18n="guide.s5_p">מגיעים למסך "מה היתה הצריכה במונה", עם לשונית "לפי תקופה" ובחירת יום, שבוע או חודש. אם מתבקשים להתחבר - מזינים מספר תעודת זהות ואת הקוד החד-פעמי שנשלח ב-SMS או במייל (את הקוד מקלידים רק באתר של חברת החשמל).</p>
+    <div class="shot" data-shot="step5">
     <img src="../docs/images/step5.png" alt="מסך מה היתה הצריכה במונה, לשונית לפי תקופה מסומנת" data-i18n-alt data-i18n="guide.s5_alt" loading="lazy">
+    </div>
   </div>
 
   <div class="card">
     <h2 data-i18n="guide.s6_h">6. שולחים את הקובץ למייל</h2>
     <p><span data-i18n="guide.s6_p1">מגללים למטה ולוחצים על "שליחת קובץ אקסל עם נתוני צריכה </span><b data-i18n="guide.s6_p2">מהשנתיים האחרונות</b><span data-i18n="guide.s6_p3"> למייל שלך". הקובץ נשלח לכתובת המייל הרשומה בחשבון ומגיע בדרך כלל תוך כמה דקות (כדאי לבדוק גם בספאם).</span></p>
+    <div class="shot" data-shot="step6">
     <img src="../docs/images/step6.png" alt="הקישור לשליחת קובץ נתוני הצריכה למייל" data-i18n-alt data-i18n="guide.s6_alt" loading="lazy">
+    </div>
   </div>
 
   <div class="card">
@@ -86,6 +107,69 @@
     <p class="muted" data-i18n="guide.footer_note">המדריך מבוסס על אתר חברת החשמל לישראל (iec.co.il), נבדק ב-2 בנובמבר 2026 עם צילומי מסך אמיתיים מהאתר (מספר המונה הושמט מהצילומים). שמות כפתורים ותפריטים משתנים מדי פעם; אם משהו נראה אחרת, חפשו באזור "מונים וצריכה" את האפשרות לקבל קובץ נתוני צריכה למייל.</p>
   </div>
 </main>
-<script type="module">import { applyI18n } from './i18n.js'; applyI18n();</script>
+<script type="module">
+import { applyI18n, t, currentLang } from './i18n.js';
+applyI18n();
+
+// Translation hotspots over the Hebrew IEC screenshots (#67): % coordinates
+// over the Hebrew UI elements the guide text references. Hover/focus/tap shows
+// the term in the current language. Hebrew UI needs no gloss - hotspots render
+// only for other languages. Coordinates are tied to the current screenshots:
+// replacing a screenshot means re-placing its hotspots.
+const HOTSPOTS = {
+  step1: [{ k: 'guide.hs_quick_actions', x: 84, y: 15, w: 15, h: 75 },
+          { k: 'guide.hs_all_actions', x: 0, y: 3, w: 10, h: 94 }],
+  step2: [{ k: 'guide.hs_all_actions', x: 82, y: 3, w: 14, h: 18 },
+          { k: 'guide.hs_meters', x: 59, y: 24, w: 20, h: 74 }],
+  step3: [{ k: 'guide.hs_meters', x: 25, y: 27, w: 50, h: 9 },
+          { k: 'guide.hs_activity', x: 2, y: 52, w: 96, h: 11 }],
+  step4: [{ k: 'guide.hs_which_data', x: 30, y: 8, w: 46, h: 10 },
+          { k: 'guide.hs_current', x: 51, y: 16, w: 46, h: 32 }],
+  step5: [{ k: 'guide.hs_by_period', x: 8, y: 5, w: 43, h: 12 },
+          { k: 'guide.hs_meter_consumption', x: 27, y: 20, w: 43, h: 7 }],
+  step6: [{ k: 'guide.hs_send_excel', x: 15, y: 4, w: 80, h: 36 }],
+};
+function hideTips() {
+  document.querySelectorAll('.hs-tip').forEach(e => e.remove());
+  document.querySelectorAll('.hs.on').forEach(e => e.classList.remove('on'));
+}
+function renderHotspots() {
+  hideTips();
+  document.querySelectorAll('.hs').forEach(e => e.remove());
+  if (currentLang() === 'he') return;
+  for (const [shot, list] of Object.entries(HOTSPOTS)) {
+    const wrap = document.querySelector(`.shot[data-shot="${shot}"]`);
+    if (!wrap) continue;
+    for (const h of list) {
+      const label = t(h.k);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'hs';
+      b.style.left = h.x + '%'; b.style.top = h.y + '%';
+      b.style.width = h.w + '%'; b.style.height = h.h + '%';
+      b.setAttribute('aria-label', label);
+      const show = () => {
+        hideTips(); b.classList.add('on');
+        const tip = document.createElement('div');
+        tip.className = 'hs-tip';
+        tip.textContent = label;
+        tip.style.left = Math.min(h.x, 20) + '%';
+        tip.style.top = h.y + '%';
+        if (h.y > 50) tip.style.transform = 'translateY(-100%)';
+        wrap.appendChild(tip);
+      };
+      b.addEventListener('mouseenter', show);
+      b.addEventListener('focus', show);
+      b.addEventListener('mouseleave', hideTips);
+      b.addEventListener('blur', hideTips);
+      b.addEventListener('click', ev => { ev.stopPropagation(); b.classList.contains('on') ? hideTips() : show(); });
+      wrap.appendChild(b);
+    }
+  }
+}
+document.addEventListener('click', hideTips);
+document.addEventListener('iec:langchange', renderHotspots);
+renderHotspots();
+</script>
 </body>
 </html>

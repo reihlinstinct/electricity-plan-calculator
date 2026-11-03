@@ -423,6 +423,23 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   check('errpath: error box still visible after switch', byId.err.style.display === 'block');
 }
 
+// --- guide screenshot hotspots (#67): every step image wrapped, every hotspot
+// key exists in all languages, hotspots skip the Hebrew UI ---
+{
+  const { I18N } = await import('../web/i18n-data.js');
+  const guide = readFileSync(join(root, 'web', 'guide.html'), 'utf-8');
+  for (let n = 1; n <= 6; n++) {
+    check(`hotspots: step${n} image wrapped`, guide.includes(`<div class="shot" data-shot="step${n}">`));
+  }
+  const keys = [...guide.matchAll(/k: '(guide\.hs_\w+)'/g)].map(m => m[1]);
+  check('hotspots: keys defined', keys.length >= 8);
+  for (const k of keys) {
+    check(`hotspots: ${k} in all languages`, I18N.strings[k] && ['he', 'en', 'ar'].every(l => I18N.strings[k][l]));
+  }
+  check('hotspots: skipped for Hebrew UI', guide.includes("if (currentLang() === 'he') return;"));
+  check('hotspots: rebuilt on language change', guide.includes("addEventListener('iec:langchange', renderHotspots)"));
+}
+
 // --- CSS contract: 360px no-overflow guards (#54 review) ---
 {
   const idx = readFileSync(join(root, 'web', 'index.html'), 'utf-8');

@@ -974,6 +974,51 @@
       "he": "בחירת שפה",
       "en": "Language",
       "ar": "اختيار اللغة"
+    },
+    "guide.hs_quick_actions": {
+      "he": "פעולות נפוצות",
+      "en": "Quick actions",
+      "ar": "إجراءات شائعة"
+    },
+    "guide.hs_all_actions": {
+      "he": "כל הפעולות",
+      "en": "All actions",
+      "ar": "كل الإجراءات"
+    },
+    "guide.hs_meters": {
+      "he": "מונים וצריכה",
+      "en": "Meters and consumption",
+      "ar": "العدادات والاستهلاك"
+    },
+    "guide.hs_activity": {
+      "he": "מצב הפעילות במונה",
+      "en": "Meter activity status",
+      "ar": "حالة النشاط في العداد"
+    },
+    "guide.hs_current": {
+      "he": "מצב צריכה עדכני",
+      "en": "Current consumption status",
+      "ar": "حالة الاستهلاك الحالية"
+    },
+    "guide.hs_which_data": {
+      "he": "איזה נתונים מעניינים אותך?",
+      "en": "Which data are you interested in?",
+      "ar": "أي بيانات تهمك؟"
+    },
+    "guide.hs_by_period": {
+      "he": "לפי תקופה",
+      "en": "By period",
+      "ar": "حسب الفترة"
+    },
+    "guide.hs_meter_consumption": {
+      "he": "מה היתה הצריכה במונה",
+      "en": "Meter consumption",
+      "ar": "ما كان الاستهلاك في العداد"
+    },
+    "guide.hs_send_excel": {
+      "he": "שליחת קובץ אקסל עם נתוני צריכה מהשנתיים האחרונות למייל שלך",
+      "en": "Send an Excel file with the last two years of consumption data to your email",
+      "ar": "إرسال ملف إكسل ببيانات استهلاك العامين الأخيرين إلى بريدك الإلكتروني"
     }
   }
 }
