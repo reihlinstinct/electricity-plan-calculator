@@ -229,6 +229,7 @@ function setBlock(ivs, startIdx, kws) {
     check(`${page}: select#langSwitch inside header`, /<header><select id="langSwitch"><\/select><h1/.test(body));
     check(`${page}: header flex opposite-side`, /header \{[^}]*display:flex[^}]*justify-content:space-between[^}]*flex-direction:row-reverse/s.test(body));
     check(`${page}: no old nav bar`, !body.includes('<nav id="langSwitch"'));
+    check(`${page}: footer bar with both links (#62)`, body.includes('<a href="https://github.com/reihlinstinct/electricity-plan-calculator" data-i18n="ui.footer_github">GitHub</a> · <a href="sources.html" data-i18n="ui.footer_sources">Sources</a>'));
   }
   check('i18n: footer sources label localized', I18N.strings['ui.footer_sources'].he === 'מקורות' && I18N.strings['ui.footer_sources'].en === 'Sources');
   check('i18n: selector aria-label key in all languages', ['he', 'en', 'ar', 'ru', 'am'].every(l => I18N.strings['ui.lang_switch_label'][l]));
