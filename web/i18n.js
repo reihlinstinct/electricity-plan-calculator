@@ -51,6 +51,17 @@ export function applyI18n(doc = document) {
   for (const el of doc.querySelectorAll('[data-i18n-title]')) {
     doc.title = t(el.getAttribute('data-i18n-title'), {}, lang);
   }
+  // Carry the language through internal page links (guide/sources/back), so
+  // navigation stays in the selected language. Only relative page targets
+  // ("guide.html", "./", "./sources.html"); never external, assets, or pure
+  // #anchors. Idempotent: any existing query string is replaced.
+  for (const a of doc.querySelectorAll('a[href]')) {
+    const m = a.getAttribute('href').match(/^((?:\.\/)?[\w.-]*(?:\.html)?)(\?[^#]*)?(#.*)?$/);
+    if (!m) continue;
+    const base = m[1];
+    if (base !== './' && !base.endsWith('.html')) continue;
+    a.setAttribute('href', `${base}?lang=${lang}${m[3] || ''}`);
+  }
   // Dropdown selector in the header: 2-letter codes, native select (keyboard
   // + screen-reader friendly), no reload - update the URL param and re-render.
   const sel = doc.getElementById('langSwitch');

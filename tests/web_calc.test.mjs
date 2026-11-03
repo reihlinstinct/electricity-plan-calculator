@@ -319,6 +319,12 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
     }
   }
   const docListeners = {};
+  const linkEls = [];
+  const mkLink = href => { const a = mkEl('a'); a.setAttribute('href', href); linkEls.push(a); return a; };
+  mkLink('guide.html');
+  mkLink('./');
+  mkLink('https://www.iec.co.il');
+  mkLink('#notes');
   const documentStub = {
     title: '', documentElement: mkEl('html'),
     getElementById(id) {
@@ -332,6 +338,7 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
     querySelectorAll(sel) {
       if (sel === '[data-i18n]') return staticEls.filter(e => 'data-i18n' in e.attrs);
       if (sel === '[data-i18n-title]') return staticEls.filter(e => 'data-i18n-title' in e.attrs);
+      if (sel === 'a[href]') return linkEls;
       return [];
     },
     addEventListener(ev, fn) { docListeners[ev] = fn; },
@@ -387,6 +394,17 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   switchTo('he');
   texts = collect().join('\n');
   check('langswitch: back to he, no stale English UI strings', !texts.includes('Annual cost') && texts.includes('עלות שנתית'));
+
+  // links carry the language (#65): internal page links get ?lang=, external
+  // links and pure #anchors stay untouched, rewrite is idempotent
+  const hrefs = () => linkEls.map(a => a.getAttribute('href'));
+  check('links: internal links carry lang on load', hrefs()[0] === 'guide.html?lang=he' && hrefs()[1] === './?lang=he');
+  check('links: external + anchor untouched', hrefs()[2] === 'https://www.iec.co.il' && hrefs()[3] === '#notes');
+  switchTo('en');
+  check('links: follow language switch', hrefs()[0] === 'guide.html?lang=en' && hrefs()[1] === './?lang=en');
+  switchTo('en');
+  check('links: idempotent rewrite', hrefs()[0] === 'guide.html?lang=en');
+  switchTo('he');
 
   // hash preservation (#58): switching language must keep the URL fragment
   windowStub.location.hash = '#plans';
