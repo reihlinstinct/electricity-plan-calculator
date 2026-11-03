@@ -2,6 +2,9 @@
 
 ## 2026-11-03
 
+- Amharic as the fourth additional language: full strings column, `--lang am`,
+  `?lang=am` on the site. (#44, #74)
+
 - Russian as the third additional language: full strings column, `--lang ru`,
   `?lang=ru` on the site. (#44, #70)
 

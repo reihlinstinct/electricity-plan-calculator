@@ -56,6 +56,13 @@ def test_russian_is_ltr_not_default():
     assert i18n.t("ui.title", lang="ru") != i18n.t("ui.title", lang="he")
 
 
+def test_amharic_is_ltr_not_default():
+    assert i18n.t("ui.title", lang="am") == "የኤሌክትሪክ ዕቅድ ካልኩለተር"
+    assert DOC["languages"]["am"]["dir"] == "ltr"
+    assert not DOC["languages"]["am"].get("default")
+    assert i18n.t("ui.title", lang="am") != i18n.t("ui.title", lang="he")
+
+
 def test_set_active_language():
     try:
         i18n.set_active_language("en")
@@ -123,4 +130,22 @@ def test_hvac_header_russian_columns_separated():
         i18n.set_active_language(None)
     assert "БазаВыходные" not in head
     for word in ("Месяц", "Всего", "База", "Выходные", "Охлажд", "Нагрев", "Прочее"):
+        assert word in head
+
+
+def test_hvac_header_amharic_columns_separated():
+    from iec_calc.report import format_hvac
+    from iec_calc.weather import HvacReport, MonthAttribution
+    rep = HvacReport(
+        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=1.0,
+        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.0, 20.0, 0.0),),
+    )
+    i18n.set_active_language("am")
+    try:
+        head = format_hvac(rep).splitlines()[5]
+    finally:
+        i18n.set_active_language(None)
+    assert "መሠረትመጨረሻ" not in head
+    for word in ("ወር", "ጠቅላላ", "መሠረት", "መጨረሻ", "ማቀዝቀዝ", "ማሞቅ", "ሌላ"):
         assert word in head
