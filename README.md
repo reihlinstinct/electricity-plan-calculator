@@ -115,6 +115,9 @@ review, ideally by a native speaker.
 
 ## Development
 
+Requires Python 3.11 or newer. Main CI tests 3.11 and 3.12; PRs use one
+version to limit CI minutes. Python 3.10 is no longer supported (EOL).
+
 Normal wheel installs include the tariff catalog, efficiency benchmarks and all
 translations. Build copies them from the canonical JSON files into the package;
 no duplicate source files are maintained. CI tests the wheel outside the checkout

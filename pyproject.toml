@@ -7,7 +7,7 @@ name = "iec-calc"
 version = "0.1.0"
 description = "Analyze IEC consumption exports and rank Israeli electricity plans by your real usage"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
@@ -41,7 +41,7 @@ fail_under = 80
 show_missing = true
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+from email.parser import Parser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +16,9 @@ def main(wheel: Path) -> None:
     with tempfile.TemporaryDirectory() as directory:
         target = Path(directory)
         with zipfile.ZipFile(wheel) as archive:
+            metadata_name = next(n for n in archive.namelist() if n.endswith(".dist-info/METADATA"))
+            metadata = Parser().parsestr(archive.read(metadata_name).decode())
+            assert metadata["Requires-Python"] == ">=3.11"
             for name, source in (
                 ("strings.json", ROOT / "i18n" / "strings.json"),
                 ("tariffs.json", ROOT / "data" / "tariffs.json"),
@@ -24,6 +28,7 @@ def main(wheel: Path) -> None:
             archive.extractall(target)
         code = """
 import sys, io, contextlib
+assert sys.version_info >= (3, 11), "Python 3.11+ required"
 sys.path.insert(0, sys.argv[1])
 from iec_calc import i18n, tariffs, benchmarks, mcp_server
 from pathlib import Path
