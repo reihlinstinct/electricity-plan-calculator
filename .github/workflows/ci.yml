@@ -22,9 +22,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip setuptools
       - run: pip install -e '.[dev]'
-      - run: ruff check src tests scripts
-      - run: ruff format --check src tests scripts
+      - run: ruff check src tests scripts setup.py
+      - run: ruff format --check src tests scripts setup.py
       - run: pytest --cov --cov-report=term-missing
+      - name: Build and smoke-test installed wheel outside checkout
+        run: |
+          pip wheel --no-deps . -w /tmp/iec-wheels
+          python scripts/check_wheel.py /tmp/iec-wheels/iec_calc-*.whl
       - run: pip-audit --skip-editable
   privacy-scan:
     runs-on: ubuntu-latest

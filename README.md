@@ -115,12 +115,18 @@ review, ideally by a native speaker.
 
 ## Development
 
+Normal wheel installs include the tariff catalog, efficiency benchmarks and all
+translations. Build copies them from the canonical JSON files into the package;
+no duplicate source files are maintained. CI tests the wheel outside the checkout
+with `python scripts/check_wheel.py dist/iec_calc-*.whl`.
+
+
 `scripts/generate_og_assets.py` regenerates the share/favicon PNGs in `web/` from the synthetic sample data (needs Pillow and Noto Sans Hebrew at `/usr/share/fonts/truetype/noto/`; the PNGs are committed, so CI does not run it).
 
 ```sh
 pytest --cov          # tests + coverage gate (>= 80%)
-ruff check src tests scripts  # lint
-ruff format --check src tests scripts  # formatting (also enforced in CI)
+ruff check src tests scripts setup.py  # lint
+ruff format --check src tests scripts setup.py  # formatting (also enforced in CI)
 pip-audit             # dependency vulnerabilities
 man -l man/iec-calc.1 # man page
 ```

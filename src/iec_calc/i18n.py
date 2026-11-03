@@ -10,9 +10,10 @@ from __future__ import annotations
 import json
 import re
 from functools import lru_cache
-from pathlib import Path
 
-STRINGS_PATH = Path(__file__).resolve().parent.parent.parent / "i18n" / "strings.json"
+from .resources import resource_path
+
+STRINGS_PATH = resource_path("strings.json")
 _PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 

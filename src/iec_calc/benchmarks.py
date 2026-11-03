@@ -6,6 +6,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .resources import resource_path
+
 
 @dataclass(frozen=True)
 class Benchmarks:
@@ -17,7 +19,7 @@ class Benchmarks:
 
 
 def load_benchmarks(path: str | Path | None = None) -> Benchmarks:
-    p = Path(path) if path else Path(__file__).resolve().parents[2] / "data" / "benchmarks.json"
+    p = Path(path) if path else resource_path("benchmarks.json")
     d = json.loads(p.read_text(encoding="utf-8"))
     return Benchmarks(
         accessed=d["accessed"],

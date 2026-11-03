@@ -16,9 +16,11 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+from .resources import resource_path
+
 log = logging.getLogger(__name__)
 
-DATA_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "tariffs.json"
+DATA_FILE = resource_path("tariffs.json")
 
 SUN_THU = (6, 0, 1, 2, 3)  # datetime.weekday(): Sun=6, Mon=0 .. Thu=3
 FRI_SAT = (4, 5)
