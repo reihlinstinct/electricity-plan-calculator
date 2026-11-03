@@ -25,11 +25,11 @@
   .muted { color:var(--muted); font-size:.85rem; }
   .back { display:inline-block; margin-top:.5rem; }
   /* translation hotspots over the Hebrew screenshots (#67) */
-  .shot { position:relative; }
+  .shot { position:relative; width:fit-content; max-width:100%; }
   .shot img { margin:.5rem 0; }
-  .hs { position:absolute; padding:0; border:2px dashed transparent; border-radius:6px;
+  .hs { position:absolute; padding:0; border:2px dashed rgba(11,107,203,.45); border-radius:6px;
         background:transparent; cursor:help; }
-  .hs:hover, .hs:focus-visible, .hs.on { border-color:var(--accent); background:rgba(11,107,203,.15); outline:none; }
+  .hs:hover, .hs:focus-visible, .hs.on { border:2px solid var(--accent); background:rgba(11,107,203,.15); outline:none; }
   .hs-tip { position:absolute; z-index:5; background:#1a1a2e; color:#fff; padding:.3rem .6rem;
             border-radius:6px; font-size:.85rem; max-width:80%; pointer-events:none;
             box-shadow:0 2px 8px rgba(0,0,0,.3); }
@@ -49,6 +49,7 @@
     <div class="shot" data-shot="step1">
     <img src="../docs/images/step1.png" alt="שורת פעולות נפוצות, כל הפעולות מסומן" data-i18n-alt data-i18n="guide.s1_alt" loading="lazy">
     </div>
+    <p class="muted" id="hsHint" style="display:none"></p>
   </div>
 
   <div class="card">
@@ -108,68 +109,10 @@
   </div>
 </main>
 <script type="module">
-import { applyI18n, t, currentLang } from './i18n.js';
+import { applyI18n } from './i18n.js';
+import { initHotspots } from './hotspots.js';
 applyI18n();
-
-// Translation hotspots over the Hebrew IEC screenshots (#67): % coordinates
-// over the Hebrew UI elements the guide text references. Hover/focus/tap shows
-// the term in the current language. Hebrew UI needs no gloss - hotspots render
-// only for other languages. Coordinates are tied to the current screenshots:
-// replacing a screenshot means re-placing its hotspots.
-const HOTSPOTS = {
-  step1: [{ k: 'guide.hs_quick_actions', x: 84, y: 15, w: 15, h: 75 },
-          { k: 'guide.hs_all_actions', x: 0, y: 3, w: 10, h: 94 }],
-  step2: [{ k: 'guide.hs_all_actions', x: 82, y: 3, w: 14, h: 18 },
-          { k: 'guide.hs_meters', x: 59, y: 24, w: 20, h: 74 }],
-  step3: [{ k: 'guide.hs_meters', x: 25, y: 27, w: 50, h: 9 },
-          { k: 'guide.hs_activity', x: 2, y: 52, w: 96, h: 11 }],
-  step4: [{ k: 'guide.hs_which_data', x: 30, y: 8, w: 46, h: 10 },
-          { k: 'guide.hs_current', x: 51, y: 16, w: 46, h: 32 }],
-  step5: [{ k: 'guide.hs_by_period', x: 8, y: 5, w: 43, h: 12 },
-          { k: 'guide.hs_meter_consumption', x: 27, y: 20, w: 43, h: 7 }],
-  step6: [{ k: 'guide.hs_send_excel', x: 15, y: 4, w: 80, h: 36 }],
-};
-function hideTips() {
-  document.querySelectorAll('.hs-tip').forEach(e => e.remove());
-  document.querySelectorAll('.hs.on').forEach(e => e.classList.remove('on'));
-}
-function renderHotspots() {
-  hideTips();
-  document.querySelectorAll('.hs').forEach(e => e.remove());
-  if (currentLang() === 'he') return;
-  for (const [shot, list] of Object.entries(HOTSPOTS)) {
-    const wrap = document.querySelector(`.shot[data-shot="${shot}"]`);
-    if (!wrap) continue;
-    for (const h of list) {
-      const label = t(h.k);
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'hs';
-      b.style.left = h.x + '%'; b.style.top = h.y + '%';
-      b.style.width = h.w + '%'; b.style.height = h.h + '%';
-      b.setAttribute('aria-label', label);
-      const show = () => {
-        hideTips(); b.classList.add('on');
-        const tip = document.createElement('div');
-        tip.className = 'hs-tip';
-        tip.textContent = label;
-        tip.style.left = Math.min(h.x, 20) + '%';
-        tip.style.top = h.y + '%';
-        if (h.y > 50) tip.style.transform = 'translateY(-100%)';
-        wrap.appendChild(tip);
-      };
-      b.addEventListener('mouseenter', show);
-      b.addEventListener('focus', show);
-      b.addEventListener('mouseleave', hideTips);
-      b.addEventListener('blur', hideTips);
-      b.addEventListener('click', ev => { ev.stopPropagation(); b.classList.contains('on') ? hideTips() : show(); });
-      wrap.appendChild(b);
-    }
-  }
-}
-document.addEventListener('click', hideTips);
-document.addEventListener('iec:langchange', renderHotspots);
-renderHotspots();
+initHotspots();
 </script>
 </body>
 </html>

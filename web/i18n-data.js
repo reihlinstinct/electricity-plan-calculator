@@ -1020,6 +1020,11 @@ export const I18N = {
       "he": "שליחת קובץ אקסל עם נתוני צריכה מהשנתיים האחרונות למייל שלך",
       "en": "Send an Excel file with the last two years of consumption data to your email",
       "ar": "إرسال ملف إكسل ببيانات استهلاك العامين الأخيرين إلى بريدك الإلكتروني"
+    },
+    "guide.hs_hint": {
+      "he": "טיפ: מקישים על האזורים המסומנים בצילומי המסך כדי לראות מה כתוב.",
+      "en": "Tip: tap the outlined areas in the screenshots to see what the Hebrew says.",
+      "ar": "تلميح: اضغط على المناطق المحددة في لقطات الشاشة لمعرفة ما تقوله العبرية."
     }
   }
 };

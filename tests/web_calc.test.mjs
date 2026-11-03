@@ -290,6 +290,13 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
       setAttribute(k, v) { this.attrs[k] = String(v); },
       getAttribute(k) { return this.attrs[k] ?? null; },
       hasAttribute(k) { return k in this.attrs; },
+      removeAttribute(k) { delete this.attrs[k]; },
+      remove() { if (this.parent) this.parent.children = this.parent.children.filter(c => c !== this); this.detached = true; },
+      classList: {
+        add(c) { if (!this.contains(c)) e.className = (e.className ? e.className + ' ' : '') + c; },
+        remove(c) { e.className = e.className.split(' ').filter(x => x && x !== c).join(' '); },
+        contains(c) { return e.className.split(' ').includes(c); },
+      },
       addEventListener(ev, fn) { this.listeners[ev] = fn; },
       dispatchEvent(ev) { this.listeners[ev.type]?.(ev); },
       insertRow() { const r = mkEl('tr'); this.children.push(r); r.parent = this; return r; },
@@ -319,6 +326,7 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
     }
   }
   const docListeners = {};
+  const shotEls = {};
   const linkEls = [];
   const mkLink = href => { const a = mkEl('a'); a.setAttribute('href', href); linkEls.push(a); return a; };
   mkLink('guide.html');
@@ -334,15 +342,32 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
     },
     createElement: tag => mkEl(tag),
     createTextNode: txt => ({ textContent: txt, children: [] }),
-    querySelector: () => null,
+    querySelector(sel) {
+      const m = sel.match(/^\.shot\[data-shot="([^"]+)"\]$/);
+      return m ? (shotEls[m[1]] ?? null) : null;
+    },
     querySelectorAll(sel) {
       if (sel === '[data-i18n]') return staticEls.filter(e => 'data-i18n' in e.attrs);
       if (sel === '[data-i18n-title]') return staticEls.filter(e => 'data-i18n-title' in e.attrs);
       if (sel === 'a[href]') return linkEls;
+      if (sel === '.hs' || sel === '.hs.on' || sel === '.hs-tip') {
+        const out = [];
+        const walk = e => {
+          if (e.className) {
+            const cs = e.className.split(' ');
+            if (sel === '.hs' && cs.includes('hs')) out.push(e);
+            if (sel === '.hs.on' && cs.includes('hs') && cs.includes('on')) out.push(e);
+            if (sel === '.hs-tip' && cs.includes('hs-tip')) out.push(e);
+          }
+          (e.children || []).forEach(walk);
+        };
+        Object.values(shotEls).forEach(walk);
+        return out;
+      }
       return [];
     },
-    addEventListener(ev, fn) { docListeners[ev] = fn; },
-    dispatchEvent(ev) { docListeners[ev.type]?.(ev); },
+    addEventListener(ev, fn) { (docListeners[ev] ||= []).push(fn); },
+    dispatchEvent(ev) { (docListeners[ev.type] || []).forEach(f => f(ev)); },
   };
   class CustomEventStub { constructor(type) { this.type = type; } }
   const windowStub = {
@@ -421,6 +446,47 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   switchTo('he');
   check('errpath: switch does not resurrect stale results', byId.plansCard.style.display === 'none' && byId.summaryCard.style.display === 'none');
   check('errpath: error box still visible after switch', byId.err.style.display === 'block');
+
+  // hotspot behavior (#67/#68 review): the tap that fires mouseenter must not
+  // toggle the tip straight back off; second tap hides; Escape/outside click
+  // dismiss; Hebrew UI renders none; rebuild on language change
+  {
+    windowStub.location.search = '?lang=en';
+    shotEls.step1 = mkEl('div');
+    const { initHotspots } = await import('../web/hotspots.js');
+    initHotspots(documentStub);
+    const wrap = shotEls.step1;
+    const isHs = c => c.className && c.className.split(' ').includes('hs');
+    const isTip = c => c.className && c.className.split(' ').includes('hs-tip');
+    const btn = () => wrap.children.find(isHs);
+    const tip = () => wrap.children.find(isTip);
+    const ev = { stopPropagation() {} };
+    check('hotspots fn: buttons rendered in en', !!btn());
+    check('hotspots fn: hint visible in en', byId.hsHint.style.display !== 'none' && byId.hsHint.textContent.includes('tap'));
+    btn().listeners.mouseenter();
+    check('hotspots fn: hover shows tip', !!tip());
+    btn().listeners.click(ev);
+    check('hotspots fn: first tap keeps tip (suppress guard)', !!tip());
+    btn()._shownAt = Date.now() - 1000;
+    btn().listeners.click(ev);
+    check('hotspots fn: second tap hides tip', !tip());
+    btn().listeners.mouseenter();
+    documentStub.dispatchEvent({ type: 'keydown', key: 'Escape' });
+    check('hotspots fn: Escape dismisses', !tip());
+    btn().listeners.mouseenter();
+    documentStub.dispatchEvent({ type: 'click', target: { classList: { contains: () => false } } });
+    check('hotspots fn: outside click dismisses', !tip());
+    btn().listeners.mouseenter();
+    check('hotspots fn: tooltip role + aria wiring', tip().attrs.role === 'tooltip' && btn().attrs['aria-describedby'] === tip().id);
+    documentStub.dispatchEvent({ type: 'keydown', key: 'Escape' });
+    windowStub.location.search = '?lang=he';
+    documentStub.dispatchEvent({ type: 'iec:langchange' });
+    check('hotspots fn: no buttons in Hebrew UI', !wrap.children.some(isHs));
+    check('hotspots fn: hint hidden in he', byId.hsHint.style.display === 'none');
+    windowStub.location.search = '?lang=en';
+    documentStub.dispatchEvent({ type: 'iec:langchange' });
+    check('hotspots fn: rebuilt on language change back to en', !!btn());
+  }
 }
 
 // --- guide screenshot hotspots (#67): every step image wrapped, every hotspot
@@ -431,13 +497,21 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   for (let n = 1; n <= 6; n++) {
     check(`hotspots: step${n} image wrapped`, guide.includes(`<div class="shot" data-shot="step${n}">`));
   }
-  const keys = [...guide.matchAll(/k: '(guide\.hs_\w+)'/g)].map(m => m[1]);
+  const hsjs = readFileSync(join(root, 'web', 'hotspots.js'), 'utf-8');
+  const keys = [...new Set([...hsjs.matchAll(/k: '(guide\.hs_\w+)'/g)].map(m => m[1]))];
   check('hotspots: keys defined', keys.length >= 8);
   for (const k of keys) {
     check(`hotspots: ${k} in all languages`, I18N.strings[k] && ['he', 'en', 'ar'].every(l => I18N.strings[k][l]));
   }
-  check('hotspots: skipped for Hebrew UI', guide.includes("if (currentLang() === 'he') return;"));
-  check('hotspots: rebuilt on language change', guide.includes("addEventListener('iec:langchange', renderHotspots)"));
+  check('hotspots: hint key in all languages', I18N.strings['guide.hs_hint'] && ['he', 'en', 'ar'].every(l => I18N.strings['guide.hs_hint'][l]));
+  check('hotspots: skipped for Hebrew UI', hsjs.includes("if (lang === 'he') return;"));
+  check('hotspots: rebuilt on language change', hsjs.includes("addEventListener('iec:langchange'"));
+  check('hotspots: first-tap suppress guard (#68 review)', hsjs.includes('CLICK_SUPPRESS_MS'));
+  check('hotspots: tooltip role + aria-describedby (#68 review)', hsjs.includes("'role', 'tooltip'") && hsjs.includes('aria-describedby'));
+  check('hotspots: Escape dismisses (#68 review)', hsjs.includes("key === 'Escape'"));
+  check('hotspots: guide imports module + hint element', guide.includes("from './hotspots.js'") && guide.includes('initHotspots()') && guide.includes('id="hsHint"'));
+  check('hotspots: always-visible affordance outline (#68 review)', /\.hs \{[^}]*dashed/.test(guide));
+  check('hotspots: shot wrapper fit-content (#68 review)', guide.includes('width:fit-content'));
 }
 
 // --- CSS contract: 360px no-overflow guards (#54 review) ---
