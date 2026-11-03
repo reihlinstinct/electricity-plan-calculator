@@ -3,6 +3,7 @@
 Data source: Open-Meteo archive API (free, no key). Network access is
 isolated in fetch_daily_temps() so tests never touch the network.
 """
+
 from __future__ import annotations
 
 import json
@@ -50,9 +51,9 @@ class HvacReport:
 @dataclass(frozen=True)
 class WeatherReport:
     days: int
-    correlation: float          # Pearson r, daily kWh vs daily mean temp
-    kwh_per_degree: float       # OLS slope with weekend covariate
-    weekend_extra_kwh: float    # OLS weekend coefficient
+    correlation: float  # Pearson r, daily kWh vs daily mean temp
+    kwh_per_degree: float  # OLS slope with weekend covariate
+    weekend_extra_kwh: float  # OLS weekend coefficient
     r_squared: float
     temp_min: float
     temp_max: float
@@ -156,7 +157,10 @@ def sensitivity(
     )
     log.debug(
         "weather: r=%.3f, %.2f kWh/deg, weekend +%.2f kWh, R2=%.2f",
-        report.correlation, report.kwh_per_degree, report.weekend_extra_kwh, report.r_squared,
+        report.correlation,
+        report.kwh_per_degree,
+        report.weekend_extra_kwh,
+        report.r_squared,
     )
     return report
 
@@ -219,8 +223,7 @@ def hvac_split(
         wknd = b_weekend * sum(1.0 for d in days if d.weekday() in FRI_SAT)
         cool = (b_cool or 0.0) * sum(cdd[d] for d in days)
         heat = (b_heat or 0.0) * sum(hdd[d] for d in days)
-        monthly.append(MonthAttribution(m, len(days), total, base, wknd, cool, heat,
-                                        total - base - wknd - cool - heat))
+        monthly.append(MonthAttribution(m, len(days), total, base, wknd, cool, heat, total - base - wknd - cool - heat))
     report = HvacReport(
         days=len(common),
         kwh_per_cooling_degree=b_cool,

@@ -1,4 +1,5 @@
 """Text report rendering (Hebrew-friendly plain text)."""
+
 from __future__ import annotations
 
 from .analysis import Summary
@@ -35,8 +36,11 @@ def format_weather(w: WeatherReport) -> str:
             _t("report.weather_title"),
             "=================",
             _t(
-                "report.weather_corr", r=f"{w.correlation:.2f}",
-                tmin=f"{w.temp_min:.0f}", tmax=f"{w.temp_max:.0f}", days=w.days,
+                "report.weather_corr",
+                r=f"{w.correlation:.2f}",
+                tmin=f"{w.temp_min:.0f}",
+                tmax=f"{w.temp_max:.0f}",
+                days=w.days,
             ),
             _t("report.weather_sens", sens=f"{w.kwh_per_degree:+.2f}", wknd=f"{w.weekend_extra_kwh:+.2f}"),
             _t("report.model_r2", r2=f"{w.r_squared:.2f}"),
@@ -57,15 +61,11 @@ def format_ranking(
     ]
     current = None
     if current_label:
-        current = next(
-            (c for c in costs if current_label in c.label), None
-        )
+        current = next((c for c in costs if current_label in c.label), None)
     for i, c in enumerate(costs, 1):
         marker = _t("report.best_marker") if i == 1 else ""
         if current is not None and c.label == current.label:
-            marker = (
-                _t("report.best_current_marker") if i == 1 else _t("report.current_marker")
-            )
+            marker = _t("report.best_current_marker") if i == 1 else _t("report.current_marker")
         lines.append(
             f"{i:2d}. {c.label:<48} {_nis(c.annual_cost):>9} | "
             f"{_t('report.savings_word')} {_nis(c.savings_vs_flat_annual):>7}{marker}"
@@ -111,7 +111,9 @@ def format_hvac(h: HvacReport) -> str:
             _t("report.hvac_cooling", v=f"{h.kwh_per_cooling_degree:+.2f}", base=f"{h.cooling_base:.0f}")
             if h.kwh_per_cooling_degree is not None
             else _t("report.hvac_cooling_na")
-        ) + " | " + (
+        )
+        + " | "
+        + (
             _t("report.hvac_heating", v=f"{h.kwh_per_heating_degree:+.2f}", base=f"{h.heating_base:.0f}")
             if h.kwh_per_heating_degree is not None
             else _t("report.hvac_heating_na")
@@ -124,10 +126,9 @@ def format_hvac(h: HvacReport) -> str:
         cells = [m.total_kwh, m.base_kwh, m.weekend_kwh, m.cooling_kwh, m.heating_kwh, m.residual_kwh]
         # round-off can leave a tiny negative that renders as "-0"; snap to 0
         cells = [0.0 if round(v) == 0 else v for v in cells]
-        lines.append(
-            f"{m.month:<9}" + "".join(f"{v:>8.0f}" for v in cells)
-        )
+        lines.append(f"{m.month:<9}" + "".join(f"{v:>8.0f}" for v in cells))
     return lines_to_text(lines)
+
 
 _KIND_KEYS = {
     "washing_machine": "app.kind_washing_machine",
@@ -152,20 +153,22 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
     lines.append(_t("report.peak_hours_line", hours=hours))
     lines.append(_t("report.weekday_avg", weekday=f"{rep.weekday_avg:.2f}", weekend=f"{rep.weekend_avg:.2f}"))
     base_annual_nis = rep.night_base_kw * 24 * 365 * flat_rate
-    lines.append(
-        _t("report.base_floor_line", watts=f"{rep.night_base_kw * 1000:.0f}", nis=f"{base_annual_nis:,.0f}")
-    )
+    lines.append(_t("report.base_floor_line", watts=f"{rep.night_base_kw * 1000:.0f}", nis=f"{base_annual_nis:,.0f}"))
     if rep.shabbat_count:
         lines.append(
-            _t("app.shabbat_line", count=rep.shabbat_count, avg=f"{rep.shabbat_avg_kwh:.1f}",
-               shabbat=f"{rep.shabbat_night_base_kw * 1000:.0f}", base=f"{rep.night_base_kw * 1000:.0f}")
+            _t(
+                "app.shabbat_line",
+                count=rep.shabbat_count,
+                avg=f"{rep.shabbat_avg_kwh:.1f}",
+                shabbat=f"{rep.shabbat_night_base_kw * 1000:.0f}",
+                base=f"{rep.night_base_kw * 1000:.0f}",
+            )
         )
     ob = rep.observance
     if ob is not None:
         pct = round((ob.base_ratio - 1) * 100)
         base_txt = _t("app.obs_base", pct=pct)
-        appl_txt = _t("app.obs_appl", starts=ob.shabbat_starts, count=ob.shabbat_count,
-                      rate=f"{ob.weekday_rate:.1f}")
+        appl_txt = _t("app.obs_appl", starts=ob.shabbat_starts, count=ob.shabbat_count, rate=f"{ob.weekday_rate:.1f}")
         if ob.confidence == "high":
             detail = base_txt + _t("app.obs_join") + appl_txt
         elif "base" in ob.signals:
@@ -178,9 +181,7 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
     if rep.notable_days:
         days = ", ".join(f"{d:%d.%m}" for d in rep.notable_days)
         lines.append(_t("app.notable_days", days=days))
-    lines.append(
-        _t("app.taoz_peak", kwh=f"{rep.taoz_peak_kwh:.0f}", pct=f"{rep.taoz_peak_cost_share * 100:.0f}")
-    )
+    lines.append(_t("app.taoz_peak", kwh=f"{rep.taoz_peak_kwh:.0f}", pct=f"{rep.taoz_peak_cost_share * 100:.0f}"))
     if rep.appliances:
         lines.append("")
         lines.append(_t("app.appliances_header"))
@@ -201,9 +202,17 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
             for e in sorted(events, key=lambda x: x.excess_kwh, reverse=True)[:2]:
                 day_name = _t(f"app.day_{(e.start.weekday() + 1) % 7}")
                 lines.append(
-                    "  " + _t("app.appliance_example", day=day_name,
-                              date=f"{e.start:%d.%m}", start=f"{e.start:%H:%M}", end=f"{e.end:%H:%M}",
-                              kwh=f"{e.excess_kwh:.1f}", conf=_t(_CONF_KEYS[e.confidence]), pattern=e.pattern)
+                    "  "
+                    + _t(
+                        "app.appliance_example",
+                        day=day_name,
+                        date=f"{e.start:%d.%m}",
+                        start=f"{e.start:%H:%M}",
+                        end=f"{e.end:%H:%M}",
+                        kwh=f"{e.excess_kwh:.1f}",
+                        conf=_t(_CONF_KEYS[e.confidence]),
+                        pattern=e.pattern,
+                    )
                 )
     if rep.efficiency:
         lines.append("")
@@ -213,4 +222,3 @@ def format_insights(rep: InsightsReport, flat_rate: float) -> str:
             lines.append(f"- {n.text} ({_t(_CONF_KEYS[n.confidence])}).{cost}")
         lines.append(_t("report.eff_sources"))
     return lines_to_text(lines)
-

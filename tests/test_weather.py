@@ -82,12 +82,7 @@ def _synthetic_hvac_days():
     for i, d in enumerate(days):
         t = 20.0 + 8.0 * ((i * 7) % 13) / 13 - (4.0 if i > 40 else 0.0)
         temps[d] = t
-        kwh[d] = (
-            5.0
-            + (3.0 if d.weekday() in (4, 5) else 0.0)
-            + 0.8 * max(0.0, t - 22.0)
-            + 1.2 * max(0.0, 18.0 - t)
-        )
+        kwh[d] = 5.0 + (3.0 if d.weekday() in (4, 5) else 0.0) + 0.8 * max(0.0, t - 22.0) + 1.2 * max(0.0, 18.0 - t)
     return kwh, temps
 
 
@@ -130,6 +125,7 @@ def test_hvac_single_sided_variance():
 
 def test_hvac_report_render():
     from iec_calc.report import format_hvac
+
     kwh, temps = _synthetic_hvac_days()
     text = format_hvac(hvac_split(kwh, temps))
     assert "קירור" in text and "חימום" in text and "שאר" in text
@@ -138,6 +134,7 @@ def test_hvac_report_render():
 
 def test_hvac_report_render_one_sided():
     from iec_calc.report import format_hvac
+
     kwh, temps = _synthetic_hvac_days()
     temps = {d: max(t, 20.0) for d, t in temps.items()}
     text = format_hvac(hvac_split(kwh, temps))
@@ -147,6 +144,7 @@ def test_hvac_report_render_one_sided():
 def test_hvac_debug_log_one_sided_no_crash(caplog):
     # regression: the final debug log used %.2f with a None regressor -> TypeError
     import logging
+
     kwh, temps = _synthetic_hvac_days()
     temps = {d: max(t, 20.0) for d, t in temps.items()}  # heating-only fit
     with caplog.at_level(logging.DEBUG, logger="iec_calc.weather"):
@@ -158,9 +156,14 @@ def test_hvac_debug_log_one_sided_no_crash(caplog):
 def test_hvac_report_no_negative_zero():
     from iec_calc.report import format_hvac
     from iec_calc.weather import HvacReport, MonthAttribution
+
     rep = HvacReport(
-        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=None,
-        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        days=30,
+        kwh_per_cooling_degree=1.0,
+        kwh_per_heating_degree=None,
+        r_squared=0.5,
+        cooling_base=22.0,
+        heating_base=18.0,
         monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.5, 20.0, -0.5),),
     )
     text = format_hvac(rep)
@@ -171,6 +174,7 @@ def test_collinear_weather_regressors_skip_fit(caplog):
     # Temperature varies by 10C, bypassing the low-variance guard, but is an
     # exact linear combination of the intercept and Fri/Sat indicator.
     import logging
+
     days = [date(2026, 10, 1) + timedelta(days=i) for i in range(14)]
     temps = {d: 20.0 + 10.0 * (d.weekday() in (4, 5)) for d in days}
     kwh = {d: 6.0 + i for i, d in enumerate(days)}

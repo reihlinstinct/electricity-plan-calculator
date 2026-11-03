@@ -7,6 +7,7 @@ Israeli conventions: workdays are Sunday-Thursday; Friday and Saturday are
 the weekend. Taoz day types follow the Electricity Authority schedule:
 weekdays, Friday/holiday-eve, Saturday/holiday.
 """
+
 from __future__ import annotations
 
 import json

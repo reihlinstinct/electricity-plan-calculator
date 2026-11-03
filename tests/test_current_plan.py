@@ -1,4 +1,5 @@
 """--current-plan: savings vs the household's actual plan (#14)."""
+
 from datetime import datetime, timedelta
 
 from iec_calc import cli
@@ -32,9 +33,7 @@ def test_no_current_plan_keeps_old_output():
 
 def test_unknown_label_errors_with_valid_list(tmp_path, capsys):
     csv = tmp_path / "x.csv"
-    csv.write_bytes(
-        '\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8")
-    )
+    csv.write_bytes('\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8"))
     rc = cli.main(["plans", str(csv), "--current-plan", "אין-כזה-מסלול"])
     assert rc == 2
     assert "no plan matches" in capsys.readouterr().err
@@ -42,9 +41,7 @@ def test_unknown_label_errors_with_valid_list(tmp_path, capsys):
 
 def test_ambiguous_label_errors(tmp_path, capsys):
     csv = tmp_path / "x.csv"
-    csv.write_bytes(
-        '\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8")
-    )
+    csv.write_bytes('\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8"))
     rc = cli.main(["plans", str(csv), "--current-plan", "סלקום"])
     assert rc == 2
     assert "ambiguous" in capsys.readouterr().err
@@ -65,9 +62,7 @@ def test_taoz_fee_text_from_catalog():
 
 def test_flat_and_taoz_labels_accepted(tmp_path, capsys):
     csv = tmp_path / "x.csv"
-    csv.write_bytes(
-        '\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8")
-    )
+    csv.write_bytes('\ufeff"00-00000001","צריכה","04/10/2026","00:00",0.1,0\n'.encode("utf-8"))
     for label in ("תעריף אחיד", 'תעו"ז'):
         rc = cli.main(["plans", str(csv), "--current-plan", label])
         assert rc == 0, label
@@ -85,7 +80,6 @@ def test_current_plan_top_ranked_message():
 
 def test_current_plan_excluded_notice():
     cat = load_catalog()
-    costs = rank_plans(_intervals(), cat, days=1,
-                       customer=Customer(gas_customer=False))
+    costs = rank_plans(_intervals(), cat, days=1, customer=Customer(gas_customer=False))
     text = format_ranking(costs, 1, cat, current_label="אמישראגז")
     assert "לא נכלל בדירוג עקב דגלי הזכאות" in text

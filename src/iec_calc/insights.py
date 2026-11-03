@@ -4,6 +4,7 @@ Every statement is an observation over the file ("בשעות 18-22 הצריכה 
 never a causal claim. Appliance detection reports a probabilistic likelihood
 from 15-minute load signatures, with the triggering pattern spelled out.
 """
+
 from __future__ import annotations
 
 import logging
@@ -23,8 +24,8 @@ log = logging.getLogger(__name__)
 FULL_YEAR_DAYS = 350  # below this, warn against seasonal comparison
 
 # appliance-signature thresholds (excess kW over the night baseline)
-MIN_EXCESS_KW = 0.15        # block membership
-HIGH_KW = 1.2               # resistive-heating interval
+MIN_EXCESS_KW = 0.15  # block membership
+HIGH_KW = 1.2  # resistive-heating interval
 WASHER_MIN_MIN, WASHER_MAX_MIN = 45, 180
 OVEN_MIN_MIN, OVEN_MAX_MIN = 20, 150
 SUSTAINED_MIN_MIN = 45
@@ -32,20 +33,20 @@ SUSTAINED_MAX_MIN = 360  # longer blocks are daytime activity, not one appliance
 SUSTAINED_MIN_MEAN_KW = 0.8
 
 # Shabbat-observance detection thresholds (statistics only, never a negative claim)
-OBS_MIN_SHABBATOT = 2        # need at least this many Shabbat windows
-OBS_MIN_WEEKDAYS = 5         # and this many weekdays for a meaningful rate
-OBS_BASE_MIN_DELTA_KW = 0.05 # absolute Shabbat-night elevation over weekday-night base
-OBS_BASE_RATIO = 1.3         # and at least 30% higher
+OBS_MIN_SHABBATOT = 2  # need at least this many Shabbat windows
+OBS_MIN_WEEKDAYS = 5  # and this many weekdays for a meaningful rate
+OBS_BASE_MIN_DELTA_KW = 0.05  # absolute Shabbat-night elevation over weekday-night base
+OBS_BASE_RATIO = 1.3  # and at least 30% higher
 OBS_WEEKDAY_MIN_RATE = 0.15  # appliance starts per weekday: household uses appliances at all
 OBS_SHABBAT_MAX_SHARE = 0.25
 
 # efficiency-note thresholds (context only, never a verdict)
-FLOOR_NOTE_KW = 0.15          # floor above this -> worth mapping always-on devices
-WASHER_NOTE_RATIO = 1.3       # measured mean cycle above 1.3x the modern typical -> note
-WASHER_MIN_EVENTS = 2         # need at least this many medium+ washer blocks
-SUSTAINED_MIN_EVENTS = 3      # sustained-high blocks needed for the conditional AC note
+FLOOR_NOTE_KW = 0.15  # floor above this -> worth mapping always-on devices
+WASHER_NOTE_RATIO = 1.3  # measured mean cycle above 1.3x the modern typical -> note
+WASHER_MIN_EVENTS = 2  # need at least this many medium+ washer blocks
+SUSTAINED_MIN_EVENTS = 3  # sustained-high blocks needed for the conditional AC note
 SUSTAINED_MIN_MEAN_EXCESS_KW = 1.0  # mean excess kW per block for the AC note
-UNATTENDED_START_HOUR = 5     # blocks starting 00:00-04:xx
+UNATTENDED_START_HOUR = 5  # blocks starting 00:00-04:xx
 
 
 def _israel_utc_offset(d: date) -> int:
@@ -65,13 +66,24 @@ def _israel_utc_offset(d: date) -> int:
 def sunset_local_minutes(d: date, lat: float, lon: float) -> float:
     """NOAA solar approximation of sunset, in local clock minutes. No network."""
     g = 2 * math.pi / 365 * (d.timetuple().tm_yday - 1)
-    eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
-                       - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
-    decl = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g) - 0.006758 * math.cos(2 * g)
-            + 0.000907 * math.sin(2 * g) - 0.002697 * math.cos(3 * g) + 0.00148 * math.sin(3 * g))
+    eqtime = 229.18 * (
+        0.000075
+        + 0.001868 * math.cos(g)
+        - 0.032077 * math.sin(g)
+        - 0.014615 * math.cos(2 * g)
+        - 0.040849 * math.sin(2 * g)
+    )
+    decl = (
+        0.006918
+        - 0.399912 * math.cos(g)
+        + 0.070257 * math.sin(g)
+        - 0.006758 * math.cos(2 * g)
+        + 0.000907 * math.sin(2 * g)
+        - 0.002697 * math.cos(3 * g)
+        + 0.00148 * math.sin(3 * g)
+    )
     latr = math.radians(lat)
-    cos_ha = (math.cos(math.radians(90.833)) / (math.cos(latr) * math.cos(decl))
-              - math.tan(latr) * math.tan(decl))
+    cos_ha = math.cos(math.radians(90.833)) / (math.cos(latr) * math.cos(decl)) - math.tan(latr) * math.tan(decl)
     ha = math.degrees(math.acos(min(1.0, max(-1.0, cos_ha))))
     utc = 720 - 4 * (lon - ha) - eqtime  # solar noon + hour angle
     return utc + 60 * _israel_utc_offset(d)
@@ -228,8 +240,7 @@ def detect_appliances(intervals: list[Interval], base_kw: float) -> tuple[Applia
             run = run + 1 if h else 0
             max_consec_hi = max(max_consec_hi, run)
         transitions = sum(
-            1 for a, b in zip(exs, exs[1:], strict=False)
-            if (a >= HIGH_KW) != (b >= HIGH_KW) and min(a, b) < 0.6
+            1 for a, b in zip(exs, exs[1:], strict=False) if (a >= HIGH_KW) != (b >= HIGH_KW) and min(a, b) < 0.6
         )
         if (
             WASHER_MIN_MIN <= dur_min <= WASHER_MAX_MIN
@@ -238,23 +249,38 @@ def detect_appliances(intervals: list[Interval], base_kw: float) -> tuple[Applia
             and 0.4 <= energy <= 2.5
         ):
             conf = "high" if max(exs) >= 1.5 and energy >= 0.6 else "medium"
-            events.append(ApplianceEvent(
-                "washing_machine", conf, start, end, round(energy, 2),
-                _t("calc.pattern_washer", dur=f"{dur_min:.0f}", consec=max_consec_hi, max=f"{max(exs):.1f}"),
-            ))
+            events.append(
+                ApplianceEvent(
+                    "washing_machine",
+                    conf,
+                    start,
+                    end,
+                    round(energy, 2),
+                    _t("calc.pattern_washer", dur=f"{dur_min:.0f}", consec=max_consec_hi, max=f"{max(exs):.1f}"),
+                )
+            )
         elif OVEN_MIN_MIN <= dur_min <= OVEN_MAX_MIN and max(exs) >= 1.5 and transitions >= 3:
-            events.append(ApplianceEvent(
-                "oven", "medium", start, end, round(energy, 2),
-                _t("calc.pattern_oven", dur=f"{dur_min:.0f}", transitions=transitions, max=f"{max(exs):.1f}"),
-            ))
-        elif (
-            SUSTAINED_MIN_MIN <= dur_min <= SUSTAINED_MAX_MIN
-            and statistics.mean(exs) >= SUSTAINED_MIN_MEAN_KW
-        ):
-            events.append(ApplianceEvent(
-                "sustained_high", "low", start, end, round(energy, 2),
-                _t("calc.pattern_sustained", mean=f"{statistics.mean(exs):.1f}", dur=f"{dur_min:.0f}"),
-            ))
+            events.append(
+                ApplianceEvent(
+                    "oven",
+                    "medium",
+                    start,
+                    end,
+                    round(energy, 2),
+                    _t("calc.pattern_oven", dur=f"{dur_min:.0f}", transitions=transitions, max=f"{max(exs):.1f}"),
+                )
+            )
+        elif SUSTAINED_MIN_MIN <= dur_min <= SUSTAINED_MAX_MIN and statistics.mean(exs) >= SUSTAINED_MIN_MEAN_KW:
+            events.append(
+                ApplianceEvent(
+                    "sustained_high",
+                    "low",
+                    start,
+                    end,
+                    round(energy, 2),
+                    _t("calc.pattern_sustained", mean=f"{statistics.mean(exs):.1f}", dur=f"{dur_min:.0f}"),
+                )
+            )
         else:
             log.debug("unclassified block at %s (%d intervals, %.2f kWh)", start, len(idxs), energy)
     return tuple(events)
@@ -275,17 +301,19 @@ def detect_efficiency(
     # more always-on loads. Context only, never a verdict on any device.
     if night_base_kw >= FLOOR_NOTE_KW:
         fridge_w = benchmarks.fridge_typical_kwh_per_year * 1000 / (24 * 365)
-        notes.append(EfficiencyNote(
-            kind="floor",
-            confidence="low",
-            text=_t(
-                "calc.eff_floor",
-                watts=f"{night_base_kw * 1000:.0f}",
-                kwh_year=f"{benchmarks.fridge_typical_kwh_per_year:.0f}",
-                fridge_w=f"{fridge_w:.0f}",
-            ),
-            annual_nis=night_base_kw * 24 * 365 * flat_rate,
-        ))
+        notes.append(
+            EfficiencyNote(
+                kind="floor",
+                confidence="low",
+                text=_t(
+                    "calc.eff_floor",
+                    watts=f"{night_base_kw * 1000:.0f}",
+                    kwh_year=f"{benchmarks.fridge_typical_kwh_per_year:.0f}",
+                    fridge_w=f"{fridge_w:.0f}",
+                ),
+                annual_nis=night_base_kw * 24 * 365 * flat_rate,
+            )
+        )
 
     # washer: mean measured cycle vs the modern typical; only medium+ identified blocks
     washers = [a for a in appliances if a.kind == "washing_machine" and a.confidence in ("high", "medium")]
@@ -295,17 +323,19 @@ def detect_efficiency(
         if mean_cycle > typical * WASHER_NOTE_RATIO:
             cycles_year = len(washers) / days * 365
             diff_nis = (mean_cycle - typical) * cycles_year * flat_rate
-            notes.append(EfficiencyNote(
-                kind="washer",
-                confidence="medium",
-                text=_t(
-                    "calc.eff_washer",
-                    mean=f"{mean_cycle:.1f}",
-                    count=len(washers),
-                    typical=f"{typical:.1f}",
-                ),
-                annual_nis=diff_nis,
-            ))
+            notes.append(
+                EfficiencyNote(
+                    kind="washer",
+                    confidence="medium",
+                    text=_t(
+                        "calc.eff_washer",
+                        mean=f"{mean_cycle:.1f}",
+                        count=len(washers),
+                        typical=f"{typical:.1f}",
+                    ),
+                    annual_nis=diff_nis,
+                )
+            )
 
     # sustained high: conditional AC context; the type itself cannot be told apart
     sustained = [a for a in appliances if a.kind == "sustained_high"]
@@ -316,24 +346,31 @@ def detect_efficiency(
         if mean_ex_kw >= SUSTAINED_MIN_MEAN_EXCESS_KW:
             lo = round(benchmarks.ac_inverter_savings_min * 100)
             hi = round(benchmarks.ac_inverter_savings_max * 100)
-            notes.append(EfficiencyNote(
-                kind="sustained",
-                confidence="low",
-                text=_t(
-                    "calc.eff_sustained", count=len(sustained), lo=lo, hi=hi,
-                ),
-            ))
+            notes.append(
+                EfficiencyNote(
+                    kind="sustained",
+                    confidence="low",
+                    text=_t(
+                        "calc.eff_sustained",
+                        count=len(sustained),
+                        lo=lo,
+                        hi=hi,
+                    ),
+                )
+            )
 
     # unattended: high blocks starting deep at night
     unattended = [a for a in appliances if a.start.hour < UNATTENDED_START_HOUR]
     if unattended:
         annual_kwh = sum(a.excess_kwh for a in unattended) / days * 365
-        notes.append(EfficiencyNote(
-            kind="unattended",
-            confidence="medium",
-            text=_t("calc.eff_unattended", count=len(unattended)),
-            annual_nis=annual_kwh * flat_rate,
-        ))
+        notes.append(
+            EfficiencyNote(
+                kind="unattended",
+                confidence="medium",
+                text=_t("calc.eff_unattended", count=len(unattended)),
+                annual_nis=annual_kwh * flat_rate,
+            )
+        )
 
     return tuple(notes)
 
@@ -359,9 +396,7 @@ def build_insights(
     def in_shabbat(dt: datetime) -> bool:
         return any(a <= dt < b for a, b in windows)
 
-    non_shabbat_night = [
-        i.kwh for i in ordered if 2 <= i.start.hour < 5 and not in_shabbat(i.start)
-    ]
+    non_shabbat_night = [i.kwh for i in ordered if 2 <= i.start.hour < 5 and not in_shabbat(i.start)]
     shabbat_night = [i.kwh for i in ordered if 2 <= i.start.hour < 5 and in_shabbat(i.start)]
     hours = _interval_hours(ordered)
     base_kw = statistics.mean(non_shabbat_night) / hours if non_shabbat_night else summary.base_load_kw
@@ -383,9 +418,7 @@ def build_insights(
         shabbat_count=len(used_shabbatot),
         weekday_days=weekday_days,
         night_base_kw=base_kw,
-        shabbat_night_base_kw=(
-            statistics.mean(shabbat_night) / hours if shabbat_night else 0.0
-        ),
+        shabbat_night_base_kw=(statistics.mean(shabbat_night) / hours if shabbat_night else 0.0),
         shabbat_starts=shabbat_starts,
         weekday_starts=len(appliances) - shabbat_starts,
     )

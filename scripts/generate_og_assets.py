@@ -5,6 +5,7 @@ web/apple-touch-icon.png (180x180). Hebrew strings below are pure Hebrew and
 stored logically; PIL renders LTR, so they are reversed for drawing.
 Requires Pillow (dev tool only; the generated PNGs are committed).
 """
+
 from __future__ import annotations
 
 import sys
@@ -14,8 +15,8 @@ from PIL import Image, ImageDraw, ImageFont, features
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTO = "/usr/share/fonts/truetype/noto"
-BG = (11, 18, 32)        # deep navy
-BOLT = (251, 191, 36)    # amber
+BG = (11, 18, 32)  # deep navy
+BOLT = (251, 191, 36)  # amber
 INK = (248, 250, 252)
 MUTED = (148, 163, 184)
 
@@ -74,8 +75,9 @@ def make_og() -> None:
     x0 = (w - 24 * (bw + gap)) // 2
     for i, v in enumerate(hourly):
         bh = int(95 * v / peak) + 4
-        od.rounded_rectangle([x0 + i * (bw + gap), base_y - bh, x0 + i * (bw + gap) + bw, base_y],
-                             radius=6, fill=(56, 130, 246, 90))
+        od.rounded_rectangle(
+            [x0 + i * (bw + gap), base_y - bh, x0 + i * (bw + gap) + bw, base_y], radius=6, fill=(56, 130, 246, 90)
+        )
     img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
 
     d = ImageDraw.Draw(img)

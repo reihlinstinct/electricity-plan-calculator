@@ -8,6 +8,7 @@ forgets: no state, no retention, and no network access except the explicit
 as the CLI --weather flag). stdout carries protocol messages only; logs go
 to stderr at WARNING unless MCP_DEBUG is set.
 """
+
 from __future__ import annotations
 
 import json
@@ -24,18 +25,16 @@ log = logging.getLogger(__name__)
 PROTOCOL_VERSION = "2025-06-18"
 SERVER_INFO = {"name": "iec-calc", "version": "0.1.0"}
 
-PRIVACY_NOTE = (
-    "Reads the local CSV at `path` only; nothing is sent anywhere or kept "
-    "after the call."
-)
+PRIVACY_NOTE = "Reads the local CSV at `path` only; nothing is sent anywhere or kept after the call."
 
 TOOLS = [
     {
         "name": "analyze_csv",
         "description": (
             "Consumption profile of an IEC export: totals, base load, peaks, "
-            "night/weekend and Shabbat split. " + PRIVACY_NOTE +
-            " `weather=true` adds an EXPERIMENTAL weather-sensitivity estimate "
+            "night/weekend and Shabbat split. "
+            + PRIVACY_NOTE
+            + " `weather=true` adds an EXPERIMENTAL weather-sensitivity estimate "
             "and makes a one-off network call to Open-Meteo (opt-in, off by "
             "default)."
         ),
@@ -43,8 +42,11 @@ TOOLS = [
             "type": "object",
             "properties": {
                 "path": {"type": "string", "description": "Local path of the IEC CSV export."},
-                "weather": {"type": "boolean", "default": False,
-                            "description": "Experimental weather correlation; calls Open-Meteo over the network."},
+                "weather": {
+                    "type": "boolean",
+                    "default": False,
+                    "description": "Experimental weather correlation; calls Open-Meteo over the network.",
+                },
                 "lat": {"type": "number", "default": 31.7683},
                 "lon": {"type": "number", "default": 35.2137},
             },
@@ -55,8 +57,9 @@ TOOLS = [
         "name": "rank_plans",
         "description": (
             "Rank Israeli electricity plans (flat, Taoz, suppliers) by annual "
-            "cost on the user's real 15-minute consumption. " + PRIVACY_NOTE +
-            " Gas/HOT-customer conditional plans are excluded unless gas/hot "
+            "cost on the user's real 15-minute consumption. "
+            + PRIVACY_NOTE
+            + " Gas/HOT-customer conditional plans are excluded unless gas/hot "
             "are set to true."
         ),
         "inputSchema": {
@@ -142,15 +145,13 @@ def _call_tool(name: str, arguments: dict) -> dict:
         out = [report.format_analysis(summary)]
         if args.get("weather"):
             temps = weather.fetch_daily_temps(
-                args.get("lat", 31.7683), args.get("lon", 35.2137),
-                min(summary.daily), max(summary.daily),
+                args.get("lat", 31.7683),
+                args.get("lon", 35.2137),
+                min(summary.daily),
+                max(summary.daily),
             )
             w = weather.sensitivity(summary.daily, temps)
-            out.append(
-                report.format_weather(w)
-                if w is not None
-                else _t("report.weather_no_overlap")
-            )
+            out.append(report.format_weather(w) if w is not None else _t("report.weather_no_overlap"))
         return _text_result("\n\n".join(out))
 
     if name == "rank_plans":
@@ -160,8 +161,7 @@ def _call_tool(name: str, arguments: dict) -> dict:
             matches = [lbl for lbl in labels if current in lbl]
             if len(matches) != 1:
                 raise ValueError(
-                    f"current_plan must match exactly one plan label "
-                    f"({len(matches)} matches for {current!r})"
+                    f"current_plan must match exactly one plan label ({len(matches)} matches for {current!r})"
                 )
         customer = cost.Customer(
             smart_meter=args.get("smart_meter", True),
@@ -169,18 +169,22 @@ def _call_tool(name: str, arguments: dict) -> dict:
             hot_customer=args.get("hot", False),
         )
         costs = cost.rank_plans(
-            intervals, catalog, summary.days,
-            phase=args.get("phase", "single"), customer=customer,
+            intervals,
+            catalog,
+            summary.days,
+            phase=args.get("phase", "single"),
+            customer=customer,
         )
         excluded = cost.unavailable_plans(catalog, customer)
-        return _text_result(
-            report.format_ranking(costs, summary.days, catalog, excluded, current)
-        )
+        return _text_result(report.format_ranking(costs, summary.days, catalog, excluded, current))
 
     if name == "explain_insights":
         ins = insights.build_insights(
-            intervals, summary, catalog,
-            lat=args.get("lat", 31.7683), lon=args.get("lon", 35.2137),
+            intervals,
+            summary,
+            catalog,
+            lat=args.get("lat", 31.7683),
+            lon=args.get("lon", 35.2137),
         )
         return _text_result(report.format_insights(ins, catalog.flat_rate))
 
@@ -199,14 +203,21 @@ def handle(message: dict, out) -> None:
             out.write(json.dumps(_error(-32600, "invalid request", msg_id)) + "\n")
         return
     if method == "initialize":
-        out.write(json.dumps({
-            "jsonrpc": "2.0", "id": msg_id,
-            "result": {
-                "protocolVersion": PROTOCOL_VERSION,
-                "capabilities": {"tools": {}},
-                "serverInfo": SERVER_INFO,
-            },
-        }, ensure_ascii=False) + "\n")
+        out.write(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": msg_id,
+                    "result": {
+                        "protocolVersion": PROTOCOL_VERSION,
+                        "capabilities": {"tools": {}},
+                        "serverInfo": SERVER_INFO,
+                    },
+                },
+                ensure_ascii=False,
+            )
+            + "\n"
+        )
         return
     if method == "notifications/initialized" or method.startswith("notifications/"):
         return  # notification: never respond
@@ -214,9 +225,17 @@ def handle(message: dict, out) -> None:
         out.write(json.dumps({"jsonrpc": "2.0", "id": msg_id, "result": {}}) + "\n")
         return
     if method == "tools/list":
-        out.write(json.dumps({
-            "jsonrpc": "2.0", "id": msg_id, "result": {"tools": TOOLS},
-        }, ensure_ascii=False) + "\n")
+        out.write(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": msg_id,
+                    "result": {"tools": TOOLS},
+                },
+                ensure_ascii=False,
+            )
+            + "\n"
+        )
         return
     if method == "tools/call":
         params = message.get("params")
@@ -227,15 +246,30 @@ def handle(message: dict, out) -> None:
             return
         try:
             result = _call_tool(params.get("name", ""), arguments or {})
-            out.write(json.dumps({
-                "jsonrpc": "2.0", "id": msg_id, "result": result,
-            }, ensure_ascii=False) + "\n")
+            out.write(
+                json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": msg_id,
+                        "result": result,
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
         except Exception as exc:  # never let one bad call kill the stdio loop
             log.debug("tools/call failed: %s", type(exc).__name__)
-            out.write(json.dumps({
-                "jsonrpc": "2.0", "id": msg_id,
-                "result": _text_result(f"error: {exc}", is_error=True),
-            }, ensure_ascii=False) + "\n")
+            out.write(
+                json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": msg_id,
+                        "result": _text_result(f"error: {exc}", is_error=True),
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
         return
     if msg_id is not None:
         out.write(json.dumps(_error(-32601, f"method not found: {method}", msg_id)) + "\n")
@@ -270,6 +304,7 @@ def main() -> int:
 
 def _debug_enabled() -> bool:
     import os
+
     return os.environ.get("MCP_DEBUG", "").lower() in ("1", "true", "yes")
 
 

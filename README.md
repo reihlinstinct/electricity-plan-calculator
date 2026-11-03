@@ -105,7 +105,8 @@ review, ideally by a native speaker.
 
 ```sh
 pytest --cov          # tests + coverage gate (>= 80%)
-ruff check src tests  # lint
+ruff check src tests scripts  # lint
+ruff format --check src tests scripts  # formatting (also enforced in CI)
 pip-audit             # dependency vulnerabilities
 man -l man/iec-calc.1 # man page
 ```

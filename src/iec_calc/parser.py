@@ -7,6 +7,7 @@ contract number, meter number) followed by interval rows:
 
 Privacy: customer metadata is never returned or logged; only interval data.
 """
+
 from __future__ import annotations
 
 import csv

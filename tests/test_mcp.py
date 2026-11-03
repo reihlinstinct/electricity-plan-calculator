@@ -1,4 +1,5 @@
 """Tests for the stdio MCP server: protocol handling in-process + stdio smoke test."""
+
 from __future__ import annotations
 
 import io
@@ -22,16 +23,26 @@ def call(message: dict) -> list[dict]:
 
 
 def call_tool(name: str, arguments: dict, msg_id: int = 7) -> dict:
-    res = call({"jsonrpc": "2.0", "id": msg_id, "method": "tools/call",
-                "params": {"name": name, "arguments": arguments}})
+    res = call(
+        {"jsonrpc": "2.0", "id": msg_id, "method": "tools/call", "params": {"name": name, "arguments": arguments}}
+    )
     assert len(res) == 1
     return res[0]["result"]
 
 
 def test_initialize_handshake():
-    res = call({"jsonrpc": "2.0", "id": 1, "method": "initialize",
-                "params": {"protocolVersion": "2025-06-18", "capabilities": {},
-                           "clientInfo": {"name": "t", "version": "0"}}})
+    res = call(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-06-18",
+                "capabilities": {},
+                "clientInfo": {"name": "t", "version": "0"},
+            },
+        }
+    )
     assert res[0]["result"]["protocolVersion"] == "2025-06-18"
     assert res[0]["result"]["serverInfo"]["name"] == "iec-calc"
     assert "tools" in res[0]["result"]["capabilities"]
@@ -132,8 +143,11 @@ def test_stdio_smoke():
     env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
     proc = subprocess.Popen(
         [sys.executable, "-m", "iec_calc.mcp_server"],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-        text=True, env=env,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        env=env,
     )
     proc.stdin.write("not json\n")
     proc.stdin.write(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping"}) + "\n")
@@ -179,8 +193,7 @@ def test_wrong_typed_arguments():
 
 
 def test_non_dict_arguments_and_params():
-    res = call({"jsonrpc": "2.0", "id": 8, "method": "tools/call",
-                "params": {"name": "analyze_csv", "arguments": "x"}})
+    res = call({"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"name": "analyze_csv", "arguments": "x"}})
     assert res[0]["error"]["code"] == -32602
     res = call({"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": "nope"})
     assert res[0]["error"]["code"] == -32602
@@ -188,9 +201,15 @@ def test_non_dict_arguments_and_params():
 
 def test_stays_alive_after_error():
     out = io.StringIO()
-    mcp_server.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
-                       "params": {"name": "analyze_csv",
-                                  "arguments": {"path": str(SAMPLE), "lat": "a"}}}, out)
+    mcp_server.handle(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {"name": "analyze_csv", "arguments": {"path": str(SAMPLE), "lat": "a"}},
+        },
+        out,
+    )
     mcp_server.handle({"jsonrpc": "2.0", "id": 2, "method": "ping"}, out)
     lines = out.getvalue().splitlines()
     assert json.loads(lines[0])["result"]["isError"] is True

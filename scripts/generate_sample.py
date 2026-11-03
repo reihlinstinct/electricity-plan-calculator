@@ -3,6 +3,7 @@
 
 Fully fictional: name, address, contract and meter numbers are placeholders.
 """
+
 import csv
 import random
 from datetime import date, datetime, time, timedelta

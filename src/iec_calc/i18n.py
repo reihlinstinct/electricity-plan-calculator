@@ -4,6 +4,7 @@ The CLI currently renders in the default language (Hebrew). A --lang flag
 arrives with the first additional language; the loader already accepts any
 language present in the file.
 """
+
 from __future__ import annotations
 
 import json

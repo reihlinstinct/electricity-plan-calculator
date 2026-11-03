@@ -1,4 +1,5 @@
 """Interval-exact plan cost computation and ranking."""
+
 from __future__ import annotations
 
 import logging
@@ -33,6 +34,7 @@ DEFAULT_CUSTOMER = Customer()
 
 log = logging.getLogger(__name__)
 
+
 def flat_label() -> str:
     return _t("plan.flat_label")
 
@@ -66,10 +68,7 @@ def flat_cost(intervals: list[Interval], rate: float) -> float:
 
 
 def supplier_cost(intervals: list[Interval], plan: SupplierPlan, flat_rate: float) -> float:
-    return sum(
-        i.kwh * flat_rate * (1 - plan.discount if plan.applies(i.start) else 1)
-        for i in intervals
-    )
+    return sum(i.kwh * flat_rate * (1 - plan.discount if plan.applies(i.start) else 1) for i in intervals)
 
 
 def taoz_cost(intervals: list[Interval], catalog: Catalog) -> float:
@@ -117,10 +116,7 @@ def rank_plans(
             period_cost=tc,
             annual_cost=taoz_annual,
             savings_vs_flat_annual=flat_annual - taoz_annual,
-            detail=(
-                "season x peak/off-peak + higher fixed fee "
-                f"{taoz_fixed:.0f} NIS/yr (vs {iec_fixed:.0f})"
-            ),
+            detail=(f"season x peak/off-peak + higher fixed fee {taoz_fixed:.0f} NIS/yr (vs {iec_fixed:.0f})"),
         ),
     )
     for plan in catalog.plans:

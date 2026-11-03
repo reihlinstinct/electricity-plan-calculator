@@ -1,4 +1,5 @@
 """Command line interface: iec-calc analyze|plans|report EXPORT.csv [--weather]."""
+
 from __future__ import annotations
 
 import argparse
@@ -36,24 +37,49 @@ def build_arg_parser() -> argparse.ArgumentParser:
     a.add_argument("--weather", action="store_true", help="correlate with temperature (Open-Meteo)")
     a.add_argument("--lat", type=float, default=DEFAULT_LAT)
     a.add_argument("--lon", type=float, default=DEFAULT_LON)
-    a.add_argument("--cooling-base", type=float, default=weather.DEFAULT_COOLING_BASE,
-                   help="cooling degree-day base temperature (default: %(default)s)")
-    a.add_argument("--heating-base", type=float, default=weather.DEFAULT_HEATING_BASE,
-                   help="heating degree-day base temperature (default: %(default)s)")
+    a.add_argument(
+        "--cooling-base",
+        type=float,
+        default=weather.DEFAULT_COOLING_BASE,
+        help="cooling degree-day base temperature (default: %(default)s)",
+    )
+    a.add_argument(
+        "--heating-base",
+        type=float,
+        default=weather.DEFAULT_HEATING_BASE,
+        help="heating degree-day base temperature (default: %(default)s)",
+    )
 
     def add_phase_arg(sp):
-        sp.add_argument("--phase", choices=["single", "three"], default="single",
-                        help="meter phase for fixed-fee calculation (default: single)")
+        sp.add_argument(
+            "--phase",
+            choices=["single", "three"],
+            default="single",
+            help="meter phase for fixed-fee calculation (default: single)",
+        )
 
     def add_eligibility_args(sp):
-        sp.add_argument("--no-smart-meter", dest="smart_meter", action="store_false",
-                        help="exclude plans that require a smart meter")
-        sp.add_argument("--gas", dest="gas_customer", action="store_true",
-                        help="include gas-customer-only plans (Amisragas); excluded by default")
-        sp.add_argument("--hot", dest="hot_customer", action="store_true",
-                        help="include HOT/NEXT-customer-only plans; excluded by default")
-        sp.add_argument("--current-plan", metavar="LABEL",
-                        help="label (or substring) of your current plan, to show savings vs it")
+        sp.add_argument(
+            "--no-smart-meter",
+            dest="smart_meter",
+            action="store_false",
+            help="exclude plans that require a smart meter",
+        )
+        sp.add_argument(
+            "--gas",
+            dest="gas_customer",
+            action="store_true",
+            help="include gas-customer-only plans (Amisragas); excluded by default",
+        )
+        sp.add_argument(
+            "--hot",
+            dest="hot_customer",
+            action="store_true",
+            help="include HOT/NEXT-customer-only plans; excluded by default",
+        )
+        sp.add_argument(
+            "--current-plan", metavar="LABEL", help="label (or substring) of your current plan, to show savings vs it"
+        )
 
     p = sub.add_parser("plans", help="rank all electricity plans by annual cost on your data")
     add_file_arg(p)
@@ -84,19 +110,15 @@ def _configure_logging(debug: bool) -> None:
 
 def _weather_block(args, summary) -> str:
     temps = weather.fetch_daily_temps(
-        args.lat, args.lon,
-        min(summary.daily), max(summary.daily),
+        args.lat,
+        args.lon,
+        min(summary.daily),
+        max(summary.daily),
     )
     w = weather.sensitivity(summary.daily, temps)
-    hvac = weather.hvac_split(
-        summary.daily, temps, args.cooling_base, args.heating_base
-    )
+    hvac = weather.hvac_split(summary.daily, temps, args.cooling_base, args.heating_base)
     blocks = []
-    blocks.append(
-        report.format_weather(w)
-        if w is not None
-        else i18n.t("report.weather_no_overlap")
-    )
+    blocks.append(report.format_weather(w) if w is not None else i18n.t("report.weather_no_overlap"))
     if hvac is not None:
         blocks.append(report.format_hvac(hvac))
     else:
@@ -120,8 +142,7 @@ def main(argv: list[str] | None = None) -> int:
                 reason = (
                     f"no plan matches '{args.current_plan}'"
                     if not matches
-                    else f"'{args.current_plan}' is ambiguous ({len(matches)} matches: "
-                         + "; ".join(matches) + ")"
+                    else f"'{args.current_plan}' is ambiguous ({len(matches)} matches: " + "; ".join(matches) + ")"
                 )
                 print(f"error: {reason}. valid labels:\n{valid}", file=sys.stderr)
                 return 2
@@ -143,15 +164,9 @@ def main(argv: list[str] | None = None) -> int:
             hot_customer=args.hot_customer,
         )
         log.debug("customer eligibility: %s", customer)
-        costs = cost.rank_plans(
-            intervals, catalog, summary.days, phase=args.phase, customer=customer
-        )
+        costs = cost.rank_plans(intervals, catalog, summary.days, phase=args.phase, customer=customer)
         excluded = cost.unavailable_plans(catalog, customer)
-        out.append(
-            report.format_ranking(
-                costs, summary.days, catalog, excluded, args.current_plan
-            )
-        )
+        out.append(report.format_ranking(costs, summary.days, catalog, excluded, args.current_plan))
     if args.command == "report":
         ins = insights.build_insights(intervals, summary, catalog, lat=args.lat, lon=args.lon)
         out.append(report.format_insights(ins, catalog.flat_rate))

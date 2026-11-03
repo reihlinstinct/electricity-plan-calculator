@@ -54,6 +54,7 @@ def test_version(capsys):
 
 def test_cli_gas_hot_opt_in(sample_csv, capsys):
     from iec_calc.cli import main
+
     def ranked_lines(out):
         return [ln for ln in out.splitlines() if " | " in ln]
 
@@ -67,6 +68,7 @@ def test_cli_gas_hot_opt_in(sample_csv, capsys):
 
 def test_report_runs_arabic(sample_csv, capsys):
     import iec_calc.i18n as i18n
+
     try:
         rc = main(["--lang", "ar", "report", str(sample_csv)])
     finally:
@@ -81,6 +83,7 @@ def test_report_runs_arabic(sample_csv, capsys):
 
 def test_report_runs_russian(sample_csv, capsys):
     import iec_calc.i18n as i18n
+
     try:
         rc = main(["--lang", "ru", "report", str(sample_csv)])
     finally:
@@ -95,6 +98,7 @@ def test_report_runs_russian(sample_csv, capsys):
 
 def test_report_runs_amharic(sample_csv, capsys):
     import iec_calc.i18n as i18n
+
     try:
         rc = main(["--lang", "am", "report", str(sample_csv)])
     finally:
@@ -109,6 +113,7 @@ def test_report_runs_amharic(sample_csv, capsys):
 
 def test_cli_phase_controls_fixed_fees(sample_csv, capsys, monkeypatch):
     import iec_calc.cli as cli
+
     original = cli.cost.rank_plans
     seen = []
 

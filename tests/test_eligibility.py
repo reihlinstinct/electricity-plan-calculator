@@ -1,4 +1,5 @@
 """Eligibility filter flags (#10)."""
+
 from datetime import datetime, timedelta
 
 from iec_calc.cost import Customer, plan_available, rank_plans, unavailable_plans

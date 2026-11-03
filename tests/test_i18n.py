@@ -1,4 +1,5 @@
 """i18n/strings.json integrity: every key complete in every language, placeholders match."""
+
 import json
 import re
 from pathlib import Path
@@ -11,10 +12,7 @@ PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 def test_every_key_exists_in_every_language():
     langs = set(DOC["languages"])
-    missing = [
-        (key, lang) for key, entry in DOC["strings"].items() for lang in langs
-        if not entry.get(lang)
-    ]
+    missing = [(key, lang) for key, entry in DOC["strings"].items() for lang in langs if not entry.get(lang)]
     assert not missing, f"keys missing a translation: {missing[:5]}"
 
 
@@ -83,11 +81,17 @@ def test_cli_report_lang_en():
     env = {**os.environ, "PYTHONPATH": str(root / "src")}
     base = subprocess.run(
         [sys.executable, "-m", "iec_calc.cli", "report", "data/sample_consumption.csv"],
-        capture_output=True, text=True, cwd=root, env=env,
+        capture_output=True,
+        text=True,
+        cwd=root,
+        env=env,
     )
     en = subprocess.run(
         [sys.executable, "-m", "iec_calc.cli", "--lang", "en", "report", "data/sample_consumption.csv"],
-        capture_output=True, text=True, cwd=root, env=env,
+        capture_output=True,
+        text=True,
+        cwd=root,
+        env=env,
     )
     assert base.returncode == 0 and en.returncode == 0
     assert "Consumption analysis" in en.stdout and "ניתוח צריכה" not in en.stdout
@@ -100,9 +104,14 @@ def test_cli_report_lang_en():
 def test_hvac_header_arabic_columns_separated():
     from iec_calc.report import format_hvac
     from iec_calc.weather import HvacReport, MonthAttribution
+
     rep = HvacReport(
-        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=1.0,
-        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        days=30,
+        kwh_per_cooling_degree=1.0,
+        kwh_per_heating_degree=1.0,
+        r_squared=0.5,
+        cooling_base=22.0,
+        heating_base=18.0,
         monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.0, 20.0, 0.0),),
     )
     i18n.set_active_language("ar")
@@ -118,9 +127,14 @@ def test_hvac_header_arabic_columns_separated():
 def test_hvac_header_russian_columns_separated():
     from iec_calc.report import format_hvac
     from iec_calc.weather import HvacReport, MonthAttribution
+
     rep = HvacReport(
-        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=1.0,
-        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        days=30,
+        kwh_per_cooling_degree=1.0,
+        kwh_per_heating_degree=1.0,
+        r_squared=0.5,
+        cooling_base=22.0,
+        heating_base=18.0,
         monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.0, 20.0, 0.0),),
     )
     i18n.set_active_language("ru")
@@ -136,9 +150,14 @@ def test_hvac_header_russian_columns_separated():
 def test_hvac_header_amharic_columns_separated():
     from iec_calc.report import format_hvac
     from iec_calc.weather import HvacReport, MonthAttribution
+
     rep = HvacReport(
-        days=30, kwh_per_cooling_degree=1.0, kwh_per_heating_degree=1.0,
-        r_squared=0.5, cooling_base=22.0, heating_base=18.0,
+        days=30,
+        kwh_per_cooling_degree=1.0,
+        kwh_per_heating_degree=1.0,
+        r_squared=0.5,
+        cooling_base=22.0,
+        heating_base=18.0,
         monthly=(MonthAttribution("2026-09", 30, 300.0, 180.0, 40.0, 60.0, 20.0, 0.0),),
     )
     i18n.set_active_language("am")

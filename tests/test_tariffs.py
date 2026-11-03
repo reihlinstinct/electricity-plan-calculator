@@ -2,8 +2,8 @@ from datetime import date, datetime
 
 from iec_calc.tariffs import Window, is_workday, load_catalog
 
-SUNDAY = datetime(2026, 10, 4, 12, 0)   # workday
-FRIDAY = datetime(2026, 10, 9, 12, 0)   # weekend
+SUNDAY = datetime(2026, 10, 4, 12, 0)  # workday
+FRIDAY = datetime(2026, 10, 9, 12, 0)  # weekend
 SATURDAY = datetime(2026, 10, 10, 12, 0)
 
 
@@ -24,10 +24,10 @@ def test_day_window():
 
 def test_night_window_wraps_midnight():
     w = Window(days="sun-thu", start=23 * 60, end=7 * 60)
-    assert w.contains(SUNDAY.replace(hour=23, minute=30))        # Sunday night start
-    assert w.contains(datetime(2026, 10, 5, 2, 0))               # Monday 02:00 (night of Sunday)
-    assert not w.contains(FRIDAY.replace(hour=23, minute=30))    # Friday night excluded
-    assert not w.contains(SUNDAY.replace(hour=2))                # Saturday night excluded
+    assert w.contains(SUNDAY.replace(hour=23, minute=30))  # Sunday night start
+    assert w.contains(datetime(2026, 10, 5, 2, 0))  # Monday 02:00 (night of Sunday)
+    assert not w.contains(FRIDAY.replace(hour=23, minute=30))  # Friday night excluded
+    assert not w.contains(SUNDAY.replace(hour=2))  # Saturday night excluded
     assert not w.contains(SUNDAY.replace(hour=8))
 
 
@@ -52,12 +52,12 @@ def test_taoz_rates():
     assert tz.rate(datetime(2026, 7, 5, 23, 30)) == 0.5042
     assert tz.rate(datetime(2026, 7, 10, 18, 0)) == 0.5042
     # winter: peak every day incl Saturday, 17-22
-    assert tz.rate(datetime(2026, 1, 10, 18, 0)) == 1.1470   # Saturday
+    assert tz.rate(datetime(2026, 1, 10, 18, 0)) == 1.1470  # Saturday
     assert tz.rate(datetime(2026, 1, 11, 22, 30)) == 0.4663
     # transition weekday peak 17-22 only
     assert tz.rate(datetime(2026, 10, 4, 18, 0)) == 0.4958
     assert tz.rate(datetime(2026, 10, 4, 22, 30)) == 0.4578
-    assert tz.rate(datetime(2026, 10, 9, 18, 0)) == 0.4578   # Friday
+    assert tz.rate(datetime(2026, 10, 9, 18, 0)) == 0.4578  # Friday
     # holiday = off-peak
     tz_h = type(tz)(seasons=tz.seasons, holidays=frozenset({date(2026, 10, 4)}))
     assert tz_h.rate(datetime(2026, 10, 4, 18, 0)) == 0.4578

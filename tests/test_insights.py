@@ -1,4 +1,5 @@
 """Insights: descriptive stats and appliance-signature detection on synthetic data."""
+
 from datetime import date, datetime, timedelta
 
 from iec_calc.analysis import summarize
@@ -10,7 +11,8 @@ from iec_calc.tariffs import load_catalog
 def _day_intervals(d: date, base_kw: float = 0.2) -> list[Interval]:
     return [
         Interval(datetime(d.year, d.month, d.day) + timedelta(hours=h, minutes=m), base_kw * 0.25, 0.0)
-        for h in range(24) for m in (0, 15, 30, 45)
+        for h in range(24)
+        for m in (0, 15, 30, 45)
     ]
 
 
@@ -80,11 +82,7 @@ def test_coverage_flag_and_fields():
     assert len(rep.peak_hours) == 3
     assert rep.taoz_peak_kwh > 0
 
-    ivs_year = [
-        iv
-        for i in range(FULL_YEAR_DAYS + 1)
-        for iv in _day_intervals(date(2026, 1, 1) + timedelta(days=i))
-    ]
+    ivs_year = [iv for i in range(FULL_YEAR_DAYS + 1) for iv in _day_intervals(date(2026, 1, 1) + timedelta(days=i))]
     s_year = summarize(ivs_year)
     rep_year = build_insights(ivs_year, s_year, cat)
     assert rep_year.covers_full_year is True
@@ -92,6 +90,7 @@ def test_coverage_flag_and_fields():
 
 def test_format_insights_observational_language():
     from iec_calc.report import format_insights
+
     cat = load_catalog()
     d = date(2026, 10, 5)
     ivs = _day_intervals(d)
@@ -108,6 +107,7 @@ def test_format_insights_observational_language():
 
 def test_sunset_approximation_reasonable():
     from iec_calc.insights import sunset_local_minutes
+
     # Jerusalem mid-October: ~18:10 IDT; mid-January ~16:55; mid-July ~19:45
     assert 17.8 * 60 < sunset_local_minutes(date(2026, 10, 15), 31.78, 35.21) < 18.5 * 60
     assert 16.5 * 60 < sunset_local_minutes(date(2026, 1, 15), 31.78, 35.21) < 17.3 * 60
@@ -116,6 +116,7 @@ def test_sunset_approximation_reasonable():
 
 def test_shabbat_baseline_separation():
     from iec_calc.insights import build_insights
+
     cat = load_catalog()
     ivs = []
     d0 = date(2026, 10, 5)  # Monday
@@ -132,6 +133,7 @@ def test_shabbat_baseline_separation():
 
 def test_no_appliance_false_positive_from_shabbat_plate():
     from iec_calc.insights import build_insights
+
     cat = load_catalog()
     ivs = []
     d0 = date(2026, 10, 5)
@@ -143,8 +145,14 @@ def test_no_appliance_false_positive_from_shabbat_plate():
     assert rep.appliances == ()
 
 
-def _household(start: date, days: int, *, shabbat_night_kw: float = 0.2,
-               weekday_washers: tuple[int, ...] = (), shabbat_washers: tuple[int, ...] = ()) -> list[Interval]:
+def _household(
+    start: date,
+    days: int,
+    *,
+    shabbat_night_kw: float = 0.2,
+    weekday_washers: tuple[int, ...] = (),
+    shabbat_washers: tuple[int, ...] = (),
+) -> list[Interval]:
     """Synthetic household: flat base, elevated Shabbat-night base, optional washer blocks.
 
     weekday_washers/shabbat_washers: day offsets (from start) that get a washer
@@ -174,6 +182,7 @@ def test_observance_high_both_signals():
     assert rep.observance.confidence == "high"
     assert set(rep.observance.signals) == {"base", "appliances"}
     from iec_calc.report import format_insights
+
     text = format_insights(rep, cat.flat_rate)
     assert "נראה שבמשק הבית שומרים שבת (ביטחון גבוה)" in text
 
@@ -182,11 +191,13 @@ def test_observance_neutral_for_non_observant():
     cat = load_catalog()
     start = date(2026, 10, 7)
     # flat nights, washers on Saturdays too -> no signal fires
-    ivs = _household(start, 21, shabbat_night_kw=0.2,
-                     weekday_washers=(1, 8, 15), shabbat_washers=(3, 10))  # Sat offsets are 3/10/17
+    ivs = _household(
+        start, 21, shabbat_night_kw=0.2, weekday_washers=(1, 8, 15), shabbat_washers=(3, 10)
+    )  # Sat offsets are 3/10/17
     rep = build_insights(ivs, summarize(ivs), cat)
     assert rep.observance is None
     from iec_calc.report import format_insights
+
     text = format_insights(rep, cat.flat_rate)
     assert "שומרים שבת" not in text  # neutral: no claim in either direction
 
@@ -200,21 +211,37 @@ def test_observance_neutral_with_too_little_data():
 
 def test_observance_medium_single_signal():
     from iec_calc.insights import detect_shabbat_observance
+
     ob = detect_shabbat_observance(
-        shabbat_count=3, weekday_days=15, night_base_kw=0.2, shabbat_night_base_kw=0.5,
-        shabbat_starts=3, weekday_starts=3,  # appliances present on Shabbat -> only base fires
+        shabbat_count=3,
+        weekday_days=15,
+        night_base_kw=0.2,
+        shabbat_night_base_kw=0.5,
+        shabbat_starts=3,
+        weekday_starts=3,  # appliances present on Shabbat -> only base fires
     )
     assert ob is not None and ob.confidence == "medium" and ob.signals == ("base",)
     ob = detect_shabbat_observance(
-        shabbat_count=3, weekday_days=15, night_base_kw=0.2, shabbat_night_base_kw=0.2,
-        shabbat_starts=0, weekday_starts=5,  # flat nights -> only appliances fires
+        shabbat_count=3,
+        weekday_days=15,
+        night_base_kw=0.2,
+        shabbat_night_base_kw=0.2,
+        shabbat_starts=0,
+        weekday_starts=5,  # flat nights -> only appliances fires
     )
     assert ob is not None and ob.confidence == "medium" and ob.signals == ("appliances",)
     # negative direction must never produce a claim
-    assert detect_shabbat_observance(
-        shabbat_count=3, weekday_days=15, night_base_kw=0.5, shabbat_night_base_kw=0.2,
-        shabbat_starts=4, weekday_starts=3,
-    ) is None
+    assert (
+        detect_shabbat_observance(
+            shabbat_count=3,
+            weekday_days=15,
+            night_base_kw=0.5,
+            shabbat_night_base_kw=0.2,
+            shabbat_starts=4,
+            weekday_starts=3,
+        )
+        is None
+    )
 
 
 def test_efficiency_floor_and_washer_notes():
@@ -229,6 +256,7 @@ def test_efficiency_floor_and_washer_notes():
     assert "ממוצע 2024" in washer.text and "0.55" in washer.text and "לא פסיקה" in washer.text  # never a verdict
     assert washer.annual_nis and washer.annual_nis > 0
     from iec_calc.report import format_insights
+
     text = format_insights(rep, cat.flat_rate)
     assert "יעילות מכשירים" in text and "benchmarks.json" in text
 

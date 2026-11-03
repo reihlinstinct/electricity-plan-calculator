@@ -46,9 +46,7 @@ def test_bom_handled(tmp_path):
 
 def test_2400_normalized(tmp_path):
     p = tmp_path / "h24.csv"
-    p.write_bytes(
-        '\ufeff"00-00000001","צריכה","02/10/2026","24:00",0.7,0\n'.encode("utf-8")
-    )
+    p.write_bytes('\ufeff"00-00000001","צריכה","02/10/2026","24:00",0.7,0\n'.encode("utf-8"))
     intervals = parse(p)
     assert intervals[0].start == datetime(2026, 10, 3, 0, 0)
 
@@ -62,7 +60,8 @@ def test_invalid_interval_times_skipped(tmp_path, bad_time):
             writer.writerow(["00-00000001", "צריכה", "02/10/2026", stamp, "0.7", "0"])
     intervals = parse(p)
     assert [i.start for i in intervals] == [
-        datetime(2026, 10, 2, 23, 45), datetime(2026, 10, 3, 0, 0),
+        datetime(2026, 10, 2, 23, 45),
+        datetime(2026, 10, 3, 0, 0),
     ]
 
 

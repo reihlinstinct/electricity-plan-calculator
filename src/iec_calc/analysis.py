@@ -1,4 +1,5 @@
 """Consumption statistics from interval data."""
+
 from __future__ import annotations
 
 import logging
@@ -70,8 +71,12 @@ def summarize(intervals: list[Interval]) -> Summary:
     )
     log.debug(
         "summary: %d days, %.1f kWh, base %.3f kW, peak %.2f kW, night %.1f%%, fri/sat %.1f%%",
-        days, total, summary.base_load_kw, summary.peak_interval_kw,
-        100 * summary.night_share, 100 * summary.fri_sat_share,
+        days,
+        total,
+        summary.base_load_kw,
+        summary.peak_interval_kw,
+        100 * summary.night_share,
+        100 * summary.fri_sat_share,
     )
     return summary
 

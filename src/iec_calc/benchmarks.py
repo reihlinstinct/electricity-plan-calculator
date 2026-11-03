@@ -1,4 +1,5 @@
 """Typical-technology benchmark figures (data/benchmarks.json), with sources."""
+
 from __future__ import annotations
 
 import json

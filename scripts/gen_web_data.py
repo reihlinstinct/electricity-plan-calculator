@@ -1,4 +1,5 @@
 """Generate web/tariffs-data.js from data/tariffs.json + data/benchmarks.json (single source of truth)."""
+
 import json
 from pathlib import Path
 
