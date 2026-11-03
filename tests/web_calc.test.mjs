@@ -194,14 +194,19 @@ function setBlock(ivs, startIdx, kws) {
   check('sources: tariff source links', src.includes('gov.il/BlobFolder') && src.includes('shtipser.com/plans/'));
   check('sources: benchmark links', src.includes('fridges-and-freezers_en') && src.includes('washing-machines_en')
     && src.includes('itu.edu.tr') && src.includes('kfupm.edu.sa') && src.includes('springer.com'));
-  check('sources: RTL static, no external loads', src.includes('dir="rtl"') && !src.includes('<script src=') && !src.includes('@import'));
+  check('sources: RTL static, no external loads except the analytics beacon', src.includes('dir="rtl"') && !src.includes('<script src=') && !src.includes('@import'));
   check('sources: access date recorded', src.includes('2026-11-02'));
   const appJs = readFileSync(join(root, 'web', 'app.js'), 'utf-8');
   const i18nData = readFileSync(join(root, 'web', 'i18n-data.js'), 'utf-8');
   check('app: base label is רצפת צריכה', i18nData.includes('רצפת צריכה (בסיס):') && !i18nData.includes('עומס בסיס לילי'));
   check('app: efficiency renderer', appJs.includes('renderEfficiency'));
-  const extRefs = html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || [];
-  check('zero external requests: only the repo link is external', extRefs.length === 1 && extRefs[0].includes('github.com/reihlinstinct/electricity-plan-calculator'));
+  // The old promise was zero external requests. Issue #102 intentionally adds
+  // exactly one: the Cloudflare Web Analytics beacon (no cookies, no IP
+  // storage), disclosed in the privacy banner. Everything else stays local.
+  const extRefs = (html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || [])
+    .filter(r => !r.includes('static.cloudflareinsights.com/beacon.min.js'));
+  check('external requests: only the repo link plus the analytics beacon', extRefs.length === 1 && extRefs[0].includes('github.com/reihlinstinct/electricity-plan-calculator')
+    && html.includes('static.cloudflareinsights.com/beacon.min.js'));
   // CSV export guide (issue #32): web page + images + link from the upload box
   check('guide: linked near upload', html.includes('<a href="guide.html" data-i18n="ui.guide_link">'));
   const guide = readFileSync(join(root, 'web', 'guide.html'), 'utf-8');
@@ -212,7 +217,8 @@ function setBlock(ivs, startIdx, kws) {
     if (p.startsWith('http')) return false;
     try { readFileSync(join(root, 'web', p)); return true; } catch { return false; }
   }));
-  check('guide: no external resource loads', !(guide.match(/src="https?:/) || guide.match(/<link[^>]+href="https?:/)));
+  check('guide: no external resource loads except the analytics beacon',
+    !(guide.match(/src="https?:(?!\/\/static\.cloudflareinsights\.com\/beacon\.min\.js)/) || guide.match(/<link[^>]+href="https?:/)));
 
   const pngSize = path => {
     const b = readFileSync(path);
@@ -275,8 +281,10 @@ function setBlock(ivs, startIdx, kws) {
 
 // --- link hygiene (issue #45): repo/source links point at main, hosts are expected, internal links exist ---
 import { existsSync, readdirSync } from 'node:fs';
+// static.cloudflareinsights.com: the privacy-first visit counter (issue #102) -
+// Cloudflare Web Analytics beacon, no cookies, no IP storage.
 const ALLOWED_HOSTS = new Set([
-  'github.com', 'www.gov.il', 'chashmali.com', 'shtipser.com', 'kolhabait.com', 'www.hebcal.com', 'www.iec.co.il', 'reihlinstinct.github.io',
+  'github.com', 'static.cloudflareinsights.com', 'www.gov.il', 'chashmali.com', 'shtipser.com', 'kolhabait.com', 'www.hebcal.com', 'www.iec.co.il', 'reihlinstinct.github.io',
   'www.ynet.co.il', 'energy-efficient-products.ec.europa.eu', 'research.itu.edu.tr',
   'pure.kfupm.edu.sa', 'link.springer.com',
 ]);
