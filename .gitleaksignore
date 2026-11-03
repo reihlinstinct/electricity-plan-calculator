@@ -1,4 +1,7 @@
 # Cloudflare Web Analytics beacon token (issue #102). This is a PUBLIC,
 # non-secret site identifier: it is shipped to every visitor in the HTML
 # source, like a Google Analytics measurement ID. It grants no API access.
-1866ec8651e049d5a1f7336759a128fd
+# Fingerprints: commit:path:rule:line (raw tokens must not appear here).
+01c30da32277eb91106fa81bba2bf436fa3bbf3c:web/index.html:generic-api-key:52
+01c30da32277eb91106fa81bba2bf436fa3bbf3c:web/guide.html:generic-api-key:38
+01c30da32277eb91106fa81bba2bf436fa3bbf3c:web/sources.html:generic-api-key:27
