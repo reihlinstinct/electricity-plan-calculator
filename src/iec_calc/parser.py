@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import csv
 import logging
+import math
 import re
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
@@ -55,6 +56,10 @@ def parse(path: str | Path) -> list[Interval]:
             except ValueError:
                 skipped += 1
                 log.debug("skipping malformed row of %d cells", len(raw))
+                continue
+            if not (math.isfinite(kwh) and math.isfinite(feed) and kwh >= 0 and feed >= 0):
+                skipped += 1
+                log.debug("skipping row with invalid energy value")
                 continue
             if cells[1] != CONSUMPTION_KIND:
                 skipped += 1

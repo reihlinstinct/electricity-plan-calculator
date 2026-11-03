@@ -52,7 +52,7 @@ check('no hour-24 timestamps', intervals.every(i => i.start.getHours() < 24));
 
 // The same synthetic input/output contract is exercised by pytest (#82).
 {
-  const cases = JSON.parse(readFileSync(join(root, 'tests/fixtures/parser_cases.json'), 'utf-8'));
+  const cases = ['parser_cases.json', 'numeric_parser_cases.json'].flatMap(file => JSON.parse(readFileSync(join(root, 'tests/fixtures', file), 'utf-8')));
   for (const c of cases) {
     let parsed = [], error = null;
     try { parsed = parseCsv(c.csv); } catch (e) { error = e; }

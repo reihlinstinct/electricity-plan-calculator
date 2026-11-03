@@ -80,8 +80,10 @@ The CLI and browser share synthetic conformance cases in
 (including commas, escaped quotes and embedded newlines), ignores metadata and
 non-consumption rows, accepts an omitted feed-in column, rejects impossible
 calendar dates and sorts intervals. Valid `24:00` means next-day midnight;
-other invalid clock values are skipped. This is format parity, not a claim
-that malformed numeric values or every nonstandard export are supported.
+other invalid clock values are skipped. Energy values must be finite and
+nonnegative; malformed numeric tokens are skipped instead of being partially
+parsed or changed to zero. Blank energy/feed cells retain the export convention
+of zero. This does not imply support for every nonstandard export.
 
 ## Caveats
 

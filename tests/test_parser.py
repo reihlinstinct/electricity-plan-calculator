@@ -77,7 +77,12 @@ def test_only_invalid_interval_time_raises(tmp_path):
 PARSER_CASES = json.loads((Path(__file__).parent / "fixtures" / "parser_cases.json").read_text(encoding="utf-8"))
 
 
-@pytest.mark.parametrize("case", PARSER_CASES, ids=lambda case: case["name"])
+NUMERIC_CASES = json.loads(
+    (Path(__file__).parent / "fixtures" / "numeric_parser_cases.json").read_text(encoding="utf-8")
+)
+
+
+@pytest.mark.parametrize("case", PARSER_CASES + NUMERIC_CASES, ids=lambda case: case["name"])
 def test_shared_parser_cases(tmp_path, case):
     path = tmp_path / "synthetic-case.csv"
     path.write_text(case["csv"], encoding="utf-8", newline="")

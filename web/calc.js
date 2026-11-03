@@ -35,6 +35,14 @@ function csvRows(text) {
   return rows;
 }
 
+// Match complete decimal/scientific tokens, never parseFloat's valid prefix.
+function energyValue(cell) {
+  if (cell === undefined || cell === '') return 0;
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(cell)) return NaN;
+  const value = Number(cell);
+  return Number.isFinite(value) && value >= 0 ? value : NaN;
+}
+
 export function parseCsv(text) {
   const intervals = [];
   for (const cells of csvRows(text)) {
@@ -52,7 +60,8 @@ export function parseCsv(text) {
     if (start.getFullYear() !== yyyy || start.getMonth() !== mm - 1 || start.getDate() !== dd) continue;
     start.setHours(hh === 24 ? 0 : hh, hh === 24 ? 0 : mi);
     if (hh === 24) start.setDate(start.getDate() + 1);
-    const kwh = parseFloat(cells[4]) || 0, feed = parseFloat(cells[5]) || 0;
+    const kwh = energyValue(cells[4]), feed = energyValue(cells[5]);
+    if (!Number.isFinite(kwh) || !Number.isFinite(feed)) continue;
     intervals.push({ start, kwh, feed });
   }
   if (!intervals.length) throw new Error(t('calc.err_no_rows'));
