@@ -105,3 +105,24 @@ def test_report_runs_amharic(sample_csv, capsys):
     assert "የዕቅዶች ደረጃ ሰሌዳ" in out
     # supplier plan names stay Hebrew (proper nouns from the tariff catalog)
     assert "ELECTRA POWER" in out
+
+
+def test_cli_phase_controls_fixed_fees(sample_csv, capsys, monkeypatch):
+    import iec_calc.cli as cli
+    original = cli.cost.rank_plans
+    seen = []
+
+    def record_phase(*args, **kwargs):
+        ranked = original(*args, **kwargs)
+        seen.append((kwargs["phase"], {p.kind: p.annual_cost for p in ranked}))
+        return ranked
+
+    monkeypatch.setattr(cli.cost, "rank_plans", record_phase)
+    assert main(["plans", str(sample_csv)]) == 0
+    capsys.readouterr()
+    assert main(["plans", str(sample_csv), "--phase", "three"]) == 0
+    capsys.readouterr()
+    assert [phase for phase, _ in seen] == ["single", "three"]
+    single, three = seen[0][1], seen[1][1]
+    assert abs(three["flat"] - single["flat"] - (27.09 - 25.57) * 12 * 1.18) < 0.01
+    assert three["taoz"] == single["taoz"]

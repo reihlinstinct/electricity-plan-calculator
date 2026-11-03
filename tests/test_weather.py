@@ -165,3 +165,16 @@ def test_hvac_report_no_negative_zero():
     )
     text = format_hvac(rep)
     assert "-0" not in text.split("2026-09", 1)[1]
+
+
+def test_collinear_weather_regressors_skip_fit(caplog):
+    # Temperature varies by 10C, bypassing the low-variance guard, but is an
+    # exact linear combination of the intercept and Fri/Sat indicator.
+    import logging
+    days = [date(2026, 10, 1) + timedelta(days=i) for i in range(14)]
+    temps = {d: 20.0 + 10.0 * (d.weekday() in (4, 5)) for d in days}
+    kwh = {d: 6.0 + i for i, d in enumerate(days)}
+    with caplog.at_level(logging.DEBUG, logger="iec_calc.weather"):
+        assert sensitivity(kwh, temps) is None
+    assert "singular design matrix" in caplog.text
+    assert "temperature variance too low" not in caplog.text

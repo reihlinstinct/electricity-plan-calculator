@@ -78,6 +78,7 @@ IEC/EA cross-checks, and supplier-site-verified plan data (2026-09-27).
 - Annualization scales your measured window to 365 days; a single-season
   export skews summer/winter estimates. Use a 12-month export for decisions.
 - Annual costs include fixed fees (incl. VAT): identical for flat and supplier plans (single/three-phase via `--phase`); Taoz's fixed fee is higher and included explicitly.
+- Taoz currently uses one regulated fixed-fee amount for both meter phases; a separate three-phase Taoz fixed-fee variant is not modeled. `--phase` changes the flat/supplier fixed fees only.
 - The Shabbat split (Friday sunset to Saturday nightfall) uses fixed Jerusalem coordinates with a NOAA sunset approximation; times can differ from local calendars by a few minutes.
 - The night base load is labelled "רצפת צריכה (בסיס)" with a plain-language explanation (fridge always on + many always-plugged devices, each drawing little).
 - Efficiency context compares measured patterns to typical-technology benchmarks from `data/benchmarks.json` (washer kWh/cycle vs a modern A-rated eco 40-60 cycle; conditional inverter-AC field-study range; fridge floor context) - context only, never a verdict, no brand/model, sources with access dates on the Sources page (`web/sources.html`).
