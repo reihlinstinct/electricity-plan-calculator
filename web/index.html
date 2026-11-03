@@ -48,12 +48,14 @@
   .opts select { width:100%; }
   h2 { font-size:1.05rem; margin:.2rem 0 .6rem; }
 </style>
+<!-- Cloudflare Web Analytics: anonymous, cookieless visit counter (issue #102) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1866ec8651e049d5a1f7336759a128fd"}'></script>
 </head>
 <body>
 <header><select id="langSwitch"></select><h1 data-i18n="ui.header">מחשבון מסלולי חשמל - מה הכי משתלם לך?</h1></header>
 <main>
   <div class="card">
-    <div class="privacy" data-i18n="ui.privacy">🔒 הקובץ לא נשלח לשום שרת. כל החישוב מתבצע בדפדפן שלך בלבד. מקור התעריפים: נתונים מפורסמים שאומתו מול חברת החשמל ואתרי השוואה (מצורף קישור במקור). הדף עצמו לא שולח שום בקשה לרשת; הקישור לקוד המקור למטה הוא קישור רגיל ושום דבר לא נטען ממנו עד שלוחצים עליו.</div>
+    <div class="privacy" data-i18n="ui.privacy">🔒 הקובץ לא נשלח לשום שרת. כל החישוב מתבצע בדפדפן שלך בלבד. מקור התעריפים: נתונים מפורסמים שאומתו מול חברת החשמל ואתרי השוואה (מצורף קישור במקור). האתר כולל מונה כניסות אנונימי (Cloudflare Web Analytics) בלי עוגיות ובלי מידע אישי, ששולח אות צפייה אחד בלבד. הקישור לקוד המקור למטה הוא קישור רגיל ושום דבר לא נטען ממנו עד שלוחצים עליו.</div>
     <p>
       <label><span data-i18n="ui.csv_label">קובץ ייצוא צריכה של חברת החשמל (CSV):</span>
         <input type="file" id="csv" accept=".csv,text/csv"></label>
