@@ -65,8 +65,11 @@ export function renderHotspots(doc = document) {
         tip.textContent = label;
         if (h.x > 50) tip.style.right = Math.max(100 - h.x - h.w, 0) + '%';
         else tip.style.left = h.x + '%';
-        tip.style.top = h.y + '%';
-        if (h.y > 50) tip.style.transform = 'translateY(-100%)';
+        // adjacent, not on top: below the hotspot when it sits in the upper
+        // part of the image, above it once its center passes the middle or
+        // it reaches the bottom edge (#69 - bubbles overlapping labels)
+        if (h.y + h.h / 2 > 50 || h.y + h.h > 85) tip.style.bottom = (100 - h.y + 1) + '%';
+        else tip.style.top = (h.y + h.h + 1) + '%';
         wrap.appendChild(tip);
         b.setAttribute('aria-describedby', tip.id);
       };

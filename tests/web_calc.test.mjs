@@ -478,6 +478,14 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
     check('hotspots fn: outside click dismisses', !tip());
     btn().listeners.mouseenter();
     check('hotspots fn: tooltip role + aria wiring', tip().attrs.role === 'tooltip' && btn().attrs['aria-describedby'] === tip().id);
+    check('hotspots fn: tall hotspot tip above, not overlapping (#69)', tip().style.bottom === '86%' && tip().style.top === undefined);
+    documentStub.dispatchEvent({ type: 'keydown', key: 'Escape' });
+    shotEls.step3 = mkEl('div');
+    documentStub.dispatchEvent({ type: 'iec:langchange' });
+    const btn3 = shotEls.step3.children.find(isHs);
+    btn3.listeners.mouseenter();
+    const tip3 = shotEls.step3.children.find(isTip);
+    check('hotspots fn: upper hotspot tip below, not overlapping (#69)', tip3.style.top === '42%' && tip3.style.bottom === undefined);
     documentStub.dispatchEvent({ type: 'keydown', key: 'Escape' });
     windowStub.location.search = '?lang=he';
     documentStub.dispatchEvent({ type: 'iec:langchange' });
@@ -509,6 +517,7 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   check('hotspots: first-tap suppress guard (#68 review)', hsjs.includes('CLICK_SUPPRESS_MS'));
   check('hotspots: tooltip role + aria-describedby (#68 review)', hsjs.includes("'role', 'tooltip'") && hsjs.includes('aria-describedby'));
   check('hotspots: Escape dismisses (#68 review)', hsjs.includes("key === 'Escape'"));
+  check('hotspots: tip placed adjacent, never overlapping (#69)', hsjs.includes('h.y + h.h + 1') && hsjs.includes('100 - h.y + 1') && !hsjs.includes('translateY'));
   check('hotspots: guide imports module + hint element', guide.includes("from './hotspots.js'") && guide.includes('initHotspots()') && guide.includes('id="hsHint"'));
   check('hotspots: always-visible affordance outline (#68 review)', /\.hs \{[^}]*dashed/.test(guide));
   check('hotspots: shot wrapper fit-content (#68 review)', guide.includes('width:fit-content'));
