@@ -51,3 +51,23 @@ def test_2400_normalized(tmp_path):
     )
     intervals = parse(p)
     assert intervals[0].start == datetime(2026, 10, 3, 0, 0)
+
+
+@pytest.mark.parametrize("bad_time", ["24:30", "25:00", "99:00", "-1:00", "12:60", "12:-1"])
+def test_invalid_interval_times_skipped(tmp_path, bad_time):
+    p = tmp_path / "invalid-time.csv"
+    with p.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.writer(fh)
+        for stamp in (bad_time, "23:45", "24:00"):
+            writer.writerow(["00-00000001", "צריכה", "02/10/2026", stamp, "0.7", "0"])
+    intervals = parse(p)
+    assert [i.start for i in intervals] == [
+        datetime(2026, 10, 2, 23, 45), datetime(2026, 10, 3, 0, 0),
+    ]
+
+
+def test_only_invalid_interval_time_raises(tmp_path):
+    p = tmp_path / "invalid-only.csv"
+    p.write_text('"00-00000001","צריכה","02/10/2026","24:30",0.7,0\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="no consumption intervals"):
+        parse(p)

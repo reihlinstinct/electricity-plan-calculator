@@ -36,6 +36,20 @@ check('gas plan excluded by default', !noGas.some(p => p.label.includes('אמי�
 // 24:00 normalization covered implicitly: sample has a 24:00 row -> parsed to next day 00:00
 check('no hour-24 timestamps', intervals.every(i => i.start.getHours() < 24));
 
+// Invalid clock values must not normalize into plausible consumption rows (#19).
+{
+  const row = stamp => `"00-00000001","צריכה","02/10/2026","${stamp}",0.7,0`;
+  for (const bad of ['24:30', '25:00', '99:00', '-1:00', '12:60', '12:-1']) {
+    const parsed = parseCsv([row(bad), row('23:45'), row('24:00')].join('\n'));
+    check(`parser: skips invalid time ${bad}`, parsed.length === 2 &&
+      parsed[0].start.getDate() === 2 && parsed[0].start.getHours() === 23 &&
+      parsed[1].start.getDate() === 3 && parsed[1].start.getHours() === 0);
+  }
+  let rejected = false;
+  try { parseCsv(row('24:30')); } catch { rejected = true; }
+  check('parser: invalid-only file rejected', rejected);
+}
+
 // --- insights ---
 function flatDay(d, baseKw = 0.2) {
   const out = [];

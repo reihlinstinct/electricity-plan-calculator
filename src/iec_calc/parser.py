@@ -58,10 +58,14 @@ def parse(path: str | Path) -> list[Interval]:
             if cells[1] != CONSUMPTION_KIND:
                 skipped += 1
                 continue
-            if hour < 24:
-                start = datetime.combine(day, time(hour, minute))
-            else:  # some exports write midnight as 24:00
+            if hour == 24 and minute == 0:  # exports may write midnight as 24:00
                 start = datetime.combine(day, time(0, 0)) + timedelta(days=1)
+            elif 0 <= hour < 24 and 0 <= minute < 60:
+                start = datetime.combine(day, time(hour, minute))
+            else:
+                skipped += 1
+                log.debug("skipping row with invalid interval time")
+                continue
             intervals.append(Interval(start, kwh, feed))
     intervals.sort(key=lambda i: i.start)
     log.debug(

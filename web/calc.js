@@ -18,6 +18,9 @@ export function parseCsv(text) {
     if (cells.length >= 6 && /^\d{2}\/\d{2}\/\d{4}$/.test(cells[2]) && /^\d{1,2}:\d{2}$/.test(cells[3])) {
       const [dd, mm, yyyy] = cells[2].split('/').map(Number);
       let [hh, mi] = cells[3].split(':').map(Number);
+      // 24:00 is the only valid next-day spelling; Date would otherwise
+      // silently normalize 24:30, 25:00 or 12:60 into a different interval.
+      if (!((hh >= 0 && hh < 24 && mi >= 0 && mi < 60) || (hh === 24 && mi === 0))) continue;
       const kwh = parseFloat(cells[4]) || 0, feed = parseFloat(cells[5]) || 0;
       const start = new Date(yyyy, mm - 1, dd, hh === 24 ? 0 : hh, hh === 24 ? 0 : mi);
       if (hh === 24) start.setDate(start.getDate() + 1);
