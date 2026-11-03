@@ -6,6 +6,8 @@ in Israel — the regulated flat tariff, regulated time-of-use (תעו"ז / Taoz
 and all private supplier discount plans — by **your actual usage**, with
 annual NIS cost estimates. The most worthwhile plan is marked in the output.
 
+[Open the electricity plan calculator](https://reihlinstinct.github.io/electricity-plan-calculator/web/)
+
 ## Install
 
 ```sh
