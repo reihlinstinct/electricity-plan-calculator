@@ -32,8 +32,14 @@
     },
     {
       "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&i=on&year=2026",
-      "description": "Hebcal API - yom-tov dates (Israel) 2026-2027, used for Taoz off-peak holidays",
-      "retrieved": "2026-11-02"
+      "description": "Hebcal API - Israel yom-tov dates for 2026; paired with the 2027 source below",
+      "retrieved": "2026-11-02",
+      "verified": "2026-11-03"
+    },
+    {
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&i=on&year=2027",
+      "description": "Hebcal API - Israel yom-tov dates for 2027; all 8 dates cross-checked against the stored holiday list",
+      "verified": "2026-11-03"
     }
   ],
   "regulated": {
