@@ -1,5 +1,7 @@
 import csv
+import json
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -70,3 +72,18 @@ def test_only_invalid_interval_time_raises(tmp_path):
     p.write_text('"00-00000001","צריכה","02/10/2026","24:30",0.7,0\n', encoding="utf-8")
     with pytest.raises(ValueError, match="no consumption intervals"):
         parse(p)
+
+
+PARSER_CASES = json.loads((Path(__file__).parent / "fixtures" / "parser_cases.json").read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize("case", PARSER_CASES, ids=lambda case: case["name"])
+def test_shared_parser_cases(tmp_path, case):
+    path = tmp_path / "synthetic-case.csv"
+    path.write_text(case["csv"], encoding="utf-8", newline="")
+    if not case["expected"]:
+        with pytest.raises(ValueError, match="no consumption intervals"):
+            parse(path)
+        return
+    actual = [{"start": i.start.strftime("%Y-%m-%dT%H:%M"), "kwh": i.kwh, "feed": i.feed_kwh} for i in parse(path)]
+    assert actual == case["expected"]

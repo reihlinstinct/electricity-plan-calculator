@@ -73,6 +73,16 @@ IEC/EA cross-checks, and supplier-site-verified plan data (2026-09-27).
   meter-id patterns and on customer metadata outside the sample.
 - Customer metadata (name/address/contract/meter) is never printed or logged.
 
+## CSV input
+
+The CLI and browser share synthetic conformance cases in
+`tests/fixtures/parser_cases.json`. The browser reads quoted CSV records
+(including commas, escaped quotes and embedded newlines), ignores metadata and
+non-consumption rows, accepts an omitted feed-in column, rejects impossible
+calendar dates and sorts intervals. Valid `24:00` means next-day midnight;
+other invalid clock values are skipped. This is format parity, not a claim
+that malformed numeric values or every nonstandard export are supported.
+
 ## Caveats
 
 - Annualization scales your measured window to 365 days; a single-season

@@ -1,0 +1,205 @@
+[
+  {
+    "name": "six columns",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,0.5,0\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "optional feed column absent",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,0.5\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "blank feed",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,0.5,\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "blank energy defaults to zero",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,,0\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.0,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "feed-in row ignored",
+    "csv": "00-00000001,הזרמה,02/10/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "metadata-shaped row ignored",
+    "csv": "metadata,צריכה,02/10/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "quoted comma in extra column",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,0.5,0,\"note, extra\"\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "quoted newline in extra column",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,0.5,0,\"note\nextra\"\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "escaped quote in extra column",
+    "csv": "00-00000001,צריכה,02/10/2026,00:15,0.5,0,\"note \"\"extra\"\"\"\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "quoted metadata with embedded newline",
+    "csv": "\"metadata\n00-00000001\",צריכה,02/10/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "BOM and CRLF",
+    "csv": "﻿00-00000001,צריכה,02/10/2026,00:15,0.5,0\r\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unquoted whitespace trimmed",
+    "csv": " 00-00000001 , צריכה , 02/10/2026 , 00:15 , 0.5 , 0 \n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "single-digit date/time tokens",
+    "csv": "00-00000001,צריכה,2/10/2026,0:5,0.5,0\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:05",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "invalid date 31/02/2026",
+    "csv": "00-00000001,צריכה,31/02/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "invalid date 29/02/2026",
+    "csv": "00-00000001,צריכה,29/02/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "invalid date 00/10/2026",
+    "csv": "00-00000001,צריכה,00/10/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "invalid date 02/13/2026",
+    "csv": "00-00000001,צריכה,02/13/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "invalid date 02/00/2026",
+    "csv": "00-00000001,צריכה,02/00/2026,00:15,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "leap day",
+    "csv": "00-00000001,צריכה,29/02/2028,00:15,0.5,0\n",
+    "expected": [
+      {
+        "start": "2028-02-29T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "24:00 year rollover",
+    "csv": "00-00000001,צריכה,31/12/2026,24:00,0.5,0\n",
+    "expected": [
+      {
+        "start": "2027-01-01T00:00",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "sorted out-of-order intervals",
+    "csv": "00-00000001,צריכה,02/10/2026,00:30,0.5,0\n00-00000001,צריכה,02/10/2026,00:15,0.5,0\n",
+    "expected": [
+      {
+        "start": "2026-10-02T00:15",
+        "kwh": 0.5,
+        "feed": 0.0
+      },
+      {
+        "start": "2026-10-02T00:30",
+        "kwh": 0.5,
+        "feed": 0.0
+      }
+    ]
+  },
+  {
+    "name": "invalid time 24:30",
+    "csv": "00-00000001,צריכה,02/10/2026,24:30,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "invalid time 25:00",
+    "csv": "00-00000001,צריכה,02/10/2026,25:00,0.5,0\n",
+    "expected": []
+  },
+  {
+    "name": "invalid time 12:60",
+    "csv": "00-00000001,צריכה,02/10/2026,12:60,0.5,0\n",
+    "expected": []
+  }
+]

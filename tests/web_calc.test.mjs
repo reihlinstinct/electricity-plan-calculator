@@ -50,6 +50,20 @@ check('no hour-24 timestamps', intervals.every(i => i.start.getHours() < 24));
   check('parser: invalid-only file rejected', rejected);
 }
 
+// The same synthetic input/output contract is exercised by pytest (#82).
+{
+  const cases = JSON.parse(readFileSync(join(root, 'tests/fixtures/parser_cases.json'), 'utf-8'));
+  for (const c of cases) {
+    let parsed = [], error = null;
+    try { parsed = parseCsv(c.csv); } catch (e) { error = e; }
+    const actual = parsed.map(i => ({
+      start: `${i.start.getFullYear()}-${String(i.start.getMonth()+1).padStart(2,'0')}-${String(i.start.getDate()).padStart(2,'0')}T${String(i.start.getHours()).padStart(2,'0')}:${String(i.start.getMinutes()).padStart(2,'0')}`,
+      kwh: i.kwh, feed: i.feed,
+    }));
+    check(`parser parity: ${c.name}`, c.expected.length ? !error && JSON.stringify(actual) === JSON.stringify(c.expected) : !!error);
+  }
+}
+
 // --- insights ---
 function flatDay(d, baseKw = 0.2) {
   const out = [];

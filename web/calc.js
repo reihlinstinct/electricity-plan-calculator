@@ -10,24 +10,53 @@ export function dateKey(d) {
 }
 
 // --- CSV parsing (IEC export: metadata header, then interval rows) ---
+// Read logical CSV records, not physical lines: quoted metadata may contain
+// commas, escaped quotes and newlines. No data leaves the browser.
+function csvRows(text) {
+  const rows = [];
+  let row = [], cell = '', quoted = false;
+  text = text.replace(/^\uFEFF/, '');
+  const endCell = () => { row.push(cell.trim()); cell = ''; };
+  const endRow = () => { endCell(); rows.push(row); row = []; };
+  for (let n = 0; n < text.length; n++) {
+    const c = text[n];
+    if (quoted) {
+      if (c === '"' && text[n + 1] === '"') { cell += '"'; n++; }
+      else if (c === '"') quoted = false;
+      else cell += c;
+    } else if (c === '"' && cell === '') quoted = true;
+    else if (c === ',') endCell();
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[n + 1] === '\n') n++;
+      endRow();
+    } else cell += c;
+  }
+  if (cell.length || row.length) endRow();
+  return rows;
+}
+
 export function parseCsv(text) {
-  const rows = text.split(/\r?\n/);
   const intervals = [];
-  for (const line of rows) {
-    const cells = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-    if (cells.length >= 6 && /^\d{2}\/\d{2}\/\d{4}$/.test(cells[2]) && /^\d{1,2}:\d{2}$/.test(cells[3])) {
-      const [dd, mm, yyyy] = cells[2].split('/').map(Number);
-      let [hh, mi] = cells[3].split(':').map(Number);
-      // 24:00 is the only valid next-day spelling; Date would otherwise
-      // silently normalize 24:30, 25:00 or 12:60 into a different interval.
-      if (!((hh >= 0 && hh < 24 && mi >= 0 && mi < 60) || (hh === 24 && mi === 0))) continue;
-      const kwh = parseFloat(cells[4]) || 0, feed = parseFloat(cells[5]) || 0;
-      const start = new Date(yyyy, mm - 1, dd, hh === 24 ? 0 : hh, hh === 24 ? 0 : mi);
-      if (hh === 24) start.setDate(start.getDate() + 1);
-      intervals.push({ start, kwh, feed });
-    }
+  for (const cells of csvRows(text)) {
+    if (cells.length < 5 || !/^\d+-\d+$/.test(cells[0]) || cells[1] !== 'צריכה') continue;
+    if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cells[2]) || !/^\d{1,2}:\d{1,2}$/.test(cells[3])) continue;
+    const [dd, mm, yyyy] = cells[2].split('/').map(Number);
+    const [hh, mi] = cells[3].split(':').map(Number);
+    if (!((hh < 24 && mi < 60) || (hh === 24 && mi === 0))) continue;
+    // Reject impossible calendar dates before Date can normalize them. Set
+    // the full year explicitly because the constructor remaps years 0-99.
+    if (yyyy < 1) continue;
+    const start = new Date(0);
+    start.setHours(0, 0, 0, 0);
+    start.setFullYear(yyyy, mm - 1, dd);
+    if (start.getFullYear() !== yyyy || start.getMonth() !== mm - 1 || start.getDate() !== dd) continue;
+    start.setHours(hh === 24 ? 0 : hh, hh === 24 ? 0 : mi);
+    if (hh === 24) start.setDate(start.getDate() + 1);
+    const kwh = parseFloat(cells[4]) || 0, feed = parseFloat(cells[5]) || 0;
+    intervals.push({ start, kwh, feed });
   }
   if (!intervals.length) throw new Error(t('calc.err_no_rows'));
+  intervals.sort((a, b) => a.start - b.start);
   return intervals;
 }
 
