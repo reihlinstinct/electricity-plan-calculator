@@ -23,6 +23,15 @@ log = logging.getLogger(__name__)
 _METER_CODE = re.compile(r"^\d+-\d+$")
 _DATE_FMT = "%d/%m/%Y"
 CONSUMPTION_KIND = "צריכה"
+_ENERGY_TOKEN = re.compile(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?")
+
+
+def _energy_value(cell: str) -> float:
+    if not cell:
+        return 0.0
+    if not _ENERGY_TOKEN.fullmatch(cell):
+        raise ValueError("invalid energy token")
+    return float(cell)
 
 
 @dataclass(frozen=True)
@@ -51,8 +60,8 @@ def parse(path: str | Path) -> list[Interval]:
             try:
                 day = datetime.strptime(cells[2], _DATE_FMT).date()
                 hour, minute = (int(x) for x in cells[3].split(":"))
-                kwh = float(cells[4] or 0)
-                feed = float(cells[5]) if len(cells) > 5 and cells[5] else 0.0
+                kwh = _energy_value(cells[4])
+                feed = _energy_value(cells[5]) if len(cells) > 5 else 0.0
             except ValueError:
                 skipped += 1
                 log.debug("skipping malformed row of %d cells", len(raw))

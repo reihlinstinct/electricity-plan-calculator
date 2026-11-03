@@ -123,5 +123,45 @@
         "feed": 0.0
       }
     ]
+  },
+  {
+    "name": "consumption: reject non-ASCII token 1_0",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",1_0,0\n",
+    "expected": []
+  },
+  {
+    "name": "consumption: reject non-ASCII token ١٠",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",١٠,0\n",
+    "expected": []
+  },
+  {
+    "name": "consumption: reject non-ASCII token １２.５",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",１２.５,0\n",
+    "expected": []
+  },
+  {
+    "name": "consumption: reject non-ASCII token 1e١",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",1e١,0\n",
+    "expected": []
+  },
+  {
+    "name": "feed: reject non-ASCII token 1_0",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",0.5,1_0\n",
+    "expected": []
+  },
+  {
+    "name": "feed: reject non-ASCII token ١٠",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",0.5,١٠\n",
+    "expected": []
+  },
+  {
+    "name": "feed: reject non-ASCII token １２.５",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",0.5,１２.５\n",
+    "expected": []
+  },
+  {
+    "name": "feed: reject non-ASCII token 1e١",
+    "csv": "\"00-00000001\",\"צריכה\",\"02/10/2026\",\"00:15\",0.5,1e١\n",
+    "expected": []
   }
 ]
