@@ -2,6 +2,8 @@
 
 ## 2026-11-03
 
+- README links to the live browser calculator using descriptive link text. (#100)
+
 - Amharic as the fourth additional language: full strings column, `--lang am`,
   `?lang=am` on the site. (#44, #74)
 
