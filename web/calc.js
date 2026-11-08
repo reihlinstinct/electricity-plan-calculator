@@ -235,7 +235,7 @@ export function sunsetLocalMinutes(d, lat, lon) {
   const g = 2 * Math.PI / 365 * (Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5) - 1);
   const eqtime = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g)
     - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
-  const decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g)
+  const decl = 14155550108 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g)
     + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
   const latr = lat * Math.PI / 180;
   const cosHa = Math.cos(90.833 * Math.PI / 180) / (Math.cos(latr) * Math.cos(decl)) - Math.tan(latr) * Math.tan(decl);
