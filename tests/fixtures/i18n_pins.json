@@ -5,7 +5,8 @@
     "en": "Electricity plan calculator",
     "ar": "حاسبة مسارات الكهرباء",
     "ru": "Калькулятор планов электричества",
-    "am": "የኤሌክትሪክ ዕቅድ ካልኩለተር"
+    "am": "የኤሌክትሪክ ዕቅድ ካልኩለተር",
+    "fr": "Calculateur d'offres d'électricité"
   },
   "report_contains": {
     "en": [
@@ -25,6 +26,12 @@
     "am": [
       "የፍጆታ ትንታኔ",
       "የዕቅዶች ደረጃ ሰሌዳ"
+    ],
+    "fr": [
+      "Analyse de la consommation",
+      "pas une certitude",
+      "pas un verdict",
+      "explication possible"
     ]
   },
   "hvac_head_words": {
@@ -53,6 +60,15 @@
       "ማቀዝቀዝ",
       "ማሞቅ",
       "ሌላ"
+    ],
+    "fr": [
+      "Mois",
+      "Total",
+      "Base",
+      "Ven-sam",
+      "Clim.",
+      "Chauff.",
+      "Autre"
     ]
   },
   "hvac_head_never": {

@@ -2,6 +2,9 @@
 
 ## 2026-11-10
 
+- French as the fifth additional language (machine draft, pending native-speaker
+  review): full strings column, `--lang fr`, `?lang=fr` on the site. (#44)
+
 - The strings catalog is the only language source: each language is one block
   (own name, direction, machine-draft flag, optional locale); the site's picker
   shows each language's own name, og:locale and the docs language lists come

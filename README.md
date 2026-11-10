@@ -121,6 +121,7 @@ Available languages (generated from the catalog):
 - `ar` العربية (machine draft, pending native-speaker review)
 - `ru` Русский (machine draft, pending native-speaker review)
 - `am` አማርኛ (machine draft, pending native-speaker review)
+- `fr` Français (machine draft, pending native-speaker review)
 <!-- languages:end -->
 
 IEC supplier plan names stay in their original Hebrew form in every
