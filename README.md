@@ -157,3 +157,16 @@ man -l man/iec-calc.1 # man page
 
 Rules: design doc first (DESIGN.md), an issue per change, small signed
 commits, PRs merged only with green CI and an independent review.
+
+## Accessibility engineering
+
+See [ACCESSIBILITY.md](ACCESSIBILITY.md) for the SI 5568 AA target, the pinned
+browser/axe gate and its manual/device limits. For a synthetic local run:
+
+```sh
+A11Y_TOOLS=/absolute/path/to/reviewed/repo-checks/actions/a11y node tests/a11y.mjs
+```
+
+Use only the reviewed shared tools and synthetic/no-secret pages. This test is
+not a conformance audit or a network sandbox. The CI workflow installs the locked
+shared dependencies and browser binaries before running it.

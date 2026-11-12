@@ -17,3 +17,6 @@ venv/
 htmlcov/
 .pytest_cache/
 .ruff_cache/
+
+# Synthetic accessibility preview manifest
+.a11y-routes.json
