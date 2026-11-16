@@ -1,0 +1,102 @@
+.TH IEC-CALC 1 "November 2026" "iec-calc 0.1.0" "User Commands"
+.SH NAME
+iec-calc \- analyze IEC consumption exports and rank Israeli electricity plans
+.SH SYNOPSIS
+.B iec-calc
+.RI [ --debug ]
+.RI [ --tariffs " JSON" ]
+.RI [ --lang " LANG" ]
+.BR analyze " | " plans " | " report
+.I EXPORT.csv
+.RI [ --weather ]
+.RI [ --lat " DEG" ]
+.RI [ --lon " DEG" ]
+.SH DESCRIPTION
+.B iec-calc
+parses an Israel Electric Corp hourly or 15-minute consumption export (CSV)
+and computes, interval by interval, the annual cost of every electricity plan
+in Israel: the regulated flat tariff, regulated time-of-use (Taoz), and all
+private supplier discount plans. Plans are printed cheapest first; the most
+worthwhile plan is marked.
+.PP
+All processing is local. Customer metadata (name, address, contract and
+meter numbers) is never printed or logged.
+.SH COMMANDS
+.TP
+.B analyze
+Consumption profile: totals, base load, peaks, night/weekend split, anomalies.
+.TP
+.B plans
+Rank all plans by annual cost on your data.
+.TP
+.B report
+Both of the above.
+Includes an insights block (observations only): coverage warning when the file
+spans under 350 days, peak hours, night baseline, notable days, Taoz peak share,
+and probabilistic appliance-signature detection (washing machine / oven /
+sustained high-power load, type unclear) with confidence and triggering pattern.
+When at least two Shabbat windows and five weekdays are present, a statistical
+Shabbat-observance estimate may appear: it fires only above its confidence
+threshold (elevated Shabbat-night base and/or near-absence of appliance starts
+on Shabbat), always with the supporting numbers, and never reports
+non-observance.
+The base load is labelled "רצפת צריכה (בסיס)" with a plain-language explanation.
+An efficiency block compares measured patterns to typical-technology benchmarks
+from data/benchmarks.json (washer cycle energy, conditional inverter-AC
+field-study range, fridge floor context) with confidence and estimated yearly
+cost - context only, never a verdict or brand/model claim.
+.SH OPTIONS
+.TP
+.B --debug
+Verbose diagnostic logging to stderr. Off by default.
+.TP
+.BI --lang " LANG"
+.\" languages:begin (generated from i18n/strings.json by scripts/gen_language_lists.py - do not edit by hand)
+Output language: he (default), en, ar, ru, am, or fr.
+.\" languages:end
+IEC supplier and plan names stay in their original Hebrew form in every
+language: they are proper nouns from the official tariff catalog, not UI text. Affects all report text and plan labels.
+.TP
+.BI --tariffs " JSON"
+Use an alternative tariff catalog instead of the bundled data/tariffs.json.
+.TP
+.B --phase {single,three}
+Meter phase for the fixed-fee calculation (default: single).
+.TP
+.B --no-smart-meter
+Exclude plans that require a smart meter.
+.TP
+.B --gas
+Opt in to gas-customer-only plans (Amisragas); excluded by default.
+.TP
+.B --hot
+Opt in to HOT/NEXT-customer-only plans; excluded by default.
+.TP
+.BI "--current-plan " LABEL
+Mark the plan whose label contains LABEL as your current plan and state the
+top plan's annual saving versus it. Must match exactly one plan, including
+the regulated options (flat tariff, Taoz); validated before the CSV is read.
+.TP
+.B --weather
+Correlate daily consumption with temperature (Open-Meteo archive API).
+Opt-in (off by default). Makes a network call to Open-Meteo. The output is an
+experimental estimate only and is never used in the plan ranking.
+.TP
+.BI --lat " DEG" , --lon " DEG"
+Coordinates for weather lookup. Default: 31.78, 35.21 (Jerusalem).
+.TP
+.BI "--cooling-base " DEG
+Cooling degree-day base temperature for the heating/cooling split (default: 22).
+.TP
+.BI "--heating-base " DEG
+Heating degree-day base temperature for the heating/cooling split (default: 18).
+.SH EXIT STATUS
+0 on success, 2 on unreadable or empty input.
+.SH FILES
+.TP
+.I data/tariffs.json
+Rates, discount windows, eligibility, source URLs and verification dates.
+.SH EXAMPLES
+.TP
+.B iec-calc report export.csv --weather --lat 32.08 --lon 34.78
+Full report for Tel Aviv coordinates.

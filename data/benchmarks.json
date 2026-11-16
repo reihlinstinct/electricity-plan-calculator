@@ -1,0 +1,33 @@
+{
+  "accessed": "2026-11-02",
+  "note": "Typical-technology benchmark figures for efficiency context only. Never a verdict on a specific appliance.",
+  "washer": {
+    "typical_modern_kwh_per_cycle": 0.5,
+    "israel_2021_kwh_per_cycle": 0.93,
+    "israel_2024_kwh_per_cycle": 0.55,
+    "unit_note": "Benchmark 0.5 kWh/cycle is consistent with the Israeli 2024 average 0.55 (ynet); the EC page gives the eco 40-60 label methodology (kWh per 100 cycles), it is not the source of the figure. Program and temperature change consumption materially",
+    "sources": [
+      {"label": "European Commission - washing machines energy label (consumption per 100 cycles, eco 40-60)", "url": "https://energy-efficient-products.ec.europa.eu/product-list/washing-machines_en"},
+      {"label": "Israeli Ministry of Energy market study via ynet: 0.93 kWh/cycle (2021) vs 0.55 (2024), -41%", "url": "https://www.ynet.co.il/economy/article/h1tu9ogzgl"}
+    ]
+  },
+  "ac": {
+    "inverter_savings_min": 0.20,
+    "inverter_savings_max": 0.40,
+    "unit_note": "Range across studies for inverter vs on/off room AC: 11-38% (Istanbul field test), ~24% (Saudi Arabia 1989: measured single-speed unit vs simulated inverter), ~44% (Jeddah)",
+    "sources": [
+      {"label": "Istanbul Technical University field test: inverter saves 11-38%", "url": "https://research.itu.edu.tr/en/publications/an-experimental-investigation-of-energy-saving-potentials-for-roo/"},
+      {"label": "KFUPM 1989 (ASHRAE Transactions): measured single-speed unit vs simulated inverter; inverter used 24% less energy", "url": "https://pure.kfupm.edu.sa/en/publications/an-assessment-of-inverter-driven-variable-speed-air-conditioners-/"},
+      {"label": "Springer (Jeddah): inverter saves up to 44%", "url": "https://link.springer.com/article/10.1007/s41825-020-00033-y"}
+    ]
+  },
+  "fridge": {
+    "typical_modern_kwh_per_year": 181,
+    "old_1990_kwh_per_year": 477,
+    "unit_note": "EU average fridge-freezer, kWh/year; 2020 vs 1990",
+    "sources": [
+      {"label": "European Commission - fridges and freezers (181 kWh/a in 2020, 477 kWh/a in 1990)", "url": "https://energy-efficient-products.ec.europa.eu/product-list/fridges-and-freezers_en"},
+      {"label": "Israeli Ministry of Energy market study via ynet: -29% fridge consumption 2021->2024, ~80 NIS/year", "url": "https://www.ynet.co.il/economy/article/h1tu9ogzgl"}
+    ]
+  }
+}

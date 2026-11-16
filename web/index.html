@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="ui.title">מחשבון מסלולי חשמל</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="מחשבון חיסכון בחשמל - איזה מסלול הכי משתלם לכם">
+<meta property="og:description" content="העלו את ייצוא הצריכה מחברת החשמל וגלו איזה מסלול משתלם. הכל בדפדפן, בלי שרת.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="he_IL">
+<meta property="og:url" content="https://reihlinstinct.github.io/electricity-plan-calculator/web/">
+<meta property="og:image" content="https://reihlinstinct.github.io/electricity-plan-calculator/web/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="מחשבון חיסכון בחשמל - איזה מסלול הכי משתלם לכם">
+<meta name="twitter:description" content="העלו את ייצוא הצריכה מחברת החשמל וגלו איזה מסלול משתלם. הכל בדפדפן, בלי שרת.">
+<meta name="twitter:image" content="https://reihlinstinct.github.io/electricity-plan-calculator/web/og-image.png">
+<style>
+  :root { --bg:#f7f7f9; --card:#fff; --ink:#1a1a2e; --accent:#0b6bcb; --muted:#666; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; }
+  header { background:var(--accent); color:#fff; padding:1rem 1.5rem;
+           display:flex; align-items:center; justify-content:space-between; gap:1rem;
+           flex-direction:row-reverse; }
+  select { max-width:100%; box-sizing:border-box; }
+  header select#langSwitch { font:inherit; font-weight:600; color:var(--accent);
+           background:#fff; border:0; border-radius:6px; padding:.15rem .3rem; cursor:pointer; }
+  header h1 { margin:0; font-size:1.3rem; }
+  main { max-width:960px; margin:0 auto; padding:1rem; display:grid; gap:1rem; }
+  .card { background:var(--card); border-radius:12px; padding:1rem 1.25rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .privacy { background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; padding:.6rem .9rem; font-size:.9rem; }
+  label { display:block; margin:.35rem 0; font-size:.92rem; }
+  input[type=text], input[type=number], select { padding:.3rem .5rem; border:1px solid #ccc; border-radius:6px; font:inherit; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:.55rem 1.4rem; font:inherit; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; }
+  th, td { padding:.35rem .5rem; border-bottom:1px solid #eee; text-align:right; }
+  tr.best { background:#e3f2fd; font-weight:600; }
+  tr.current { outline:2px solid var(--accent); }
+  .muted { color:var(--muted); font-size:.85rem; }
+  canvas { width:100%; max-width:880px; }
+  .err { background:#ffebee; border:1px solid #ef9a9a; border-radius:8px; padding:.6rem .9rem; display:none; }
+  .opts { display:flex; flex-wrap:wrap; gap:1rem; }
+  .opts label { min-width:0; }
+  .opts select { width:100%; }
+  h2 { font-size:1.05rem; margin:.2rem 0 .6rem; }
+</style>
+<!-- Cloudflare Web Analytics: anonymous, cookieless visit counter (issue #102) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1866ec8651e049d5a1f7336759a128fd"}'></script>
+</head>
+<body>
+<header><select id="langSwitch"></select><h1 data-i18n="ui.header">מחשבון מסלולי חשמל - מה הכי משתלם לך?</h1></header>
+<main>
+  <div class="card">
+    <div class="privacy" data-i18n="ui.privacy">🔒 הקובץ לא נשלח לשום שרת. כל החישוב מתבצע בדפדפן שלך בלבד. מקור התעריפים: נתונים מפורסמים שאומתו מול חברת החשמל ואתרי השוואה (מצורף קישור במקור). האתר כולל מונה כניסות אנונימי (Cloudflare Web Analytics) בלי עוגיות ובלי מידע אישי, ששולח אות צפייה אחד בלבד. הקישור לקוד המקור למטה הוא קישור רגיל ושום דבר לא נטען ממנו עד שלוחצים עליו.</div>
+    <p>
+      <label><span data-i18n="ui.csv_label">קובץ ייצוא צריכה של חברת החשמל (CSV):</span>
+        <input type="file" id="csv" accept=".csv,text/csv"></label>
+      <span class="muted"><span data-i18n="ui.no_file">אין עדיין קובץ?</span> <a href="guide.html" data-i18n="ui.guide_link">איך מורידים את ייצוא הצריכה מחברת החשמל</a></span>
+    </p>
+    <div class="opts">
+      <label><span data-i18n="ui.meter_type">סוג מונה:</span>
+        <select id="phase"><option value="single" data-i18n="ui.single_phase">חד-פאזי</option><option value="three" data-i18n="ui.three_phase">תלת-פאזי</option></select></label>
+      <label><input type="checkbox" id="smartMeter" checked> <span data-i18n="ui.smart_meter">יש לי מונה חכם</span></label>
+      <details id="extraDiscounts">
+        <summary data-i18n="ui.extra_discounts">אפשרויות הנחה נוספות</summary>
+        <label><input type="checkbox" id="gasCustomer"> <span data-i18n="ui.gas_customer">לקוח גז אמישראגז</span></label>
+        <label><input type="checkbox" id="hotCustomer"> <span data-i18n="ui.hot_customer">לקוח HOT/NEXT</span></label>
+      </details>
+      <label><span data-i18n="ui.current_plan">המסלול הנוכחי שלי:</span> <select id="currentPlan"><option value="">-</option></select></label>
+    </div>
+    <p><button id="go" disabled data-i18n="ui.compute">חשב</button> <span id="status" class="muted"></span></p>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="card" id="summaryCard" style="display:none">
+    <h2 data-i18n="ui.summary_title">פרופיל צריכה</h2>
+    <div id="summary"></div>
+    <h2 data-i18n="ui.hourly_title">פרופיל שעתי (ממוצע קוט"ש לרבע שעה)</h2>
+    <canvas id="chHourly" width="880" height="260"></canvas>
+    <h2 data-i18n="ui.daily_title">צריכה יומית</h2>
+    <canvas id="chDaily" width="880" height="260"></canvas>
+  </div>
+
+  <div class="card" id="insightsCard" style="display:none">
+    <h2 data-i18n="ui.insights_title">תובנות מהנתונים (תצפיות על הקובץ בלבד)</h2>
+    <div id="insightsText"></div>
+    <div id="applianceText"></div>
+  </div>
+
+  <div class="card" id="plansCard" style="display:none">
+    <h2 data-i18n="ui.plans_title">דירוג מסלולים (עלות שנתית משוערת: צריכה + תשלומים קבועים, כולל מע"מ)</h2>
+    <div id="plansNote" class="muted"></div>
+    <canvas id="chPlans" width="880" height="520"></canvas>
+    <table id="plansTable"></table>
+    <div id="currentPlanNote"></div>
+  </div>
+
+</main>
+<footer class="muted" style="text-align:center;padding:1rem;">
+  <a href="https://github.com/reihlinstinct/electricity-plan-calculator" data-i18n="ui.footer_github">GitHub</a> · <a href="sources.html" data-i18n="ui.footer_sources">Sources</a>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

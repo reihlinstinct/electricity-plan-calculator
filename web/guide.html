@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="guide.title">איך שולפים את קובץ הצריכה מחברת החשמל</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg:#f7f7f9; --card:#fff; --ink:#1a1a2e; --accent:#0b6bcb; --muted:#666; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; }
+  header { background:var(--accent); color:#fff; padding:1rem 1.5rem;
+           display:flex; align-items:center; justify-content:space-between; gap:1rem;
+           flex-direction:row-reverse; }
+  select { max-width:100%; box-sizing:border-box; }
+  header select#langSwitch { font:inherit; font-weight:600; color:var(--accent);
+           background:#fff; border:0; border-radius:6px; padding:.15rem .3rem; cursor:pointer; }
+  header h1 { margin:0; font-size:1.2rem; }
+  main { max-width:760px; margin:0 auto; padding:1rem; display:grid; gap:1rem; }
+  .card { background:var(--card); border-radius:12px; padding:1rem 1.25rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  img { max-width:100%; border-radius:8px; border:1px solid #e3e3e8; display:block; margin:.5rem 0; }
+  h2 { font-size:1.05rem; margin:.2rem 0; }
+  p, li { line-height:1.6; }
+  .muted { color:var(--muted); font-size:.85rem; }
+  .back { display:inline-block; margin-top:.5rem; }
+  /* translation hotspots over the Hebrew screenshots (#67) */
+  .shot { position:relative; width:fit-content; max-width:100%; }
+  .shot img { margin:.5rem 0; }
+  .hs { position:absolute; padding:0; border:2px dashed rgba(11,107,203,.45); border-radius:6px;
+        background:transparent; cursor:help; }
+  .hs:hover, .hs:focus-visible, .hs.on { border:2px solid var(--accent); background:rgba(11,107,203,.15); outline:none; }
+  .hs-tip { position:absolute; z-index:5; background:#1a1a2e; color:#fff; padding:.3rem .6rem;
+            border-radius:6px; font-size:.85rem; max-width:80%; pointer-events:none;
+            box-shadow:0 2px 8px rgba(0,0,0,.3); }
+</style>
+<!-- Cloudflare Web Analytics: anonymous, cookieless visit counter (issue #102) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1866ec8651e049d5a1f7336759a128fd"}'></script>
+</head>
+<body>
+<header><select id="langSwitch"></select><h1 data-i18n="guide.header">איך שולפים את קובץ נתוני הצריכה (CSV) מאתר חברת החשמל</h1></header>
+<main>
+  <div class="card">
+    <p data-i18n="guide.intro">מדריך קצר, צעד אחר צעד, להורדת קובץ הצריכה ברמת רבע שעה - זה הקובץ שמעלים למחשבון. נבדק מול האתר בנובמבר 2026.</p>
+    <p><b data-i18n="guide.prereq">מה צריך לפני שמתחילים:</b><span data-i18n="guide.prereq_body"> מונה חכם (בלעדיו אין נתוני צריכה לפי שעות) · מספר תעודת זהות של בעל החשבון · גישה לטלפון או למייל הרשומים בחשבון, לקבלת קוד חד-פעמי. כל התהליך לוקח כמה דקות.</span></p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s1_h">1. נכנסים לאתר חברת החשמל</h2>
+    <p><span data-i18n="guide.s1_p1">פותחים את </span><a href="https://www.iec.co.il">iec.co.il</a><span data-i18n="guide.s1_p2">. בשורת "פעולות נפוצות" לוחצים על "כל הפעולות".</span></p>
+    <div class="shot" data-shot="step1">
+    <img src="../docs/images/step1.png" alt="שורת פעולות נפוצות, כל הפעולות מסומן" data-i18n-alt data-i18n="guide.s1_alt" loading="lazy">
+    </div>
+    <p class="muted" id="hsHint" style="display:none"></p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s2_h">2. בוחרים "מונים וצריכה"</h2>
+    <p data-i18n="guide.s2_p">בעמוד "כל הפעולות" לוחצים על האריח "מונים וצריכה".</p>
+    <div class="shot" data-shot="step2">
+    <img src="../docs/images/step2.png" alt="עמוד כל הפעולות, מונים וצריכה מסומן" data-i18n-alt data-i18n="guide.s2_alt" loading="lazy">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s3_h">3. בוחרים "מצב הפעילות במונה"</h2>
+    <p data-i18n="guide.s3_p">בתפריט "מונים וצריכה" לוחצים על "מצב הפעילות במונה".</p>
+    <div class="shot" data-shot="step3">
+    <img src="../docs/images/step3.png" alt="תפריט מונים וצריכה, מצב הפעילות במונה מסומן" data-i18n-alt data-i18n="guide.s3_alt" loading="lazy">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s4_h">4. בוחרים "מצב צריכה עדכני"</h2>
+    <p data-i18n="guide.s4_p">במסך "איזה נתונים מעניינים אותך?" לוחצים על הכרטיס "מצב צריכה עדכני" (לא "קריאות מונה קודמות").</p>
+    <div class="shot" data-shot="step4">
+    <img src="../docs/images/step4.png" alt="מסך איזה נתונים מעניינים אותך, מצב צריכה עדכני מסומן" data-i18n-alt data-i18n="guide.s4_alt" loading="lazy">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s5_h">5. נפתח מסך הצריכה</h2>
+    <p data-i18n="guide.s5_p">מגיעים למסך "מה היתה הצריכה במונה", עם לשונית "לפי תקופה" ובחירת יום, שבוע או חודש. אם מתבקשים להתחבר - מזינים מספר תעודת זהות ואת הקוד החד-פעמי שנשלח ב-SMS או במייל (את הקוד מקלידים רק באתר של חברת החשמל).</p>
+    <div class="shot" data-shot="step5">
+    <img src="../docs/images/step5.png" alt="מסך מה היתה הצריכה במונה, לשונית לפי תקופה מסומנת" data-i18n-alt data-i18n="guide.s5_alt" loading="lazy">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s6_h">6. שולחים את הקובץ למייל</h2>
+    <p><span data-i18n="guide.s6_p1">מגללים למטה ולוחצים על "שליחת קובץ אקסל עם נתוני צריכה </span><b data-i18n="guide.s6_p2">מהשנתיים האחרונות</b><span data-i18n="guide.s6_p3"> למייל שלך". הקובץ נשלח לכתובת המייל הרשומה בחשבון ומגיע בדרך כלל תוך כמה דקות (כדאי לבדוק גם בספאם).</span></p>
+    <div class="shot" data-shot="step6">
+    <img src="../docs/images/step6.png" alt="הקישור לשליחת קובץ נתוני הצריכה למייל" data-i18n-alt data-i18n="guide.s6_alt" loading="lazy">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.s7_h">7. מורידים מהמייל ומעלים למחשבון</h2>
+    <p data-i18n="guide.s7_p">שומרים את הקובץ מהמייל במחשב כמו שהוא, ומעלים אותו למחשבון. הקובץ נקרא בדפדפן שלכם בלבד ולא נשלח לשום שרת.</p>
+    <a class="back" href="./" data-i18n="guide.back">חזרה למחשבון ◀</a>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="guide.notes_h">הערות</h2>
+    <ul>
+      <li><b data-i18n="guide.note1_b">CSV או אקסל?</b><span data-i18n="guide.note1_p"> המייל מכיל קובץ נתונים (CSV; לפעמים מגיע כאקסל). אם קיבלתם קובץ xlsx והמחשבון מבקש CSV - פותחים ושומרים מחדש בפורמט CSV (קובץ ← שמירה בשם ← CSV).</span></li>
+      <li><b data-i18n="guide.note2_b">כמה נתונים יש בקובץ?</b><span data-i18n="guide.note2_p"> שנתיים אחורה, מדידה לכל רבע שעה. הנתונים מתעדכנים כמה פעמים ביום, ויכול להיות שהשעות האחרונות עדיין חסרות.</span></li>
+      <li><b data-i18n="guide.note3_b">אין אפשרות לקבל קובץ?</b><span data-i18n="guide.note3_p"> כנראה שאין מונה חכם. אפשר עדיין לעבור לתוכנית בהנחה קבועה, ומונה חכם מותקן בחינם במסגרת הפריסה הארצית.</span></li>
+    </ul>
+    <p class="muted" data-i18n="guide.footer_note">המדריך מבוסס על אתר חברת החשמל לישראל (iec.co.il), נבדק ב-2 בנובמבר 2026 עם צילומי מסך אמיתיים מהאתר (מספר המונה הושמט מהצילומים). שמות כפתורים ותפריטים משתנים מדי פעם; אם משהו נראה אחרת, חפשו באזור "מונים וצריכה" את האפשרות לקבל קובץ נתוני צריכה למייל.</p>
+  </div>
+</main>
+<footer class="muted" style="text-align:center;padding:1rem;">
+  <a href="https://github.com/reihlinstinct/electricity-plan-calculator" data-i18n="ui.footer_github">GitHub</a> · <a href="sources.html" data-i18n="ui.footer_sources">Sources</a>
+</footer>
+<script type="module">
+import { applyI18n } from './i18n.js';
+import { initHotspots } from './hotspots.js';
+applyI18n();
+initHotspots();
+</script>
+</body>
+</html>

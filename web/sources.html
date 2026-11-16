@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="sources.title">מקורות - מחשבון מסלולי חשמל</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg:#f7f7f9; --card:#fff; --ink:#1a1a2e; --accent:#0b6bcb; --muted:#666; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; }
+  header { background:var(--accent); color:#fff; padding:1rem 1.5rem;
+           display:flex; align-items:center; justify-content:space-between; gap:1rem;
+           flex-direction:row-reverse; }
+  select { max-width:100%; box-sizing:border-box; }
+  header select#langSwitch { font:inherit; font-weight:600; color:var(--accent);
+           background:#fff; border:0; border-radius:6px; padding:.15rem .3rem; cursor:pointer; }
+  header h1 { margin:0; font-size:1.2rem; }
+  main { max-width:760px; margin:0 auto; padding:1rem; display:grid; gap:1rem; }
+  .card { background:var(--card); border-radius:12px; padding:1rem 1.25rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  h2 { font-size:1.05rem; margin:.2rem 0; }
+  p, li { line-height:1.6; }
+  .muted { color:var(--muted); font-size:.85rem; }
+</style>
+<!-- Cloudflare Web Analytics: anonymous, cookieless visit counter (issue #102) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1866ec8651e049d5a1f7336759a128fd"}'></script>
+</head>
+<body>
+<header><select id="langSwitch"></select><h1 data-i18n="sources.header">מקורות - מחשבון מסלולי חשמל</h1></header>
+<main>
+  <div class="card">
+    <h2 data-i18n="sources.tariffs_h">מקורות תעריפים</h2>
+    <ul>
+      <li><a href="https://www.gov.il/BlobFolder/generalpage/maagar_tarrifr_histoty/he/sefer_tariff_01_2026.pdf" data-i18n="sources.t1">ספר התעריפים של רשות החשמל, ינואר 2026 (נספח 5.2-1, מתח נמוך)</a><span data-i18n="sources.verified_prefix"> - אומת </span>2026-08-06</li>
+      <li><a href="https://chashmali.com/electricity-tariff/" data-i18n="sources.t2">chashmali.com - אימות תעריף מול ספר התעריפים</a><span data-i18n="sources.verified_prefix"> - אומת </span>2026-08-06</li>
+      <li><a href="https://shtipser.com/tariff/" data-i18n="sources.t3">shtipser.com - עמוד תעריפים (אומת מול עמוד התעריף של חברת החשמל)</a><span data-i18n="sources.verified_prefix"> - אומת </span>2026-08-01</li>
+      <li><a href="https://kolhabait.com/chashmal/taoz" data-i18n="sources.t4">שעות שיא/שפל של תעו"ז, החלטת רשות החשמל 63609 (נספח 5.1-1)</a><span data-i18n="sources.verified_prefix"> - אומת </span>2026-10-01</li>
+      <li><a href="https://shtipser.com/plans/" data-i18n="sources.t5">מסלולי ספקים פרטיים (אומתו מול אתרי הספקים)</a><span data-i18n="sources.verified_prefix"> - אומת </span>2026-09-27</li>
+      <li><a href="https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&i=on&year=2026" data-i18n="sources.t6">hebcal.com - זמני שבת (שימוש קודם; חלון השבת מחושב היום מקומית)</a></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2 data-i18n="sources.bench_h">מקורות השוואת יעילות (benchmarks)</h2>
+    <p data-i18n="sources.bench_p">ההשוואות בבלוק "יעילות מכשירים" הן לערכי טכנולוגיה טיפוסית בלבד - קונטקסט, לא פסיקה על מכשיר מסוים. אומתו ב-2026-11-02.</p>
+    <ul>
+      <li><b data-i18n="sources.washer_b">מכונת כביסה:</b><span data-i18n="sources.washer_p1"> מכונה מודרנית - כ-0.5 קוט"ש למחזור, בקנה אחד עם הממוצע בישראל 2024 (0.55 קוט"ש). מתודולוגיית תווית האנרגיה האירופית (תוכנית eco 40-60, קוט"ש ל-100 מחזורים): </span>
+        <a href="https://energy-efficient-products.ec.europa.eu/product-list/washing-machines_en" data-i18n="sources.washer_ec">European Commission - Washing Machines</a><span data-i18n="sources.washer_p2">. בישראל: ירידה מ-0.93 ל-0.55 קוט"ש למחזור בין 2021 ל-2024 (-41%), בדיקת משרד האנרגיה: </span>
+        <a href="https://www.ynet.co.il/economy/article/h1tu9ogzgl">ynet</a>.</li>
+      <li><b data-i18n="sources.ac_b">מזגן:</b><span data-i18n="sources.ac_p1"> טווח מחקרים לחיסכון של אינוורטר מול on/off - 20-40% (11-38% מדידת שדה באיסטנבול; ~24% בערב הסעודית, 1989 - יחידת on/off מדודה מול אינוורטר מסומלץ; ~44% בג'דה): </span>
+        <a href="https://research.itu.edu.tr/en/publications/an-experimental-investigation-of-energy-saving-potentials-for-roo/">ITU</a>,
+        <a href="https://pure.kfupm.edu.sa/en/publications/an-assessment-of-inverter-driven-variable-speed-air-conditioners-/">KFUPM</a>,
+        <a href="https://link.springer.com/article/10.1007/s41825-020-00033-y">Springer</a>.</li>
+      <li><b data-i18n="sources.fridge_b">מקרר:</b><span data-i18n="sources.fridge_p1"> מקרר-מקפיא מודרני טיפוסי - כ-181 קוט"ש בשנה (ממוצע אירופי 2020; ב-1990 היה 477): </span>
+        <a href="https://energy-efficient-products.ec.europa.eu/product-list/fridges-and-freezers_en" data-i18n="sources.fridge_ec">European Commission - Fridges and Freezers</a><span data-i18n="sources.fridge_p2">. בישראל: ירידה של 29% בצריכת מקררים 2021→2024 (~80 ₪ בשנה), משרד האנרגיה: </span>
+        <a href="https://www.ynet.co.il/economy/article/h1tu9ogzgl">ynet</a>.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2 data-i18n="sources.method_h">הערות מתודולוגיה</h2>
+    <ul>
+      <li data-i18n="sources.m1">חלון שבת מחושב מקומית (שקיעת שישי עד צאת השבת) לפי קואורדינטות ירושלים וקירוב NOAA לשקיעה; ייתכנו סטיות של דקות ספורות מול לוחות מקומיים.</li>
+      <li data-i18n="sources.m2">זיהוי מכשירים הוא הסתברותי מחתימת העומס בלבד - מזגן, תנור חימום ודוד אינם ניתנים להבחנה מצריכת כל הבית.</li>
+      <li><span data-i18n="sources.m3">הקוד הפתוח מכיל את כל הקבועים והנוסחאות: </span><a href="https://github.com/reihlinstinct/electricity-plan-calculator">GitHub</a>.</li>
+    </ul>
+    <p class="muted"><a href="index.html" data-i18n="sources.back">חזרה למחשבון</a></p>
+  </div>
+</main>
+<footer class="muted" style="text-align:center;padding:1rem;">
+  <a href="https://github.com/reihlinstinct/electricity-plan-calculator" data-i18n="ui.footer_github">GitHub</a> · <a href="sources.html" data-i18n="ui.footer_sources">Sources</a>
+</footer>
+<script type="module">import { applyI18n } from './i18n.js'; applyI18n();</script>
+</body>
+</html>
