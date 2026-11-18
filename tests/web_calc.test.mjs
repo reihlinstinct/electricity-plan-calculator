@@ -590,4 +590,20 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   }
 }
 
+// xlsx writer: builds a valid ZIP container with the expected parts
+{
+  const { buildXlsx } = await import('../web/xlsx.js');
+  const tiny = new TextEncoder().encode('x');
+  const bytes = buildXlsx([
+    { name: 'a', rows: [[1, 'two'], [null, 3]] },
+    { name: 'b', rows: [['chart']], image: { png: tiny, width: 2, height: 2, row: 5 } },
+  ]);
+  const text = new TextDecoder('latin1').decode(bytes);
+  check('xlsx is a zip', bytes[0] === 0x50 && bytes[1] === 0x4b);
+  check('xlsx has workbook', text.includes('xl/workbook.xml'));
+  check('xlsx has drawing + media', text.includes('xl/drawings/drawing2.xml') && text.includes('xl/media/image1.png'));
+  check('xlsx has end of central directory', bytes[bytes.length - 22] === 0x50 && bytes[bytes.length - 21] === 0x4b);
+}
+
 process.exit(failures ? 1 : 0);
+

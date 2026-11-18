@@ -1652,6 +1652,174 @@ export const I18N = {
       "ru": "Совет: нажмите на выделенные области на скриншотах, чтобы увидеть, что написано на иврите.",
       "am": "ምክር: በምስሎች ላይ ያሉትን የተመሠጡ ክፍሎች ይንኩ በዕብራይስጥ ምን እንደሚል ለማየት.",
       "fr": "Astuce : touchez les zones encadrées sur les captures d'écran pour voir ce que dit l'hébreu."
+    },
+    "ui.drop_main": {
+      "he": "העלאת קובץ הצריכה מחברת החשמל",
+      "en": "Upload your IEC consumption file",
+      "ar": "رفع ملف الاستهلاك من شركة الكهرباء",
+      "ru": "Загрузка файла потребления от электрокомпании",
+      "am": "የኤሌክትሪክ ኩባንያ ፍጆታ ፋይል ስቀል",
+      "fr": "Téléversez votre fichier de consommation de la Compagnie d'électricité"
+    },
+    "ui.drop_sub": {
+      "he": "לחצו כאן לבחירת קובץ CSV, או גררו אותו לכאן",
+      "en": "Click to choose a CSV file, or drag it here",
+      "ar": "انقر لاختيار ملف CSV أو اسحبه إلى هنا",
+      "ru": "Нажмите, чтобы выбрать файл CSV, или перетащите его сюда",
+      "am": "CSV ፋይል ለመምረጥ እዚህ ጠቅ ያድርጉ፣ ወይም እዚህ ይጎትቱ",
+      "fr": "Cliquez pour choisir un fichier CSV, ou glissez-le ici"
+    },
+    "ui.file_chosen": {
+      "he": "נבחר הקובץ: {name}",
+      "en": "Selected file: {name}",
+      "ar": "الملف المحدد: {name}",
+      "ru": "Выбран файл: {name}",
+      "am": "የተመረጠው ፋይል: {name}",
+      "fr": "Fichier sélectionné : {name}"
+    },
+    "ui.export_title": {
+      "he": "ייצוא הדוח",
+      "en": "Export the report",
+      "ar": "تصدير التقرير",
+      "ru": "Экспорт отчёта",
+      "am": "ሪፖርት ላክ",
+      "fr": "Exporter le rapport"
+    },
+    "ui.export_pdf": {
+      "he": "הדפסה / שמירה כ-PDF (כולל גרפים)",
+      "en": "Print / save as PDF (with charts)",
+      "ar": "طباعة / حفظ كـ PDF (مع الرسوم البيانية)",
+      "ru": "Печать / сохранить как PDF (с графиками)",
+      "am": "አትም / እንደ PDF አስቀምጥ (ከገራፎች ጋር)",
+      "fr": "Imprimer / enregistrer en PDF (avec graphiques)"
+    },
+    "ui.export_excel": {
+      "he": "הורדת Excel (נתונים וגרפים)",
+      "en": "Download Excel (data and charts)",
+      "ar": "تنزيل Excel (بيانات ورسوم بيانية)",
+      "ru": "Скачать Excel (данные и графики)",
+      "am": "Excel አውርድ (ውሂብ እና ገራፎች)",
+      "fr": "Télécharger Excel (données et graphiques)"
+    },
+    "ui.export_note": {
+      "he": "הייצוא מתבצע בדפדפן בלבד; הקובץ נשמר רק על המכשיר שלך.",
+      "en": "The export runs entirely in your browser; the file is saved only on your device.",
+      "ar": "يتم التصدير بالكامل في المتصفح؛ يُحفظ الملف على جهازك فقط.",
+      "ru": "Экспорт выполняется только в браузере; файл сохраняется только на вашем устройстве.",
+      "am": "ላኩ ሙሉ በሙሉ በአሳሽዎ ውስጥ ይካሄዳል፤ ፋይሉ በመሣሪያዎ ላይ ብቻ ይቀመጣል።",
+      "fr": "L'export s'effectue entièrement dans le navigateur ; le fichier n'est enregistré que sur votre appareil."
+    },
+    "app.signup_link": {
+      "he": "הספק הזול ביותר: להצטרפות למסלול {label} באתר הספק",
+      "en": "Cheapest supplier: join {label} on the supplier's site",
+      "ar": "أرخص مزود: للانضمام إلى مسار {label} على موقع المزود",
+      "ru": "Самый дешёвый поставщик: подключиться к {label} на сайте поставщика",
+      "am": "ረጅሙ አቅራቢ: ለ{label} በአቅራቢው ጣቢያ ላይ ይቀላቀሉ",
+      "fr": "Fournisseur le moins cher : souscrire à {label} sur le site du fournisseur"
+    },
+    "app.signup_note": {
+      "he": "קישור ישיר לאתר הרשמי של הספק; אין לנו שותפות מסחרית או עמלה.",
+      "en": "A direct link to the supplier's official site; we have no commercial partnership or commission.",
+      "ar": "رابط مباشر إلى الموقع الرسمي للمزود؛ لا شراكة تجارية أو عمولة لنا.",
+      "ru": "Прямая ссылка на официальный сайт поставщика; у нас нет коммерческого партнёрства или комиссии.",
+      "am": "ወደ አቅራቢው የኦፊሴላዊ ጣቢያ ቀጥተኛ አገናኝ፤ ምንም የንግድ ሽርክና ወይም ኮሚሽን የለንም።",
+      "fr": "Lien direct vers le site officiel du fournisseur ; aucun partenariat commercial ni commission."
+    },
+    "export.sheet_summary": {
+      "he": "סיכום",
+      "en": "Summary",
+      "ar": "ملخص",
+      "ru": "Сводка",
+      "am": "ማጠቃለያ",
+      "fr": "Résumé"
+    },
+    "export.sheet_hourly": {
+      "he": "פרופיל שעתי",
+      "en": "Hourly profile",
+      "ar": "الملف الساعي",
+      "ru": "Почасовой профиль",
+      "am": "የሰዓት መገለጫ",
+      "fr": "Profil horaire"
+    },
+    "export.sheet_daily": {
+      "he": "צריכה יומית",
+      "en": "Daily consumption",
+      "ar": "الاستهلاك اليومي",
+      "ru": "Дневное потребление",
+      "am": "ዕለታዊ ፍጆታ",
+      "fr": "Consommation quotidienne"
+    },
+    "export.sheet_plans": {
+      "he": "דירוג מסלולים",
+      "en": "Plan ranking",
+      "ar": "ترتيب المسارات",
+      "ru": "Рейтинг тарифов",
+      "am": "የዕቅዶች ደረጃ",
+      "fr": "Classement des offres"
+    },
+    "export.col_item": {
+      "he": "פריט",
+      "en": "Item",
+      "ar": "البند",
+      "ru": "Пункт",
+      "am": "ንጥር",
+      "fr": "Élément"
+    },
+    "export.col_value": {
+      "he": "ערך",
+      "en": "Value",
+      "ar": "القيمة",
+      "ru": "Значение",
+      "am": "ዋጋ",
+      "fr": "Valeur"
+    },
+    "export.col_rank": {
+      "he": "דירוג",
+      "en": "Rank",
+      "ar": "الترتيب",
+      "ru": "Место",
+      "am": "ደረጃ",
+      "fr": "Rang"
+    },
+    "export.col_hour": {
+      "he": "שעה",
+      "en": "Hour",
+      "ar": "الساعة",
+      "ru": "Час",
+      "am": "ሰዓት",
+      "fr": "Heure"
+    },
+    "export.col_avg_kwh": {
+      "he": "ממוצע קוט\"ש",
+      "en": "Avg kWh",
+      "ar": "متوسط ك.و.س",
+      "ru": "Среднее кВт·ч",
+      "am": "አማካይ kWh",
+      "fr": "kWh moyens"
+    },
+    "export.col_date": {
+      "he": "תאריך",
+      "en": "Date",
+      "ar": "التاريخ",
+      "ru": "Дата",
+      "am": "ቀን",
+      "fr": "Date"
+    },
+    "export.col_kwh": {
+      "he": "קוט\"ש",
+      "en": "kWh",
+      "ar": "ك.و.س",
+      "ru": "кВт·ч",
+      "am": "kWh",
+      "fr": "kWh"
+    },
+    "calc.err_too_large": {
+      "he": "הקובץ גדול מדי לעיבוד בדפדפן. אם זה ייצוא צריכה של חברת החשמל, ודאו שהורדתם את קובץ ה-CSV ולא קובץ אחר.",
+      "en": "The file is too large to process in the browser. If this is an IEC consumption export, make sure you downloaded the CSV file and not something else.",
+      "ar": "الملف كبير جدًا على المعالجة في المتصفح. إذا كان هذا تصدير استهلاك من شركة الكهرباء، فتأكد من تنزيل ملف CSV وليس ملفًا آخر.",
+      "ru": "Файл слишком велик для обработки в браузере. Если это экспорт потребления от электрокомпании, убедитесь, что скачан именно CSV-файл.",
+      "am": "ፋይሉ በአሳሽ ውስጥ ለማስኬድ በጣም ትልቅ ነው። ይህ የኤሌክትሪክ ኩባንያ ፍጆታ ላክ ከሆነ CSV ፋይል መሆኑን ያረጋግጡ።",
+      "fr": "Le fichier est trop volumineux pour être traité dans le navigateur. S'il s'agit d'un export de consommation de la Compagnie d'électricité, vérifiez qu'il s'agit bien du fichier CSV."
     }
   }
 };
