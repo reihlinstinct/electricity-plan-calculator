@@ -315,7 +315,11 @@ $('exportXlsx').addEventListener('click', () => {
 $('go').addEventListener('click', async () => {
   const err = $('err'); err.style.display = 'none';
   try {
-    const text = await $('csv').files[0].text();
+    const file = $('csv').files[0];
+    // IEC exports are small text files; a hard cap keeps a wrong huge file
+    // from freezing the tab before parsing even starts.
+    if (file.size > 10 * 1024 * 1024) throw new Error(t('calc.err_too_large'));
+    const text = await file.text();
     lastIntervals = parseCsv(text);
     lastErrorNoRows = false;
     renderAnalysis(lastIntervals);

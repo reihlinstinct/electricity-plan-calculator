@@ -1811,6 +1811,14 @@
       "ru": "кВт·ч",
       "am": "kWh",
       "fr": "kWh"
+    },
+    "calc.err_too_large": {
+      "he": "הקובץ גדול מדי לעיבוד בדפדפן. אם זה ייצוא צריכה של חברת החשמל, ודאו שהורדתם את קובץ ה-CSV ולא קובץ אחר.",
+      "en": "The file is too large to process in the browser. If this is an IEC consumption export, make sure you downloaded the CSV file and not something else.",
+      "ar": "الملف كبير جدًا على المعالجة في المتصفح. إذا كان هذا تصدير استهلاك من شركة الكهرباء، فتأكد من تنزيل ملف CSV وليس ملفًا آخر.",
+      "ru": "Файл слишком велик для обработки в браузере. Если это экспорт потребления от электрокомпании, убедитесь, что скачан именно CSV-файл.",
+      "am": "ፋይሉ በአሳሽ ውስጥ ለማስኬድ በጣም ትልቅ ነው። ይህ የኤሌክትሪክ ኩባንያ ፍጆታ ላክ ከሆነ CSV ፋይል መሆኑን ያረጋግጡ።",
+      "fr": "Le fichier est trop volumineux pour être traité dans le navigateur. S'il s'agit d'un export de consommation de la Compagnie d'électricité, vérifiez qu'il s'agit bien du fichier CSV."
     }
   }
 }
