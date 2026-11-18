@@ -31,14 +31,12 @@ function zipStore(entries) {
     const crc = crc32(e.data);
     const local = [u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
       u32(crc), u32(e.data.length), u32(e.data.length), u16(name.length), u16(0), name];
+    const localOffset = offset;
     local.forEach(push);
     push(e.data);
     central.push([u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
       u32(crc), u32(e.data.length), u32(e.data.length), u16(name.length), u16(0), u16(0),
-      u16(0), u16(0), u32(0), u32(offset - e.data.length - local.reduce((s, a) => s + a.length, 0) + 0),
-      name]);
-    // fix: local header size = sum of parts before data
-    central[central.length - 1][16] = u32(offset - e.data.length - local.reduce((s, a) => s + a.length, 0));
+      u16(0), u16(0), u32(0), u32(localOffset), name]);
   }
   const cdStart = offset;
   for (const c of central) c.forEach(push);

@@ -101,3 +101,5 @@ def test_signup_urls_present_and_https():
     assert plans, "supplier plan catalog is empty"
     missing = [p["plan"] for p in plans if not p.get("signup_url", "").startswith("https://")]
     assert not missing, f"plans without an https signup_url: {missing}"
+    unverified = [p["plan"] for p in plans if not p.get("signup_verified")]
+    assert not unverified, f"plans without a signup_verified date: {unverified}"

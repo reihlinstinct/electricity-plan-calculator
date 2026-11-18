@@ -1685,12 +1685,12 @@
       "fr": "Exporter le rapport"
     },
     "ui.export_pdf": {
-      "he": "הורדת PDF (כולל גרפים)",
-      "en": "Download PDF (with charts)",
-      "ar": "تنزيل PDF (مع الرسوم البيانية)",
-      "ru": "Скачать PDF (с графиками)",
-      "am": "PDF አውርድ (ከገራፎች ጋር)",
-      "fr": "Télécharger le PDF (avec graphiques)"
+      "he": "הדפסה / שמירה כ-PDF (כולל גרפים)",
+      "en": "Print / save as PDF (with charts)",
+      "ar": "طباعة / حفظ كـ PDF (مع الرسوم البيانية)",
+      "ru": "Печать / сохранить как PDF (с графиками)",
+      "am": "አትም / እንደ PDF አስቀምጥ (ከገራፎች ጋር)",
+      "fr": "Imprimer / enregistrer en PDF (avec graphiques)"
     },
     "ui.export_excel": {
       "he": "הורדת Excel (נתונים וגרפים)",
@@ -1709,12 +1709,12 @@
       "fr": "L'export s'effectue entièrement dans le navigateur ; le fichier n'est enregistré que sur votre appareil."
     },
     "app.signup_link": {
-      "he": "להצטרפות למסלול {label} באתר הספק",
-      "en": "Join {label} on the supplier's site",
-      "ar": "للانضمام إلى مسار {label} على موقع المزود",
-      "ru": "Подключиться к {label} на сайте поставщика",
-      "am": "ለ{label} በአቅራቢው ጣቢያ ላይ ይቀላቀሉ",
-      "fr": "Souscrire à {label} sur le site du fournisseur"
+      "he": "הספק הזול ביותר: להצטרפות למסלול {label} באתר הספק",
+      "en": "Cheapest supplier: join {label} on the supplier's site",
+      "ar": "أرخص مزود: للانضمام إلى مسار {label} على موقع المزود",
+      "ru": "Самый дешёвый поставщик: подключиться к {label} на сайте поставщика",
+      "am": "ረጅሙ አቅራቢ: ለ{label} በአቅራቢው ጣቢያ ላይ ይቀላቀሉ",
+      "fr": "Fournisseur le moins cher : souscrire à {label} sur le site du fournisseur"
     },
     "app.signup_note": {
       "he": "קישור ישיר לאתר הרשמי של הספק; אין לנו שותפות מסחרית או עמלה.",
