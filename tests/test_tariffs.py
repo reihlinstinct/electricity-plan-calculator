@@ -89,3 +89,15 @@ def test_winter_peak_on_holiday():
         fixed_fee_monthly_pre_vat=cat.taoz.fixed_fee_monthly_pre_vat,
     )
     assert tz.rate(datetime(2027, 1, 15, 18, 0)) == 1.1470  # Friday in winter, holiday
+
+
+def test_signup_urls_present_and_https():
+    import json
+
+    from iec_calc.tariffs import DATA_FILE
+
+    raw = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    plans = raw["supplier_plans"]
+    assert plans, "supplier plan catalog is empty"
+    missing = [p["plan"] for p in plans if not p.get("signup_url", "").startswith("https://")]
+    assert not missing, f"plans without an https signup_url: {missing}"

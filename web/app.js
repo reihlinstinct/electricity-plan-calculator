@@ -1,15 +1,38 @@
 import { TARIFFS } from './tariffs-data.js';
 import { parseCsv, summarize, rankPlans, buildInsights } from './calc.js';
 import { t, applyI18n, amountLocale } from './i18n.js';
+import { buildXlsx, pngFromCanvas, downloadXlsx } from './xlsx.js';
 
 applyI18n();
 
 const $ = id => document.getElementById(id);
 const nis = v => `${Math.round(v).toLocaleString(amountLocale())} ₪`;
 
-$('csv').addEventListener('change', () => { $('go').disabled = !$('csv').files.length; });
+function showFileName() {
+  const f = $('csv').files[0];
+  $('fileName').textContent = f ? t('ui.file_chosen', { name: f.name }) + ' · ' : '';
+}
+
+$('csv').addEventListener('change', () => { $('go').disabled = !$('csv').files.length; showFileName(); });
+
+// Big obvious dropzone: drag & drop lands in the same hidden file input.
+{
+  const dz = $('dropzone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      $('csv').files = e.dataTransfer.files;
+      $('go').disabled = false;
+      showFileName();
+    }
+  });
+}
 
 let lastIntervals = null;
+let lastRanked = null;
 let lastErrorNoRows = false;
 
 // (re)populate the current-plan select in the active language, keeping the
@@ -125,6 +148,26 @@ function renderAnalysis(intervals) {
     }
     $('plansNote').textContent = t('app.plans_note');
 
+    // single signup link: the cheapest ranked supplier plan only
+    const signupEl = $('signupLink');
+    signupEl.innerHTML = '';
+    const best = ranked.find(p => p.plan && p.plan.signup_url);
+    if (best) {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = best.plan.signup_url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = t('app.signup_link', { label: best.label });
+      p.appendChild(a);
+      const span = document.createElement('span');
+      span.className = 'muted';
+      span.textContent = ' ' + t('app.signup_note');
+      p.appendChild(span);
+      signupEl.appendChild(p);
+    }
+    lastRanked = ranked;
+
     // insights: observations only, from the CSV alone
     const ins = buildInsights(intervals);
     const HEDAY = [0,1,2,3,4,5,6].map(i => t('app.day_' + i));
@@ -236,6 +279,39 @@ function renderAnalysis(intervals) {
     renderEfficiency();
 }
 
+$('exportPdf').addEventListener('click', () => window.print());
+
+$('exportXlsx').addEventListener('click', () => {
+  if (!lastIntervals || !lastRanked) return;
+  const sum = summarize(lastIntervals);
+  const n = v => Math.round(v * 100) / 100;
+  const summaryRows = [
+    [t('export.col_item'), t('export.col_value')],
+    [t('app.days_measured', { days: sum.days }).trim(), null],
+    [t('app.summary_line', { total: sum.total.toFixed(1), avg: (sum.total / sum.days).toFixed(2),
+      annual: Math.round(sum.total / sum.days * 365).toLocaleString(amountLocale()) }).trim(), null],
+    [t('app.col_plan'), lastRanked[0].label],
+    [t('app.col_annual'), n(lastRanked[0].annual)],
+    [t('app.col_saving'), n(lastRanked[0].saving)],
+    [t('app.plans_note'), null],
+  ];
+  const hourlyRows = [[t('export.col_hour'), t('export.col_avg_kwh')],
+    ...[...Array(24).keys()].map(h => [`${String(h).padStart(2, '0')}:00`, n(sum.hourlyAvg[h])])];
+  const days = [...sum.daily.keys()].sort();
+  const dailyRows = [[t('export.col_date'), t('export.col_kwh')],
+    ...days.map(d => [d, n(sum.daily.get(d))])];
+  const planRows = [[t('export.col_rank'), t('app.col_plan'), t('app.col_annual'), t('app.col_saving')],
+    ...lastRanked.map((p, i) => [i + 1, p.label, n(p.annual), n(p.saving)])];
+  const img = id => Object.assign(pngFromCanvas($(id)), { row: hourlyRows.length + 2 });
+  const sheets = [
+    { name: t('export.sheet_summary'), rows: summaryRows },
+    { name: t('export.sheet_hourly'), rows: hourlyRows, image: img('chHourly') },
+    { name: t('export.sheet_daily'), rows: dailyRows, image: Object.assign(pngFromCanvas($('chDaily')), { row: dailyRows.length + 2 }) },
+    { name: t('export.sheet_plans'), rows: planRows, image: Object.assign(pngFromCanvas($('chPlans')), { row: planRows.length + 2 }) },
+  ];
+  downloadXlsx(buildXlsx(sheets), 'electricity-report.xlsx');
+});
+
 $('go').addEventListener('click', async () => {
   const err = $('err'); err.style.display = 'none';
   try {
@@ -258,6 +334,7 @@ $('go').addEventListener('click', async () => {
 // the static markup; this event covers the rest.
 document.addEventListener('iec:langchange', () => {
   populatePlanSelect();
+  showFileName();
   if (lastIntervals) renderAnalysis(lastIntervals);
   else if (lastErrorNoRows) $('err').textContent = t('calc.err_no_rows');
 });

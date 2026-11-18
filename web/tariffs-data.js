@@ -164,7 +164,8 @@ export const TARIFFS = {
       "meter": "any",
       "eligibility": "כל סוגי המונים",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.electra-power.co.il/%D7%A1%D7%A4%D7%A7-%D7%94%D7%97%D7%A9%D7%9E%D7%9C-%D7%94%D7%97%D7%93%D7%A9-%D7%A9%D7%9C%D7%9A/"
     },
     {
       "supplier": "אמישראגז חשמל",
@@ -176,7 +177,8 @@ export const TARIFFS = {
       "source": "https://shtipser.com/plans/",
       "verified": "2026-09-27",
       "requires_gas_customer": true,
-      "requires_hot_customer": false
+      "requires_hot_customer": false,
+      "signup_url": "https://www.amisragas.co.il/electricity/"
     },
     {
       "supplier": "בזק energy",
@@ -186,7 +188,8 @@ export const TARIFFS = {
       "meter": "any",
       "eligibility": "כל סוגי המונים",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.bezeq.co.il/benergy/"
     },
     {
       "supplier": "HOT energy",
@@ -198,7 +201,8 @@ export const TARIFFS = {
       "source": "https://shtipser.com/plans/",
       "verified": "2026-09-27",
       "requires_gas_customer": false,
-      "requires_hot_customer": true
+      "requires_hot_customer": true,
+      "signup_url": "https://www.hot.net.il/heb/customerservice/contactus/joinhot/joinhot/"
     },
     {
       "supplier": "HOT energy",
@@ -208,7 +212,8 @@ export const TARIFFS = {
       "meter": "any",
       "eligibility": "כל סוגי המונים",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.hot.net.il/heb/customerservice/contactus/joinhot/joinhot/"
     },
     {
       "supplier": "פזגז",
@@ -218,7 +223,8 @@ export const TARIFFS = {
       "meter": "any",
       "eligibility": "ללא התחייבות",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.pazgas.co.il/he/electricity/"
     },
     {
       "supplier": "Partner Power",
@@ -228,7 +234,8 @@ export const TARIFFS = {
       "meter": "any",
       "eligibility": "כל סוגי המונים; ההנחה עולה ל-7% לאורך שלוש שנים",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.partner.co.il/n/partnerpower/lobby"
     },
     {
       "supplier": "סלקום אנרג׳י",
@@ -242,7 +249,8 @@ export const TARIFFS = {
       "meter": "any",
       "eligibility": "ימים ראשון-חמישי בלבד",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://cellcom.co.il/production/Private/1/energy3/"
     },
     {
       "supplier": "ELECTRA POWER",
@@ -256,7 +264,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.electra-power.co.il/%D7%A1%D7%A4%D7%A7-%D7%94%D7%97%D7%A9%D7%9E%D7%9C-%D7%94%D7%97%D7%93%D7%A9-%D7%A9%D7%9C%D7%9A/"
     },
     {
       "supplier": "סלקום אנרג׳י",
@@ -270,7 +279,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://cellcom.co.il/production/Private/1/energy3/"
     },
     {
       "supplier": "בזק energy",
@@ -284,7 +294,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.bezeq.co.il/benergy/"
     },
     {
       "supplier": "HOT energy",
@@ -298,7 +309,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.hot.net.il/heb/customerservice/contactus/joinhot/joinhot/"
     },
     {
       "supplier": "Partner Power",
@@ -312,7 +324,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.partner.co.il/n/partnerpower/lobby"
     },
     {
       "supplier": "סלקום אנרג׳י",
@@ -326,7 +339,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://cellcom.co.il/production/Private/1/energy3/"
     },
     {
       "supplier": "ELECTRA POWER",
@@ -340,7 +354,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.electra-power.co.il/%D7%A1%D7%A4%D7%A7-%D7%94%D7%97%D7%A9%D7%9E%D7%9C-%D7%94%D7%97%D7%93%D7%A9-%D7%A9%D7%9C%D7%9A/"
     },
     {
       "supplier": "ELECTRA POWER",
@@ -354,7 +369,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.electra-power.co.il/%D7%A1%D7%A4%D7%A7-%D7%94%D7%97%D7%A9%D7%9E%D7%9C-%D7%94%D7%97%D7%93%D7%A9-%D7%A9%D7%9C%D7%9A/"
     },
     {
       "supplier": "בזק energy",
@@ -368,7 +384,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.bezeq.co.il/benergy/"
     },
     {
       "supplier": "HOT energy",
@@ -382,7 +399,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.hot.net.il/heb/customerservice/contactus/joinhot/joinhot/"
     },
     {
       "supplier": "Partner Power",
@@ -396,7 +414,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://www.partner.co.il/n/partnerpower/lobby"
     },
     {
       "supplier": "סלקום אנרג׳י",
@@ -410,7 +429,8 @@ export const TARIFFS = {
       "meter": "smart",
       "eligibility": "מונה חכם",
       "source": "https://shtipser.com/plans/",
-      "verified": "2026-09-27"
+      "verified": "2026-09-27",
+      "signup_url": "https://cellcom.co.il/production/Private/1/energy3/"
     }
   ],
   "vat_rate": 0.18
