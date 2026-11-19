@@ -8,4 +8,4 @@
 Opening the [electricity plan calculator](web/) - if nothing happens, use the link.
 
 - [Open the electricity plan calculator](web/)
-- [Project README](README.html)
+- [Project README](https://github.com/reihlinstinct/electricity-plan-calculator/blob/main/README.md)
