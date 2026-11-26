@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-26
+
+- Content Security Policy (meta tag) on the three calculator pages: no inline
+  scripts (the two inline module scripts moved to `guide-init.js` and
+  `sources-init.js`), scripts only from the site and the Cloudflare analytics
+  beacon, no network connections except analytics, no form or base-URL hijack.
+  Tests check each page's policy.
+
 ## 2026-11-10
 
 - French as the fifth additional language (machine draft, pending native-speaker
