@@ -301,7 +301,7 @@ const pagesAndDocs = ['web/index.html', 'web/guide.html', 'web/sources.html', 'R
   ...readdirSync(join(root, 'docs')).filter(f => f.endsWith('.md')).map(f => join('docs', f))];
 let linkFails = 0;
 for (const rel of pagesAndDocs) {
-  const body = readFileSync(join(root, rel), 'utf-8');
+  const body = readFileSync(join(root, rel), 'utf-8').replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, ''); // CSP origins are policy, not links; checked separately below
   if (/design-doc|\/tree\/|\/blob\//.test(body)) { console.error('FAIL branch ref in', rel); linkFails++; }
   for (const m of body.match(/https?:\/\/[^"'\s)>]+/g) || []) {
     const host = m.replace(/^https?:\/\//, '').split('/')[0];
@@ -315,6 +315,20 @@ for (const rel of pagesAndDocs) {
   }
 }
 check('links: no branch refs, expected hosts only, internal links resolve (issue #45)', linkFails === 0);
+
+// --- security: every page ships a content security policy that fits its real dependencies ---
+for (const page of ['index', 'guide', 'sources']) {
+  const html = readFileSync(join(root, 'web', page + '.html'), 'utf-8');
+  const meta = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/);
+  check(`csp: web/${page}.html has a CSP meta`, !!meta);
+  const policy = meta ? meta[1] : '';
+  check(`csp: web/${page}.html starts from default-src 'none' and blocks base/form hijack`, /default-src 'none'/.test(policy) && /base-uri 'none'/.test(policy) && /form-action 'none'/.test(policy));
+  check(`csp: web/${page}.html allows no unsafe script sources`, !/script-src[^;]*'unsafe-(inline|eval)'/.test(policy));
+  const inlineScripts = (html.match(/<script(?![^>]*\ssrc=)[^>]*>/g) || []).length;
+  check(`csp: web/${page}.html has no inline scripts`, inlineScripts === 0);
+  const origins = (policy.match(/https:\/\/[a-z.]+/g) || []);
+  check(`csp: web/${page}.html names only the Cloudflare analytics origins`, origins.every(o => /^https:\/\/(static\.)?cloudflareinsights\.com$/.test(o)));
+}
 
 
 // --- functional: full language switch after a calculation leaves no stale strings (#54 review) ---
@@ -573,7 +587,8 @@ check('links: no branch refs, expected hosts only, internal links resolve (issue
   check('hotspots: tooltip role + aria-describedby (#68 review)', hsjs.includes("'role', 'tooltip'") && hsjs.includes('aria-describedby'));
   check('hotspots: Escape dismisses (#68 review)', hsjs.includes("key === 'Escape'"));
   check('hotspots: tip placed adjacent, never overlapping (#69)', hsjs.includes('h.y + h.h + 1') && hsjs.includes('100 - h.y + 1') && !hsjs.includes('translateY'));
-  check('hotspots: guide imports module + hint element', guide.includes("from './hotspots.js'") && guide.includes('initHotspots()') && guide.includes('id="hsHint"'));
+  const guideInit = readFileSync(join(root, 'web', 'guide-init.js'), 'utf-8');
+  check('hotspots: guide imports module + hint element', guide.includes('src="guide-init.js"') && guideInit.includes("from './hotspots.js'") && guideInit.includes('initHotspots()') && guide.includes('id="hsHint"'));
   check('hotspots: always-visible affordance outline (#68 review)', /\.hs \{[^}]*dashed/.test(guide));
   check('hotspots: shot wrapper fit-content (#68 review)', guide.includes('width:fit-content'));
 }
